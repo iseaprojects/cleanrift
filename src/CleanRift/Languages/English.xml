@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Language Name="English" LangID="1033" Version="1">
+    <DelayedFilesRemovalDialog>
+        <Title>Some files were not deleted</Title>
+    </DelayedFilesRemovalDialog>
+    <DlgAddNewStartupProgram>
+        <checkHighestPriviledges>Run task with the highest privileges</checkHighestPriviledges>
+        <DlgAddNewStartupProgramCaption>Add a new startup program</DlgAddNewStartupProgramCaption>
+        <filterAllFiles>All Files</filterAllFiles>
+        <filterExecutableFiles>Executable Files</filterExecutableFiles>
+        <labelArguments>Arguments (optional):</labelArguments>
+        <labelPathToExecutableFile>Path to executable file:</labelPathToExecutableFile>
+        <labelStartupType>Startup type:</labelStartupType>
+    </DlgAddNewStartupProgram>
+    <DlgPreferences>
+        <betaAppListNote>Software update groups, the recent-items popup and the recent-items toolbar button are not available in the 1.0 beta.</betaAppListNote>
+        <betaGeneralNote>Update checks, Explorer integration, the Control Panel icon and Total Commander navigation are not available in the 1.0 beta.</betaGeneralNote>
+        <categoryAppList>Application list</categoryAppList>
+        <categoryGeneral>General</categoryGeneral>
+        <categoryInterface>Interface</categoryInterface>
+        <categoryUninstallWizard>Removal Wizard</categoryUninstallWizard>
+        <checkCheckForBetaVersions>Include beta versions</checkCheckForBetaVersions>
+        <checkCheckForUpdates>Check for updates at startup</checkCheckForUpdates>
+        <checkControlPanelIcon>Show a CleanRift shortcut in Control Panel</checkControlPanelIcon>
+        <checkDisplayPopup>Show a popup with recently installed programs</checkDisplayPopup>
+        <checkDisplayUpdates>Show software updates</checkDisplayUpdates>
+        <checkHighlighRecent>Highlight recently installed programs</checkHighlighRecent>
+        <checkMark32bitApps>Mark 32-bit apps</checkMark32bitApps>
+        <checkMinimizeOnClose>Minimize to system tray on window close</checkMinimizeOnClose>
+        <checkMinimizeToTray>Minimize to system tray on window minimize</checkMinimizeToTray>
+        <checkRecentOnSecondaryToolbar>Show recent programs in the secondary toolbar</checkRecentOnSecondaryToolbar>
+        <checkShellExtension>Add 'Install and Trace' to the Explorer context menu for setup files (exe/msi)</checkShellExtension>
+        <checkSkipUAC>Use Task Scheduler to skip the UAC confirmation (when possible)</checkSkipUAC>
+        <checkSkipUACHelpText>When enabled, CleanRift creates an elevated Windows scheduled task so future launches can skip the UAC confirmation. You can disable it at any time.</checkSkipUACHelpText>
+        <checkSmallIcons>Compact list with apps</checkSmallIcons>
+        <checkStartMinimized>Automatically start CleanRift minimized in system tray on Windows startup</checkStartMinimized>
+        <checkToolBarCaptions>Display toolbar buttons captions</checkToolBarCaptions>
+        <checkTotalCommander>Open program folders with Total Commander (if installed)</checkTotalCommander>
+        <checkTrayIcon>Display CleanRift system tray icon</checkTrayIcon>
+        <colorSchemeAuto>Match Windows light/dark mode</colorSchemeAuto>
+        <colorSchemeDark>Dark mode</colorSchemeDark>
+        <colorSchemeLight>Light mode (default)</colorSchemeLight>
+        <comboItemTreeUpdatesAlwaysExpanded>Always expanded</comboItemTreeUpdatesAlwaysExpanded>
+        <comboItemTreeUpdatesCollapsed>Initially collapsed</comboItemTreeUpdatesCollapsed>
+        <comboItemTreeUpdatesExpanded>Initially expanded</comboItemTreeUpdatesExpanded>
+        <comboItemWizardOption1>Ask before launching</comboItemWizardOption1>
+        <comboItemWizardOption2>Automatically</comboItemWizardOption2>
+        <comboItemWizardOption3>Disable</comboItemWizardOption3>
+        <DlgPreferencesCaption>Preferences</DlgPreferencesCaption>
+        <frameColorScheme>Color scheme</frameColorScheme>
+        <staticInterfaceLanguage>Interface language:</staticInterfaceLanguage>
+        <staticRecentlyInstalled>Recently installed programs:</staticRecentlyInstalled>
+        <staticTreeLikeUpdates>Software updates as sub-items:</staticTreeLikeUpdates>
+        <staticWizardDesctiption>After a program's own uninstaller finishes, the Removal Wizard can scan the registry and file system for leftovers. Choose whether to run it automatically, disable it, or ask each time. Traced programs always use the Removal Wizard.</staticWizardDesctiption>
+        <staticWizardUsage>Launch the Removal Wizard after the built-in uninstaller:</staticWizardUsage>
+        <subitemsHelpText>Expand or collapse groups with the mouse or the Left/Right keys. If a search matches a sub-item, its group opens automatically.</subitemsHelpText>
+        <staticTrayGroup>System notification area (system tray) icon:</staticTrayGroup>
+        <staticWizardTracedNote>Removal Wizard always runs for traced programs and cannot be disabled for them.</staticWizardTracedNote>
+    </DlgPreferences>
+    <ExplorerBar>
+        <itemAddNewStartupItem>Add a new program...</itemAddNewStartupItem>
+        <itemBatchUninstallInProgressTip>Batch uninstall in progress, please wait while removal of all apps is finished...</itemBatchUninstallInProgressTip>
+        <itemCommandLineCaption>Command Line:</itemCommandLineCaption>
+        <itemDelete>Force removal of all traces</itemDelete>
+        <itemDeleteSelected>Delete selected items from the list</itemDeleteSelected>
+        <itemDeleteStartupItem>Delete from the list</itemDeleteStartupItem>
+        <itemDisableRunning>Disable running on startup</itemDisableRunning>
+        <itemDisableSelected>Disable selected items</itemDisableSelected>
+        <itemEnableRunning>Enable running on startup</itemEnableRunning>
+        <itemGroup>This is a group of programs</itemGroup>
+        <itemInstalledOn>Installed/Updated On:</itemInstalledOn>
+        <itemModifyIt>Modify</itemModifyIt>
+        <itemMultiplSelected>%u items selected</itemMultiplSelected>
+        <itemNoItemsMatchingFilter>There are no programs matching '%s' in the %s category</itemNoItemsMatchingFilter>
+        <itemNothingFound>Nothing found!</itemNothingFound>
+        <itemNoUninstall>The program cannot be uninstalled in a normal way, you can try Force Removal instead.</itemNoUninstall>
+        <itemPublisher>Publisher:</itemPublisher>
+        <itemSearch>Search</itemSearch>
+        <itemShortSearchTip>Type to find a program</itemShortSearchTip>
+        <itemSourceCaption>Source:</itemSourceCaption>
+        <itemSourceRun_HKCU>Current User Registry Run Key</itemSourceRun_HKCU>
+        <itemSourceRun_HKLM>All Users Registry Run Key</itemSourceRun_HKLM>
+        <itemSourceStartMenu_All>All Users Autorun Start Menu</itemSourceStartMenu_All>
+        <itemSourceStartMenu_Current>Current User Autorun Start Menu</itemSourceStartMenu_Current>
+        <itemStatusCaption>Status:</itemStatusCaption>
+        <itemStatusDisabled>Disabled</itemStatusDisabled>
+        <itemStatusInvalid>Invalid</itemStatusInvalid>
+        <itemStatusNotRunning>Not Running</itemStatusNotRunning>
+        <itemStatusRunning>Running</itemStatusRunning>
+        <itemUninstallIt>Uninstall</itemUninstallIt>
+        <itemVersion>Version:</itemVersion>
+    </ExplorerBar>
+    <ForceRemovalForm>
+        <captionCancel>Cancel the operation?</captionCancel>
+        <staticCancel>The operation is still running. Do you want to stop it and close the window?</staticCancel>
+    </ForceRemovalForm>
+    <HTMLReport>
+        <allFiles>All Files</allFiles>
+        <computer>Computer</computer>
+        <generatedByOn>Generated by %s on %s</generatedByOn>
+        <htmlFiles>HTML Files</htmlFiles>
+        <installedPrograms>Installed Programs (%s)</installedPrograms>
+        <startupPrograms>Startup Programs</startupPrograms>
+    </HTMLReport>
+    <InstallTracker>
+        <btnInstall>Install and Trace</btnInstall>
+        <btnNoAndRevert>No + Revert</btnNoAndRevert>
+        <btnSave>Save</btnSave>
+        <btnSaveLog>Save Log...</btnSaveLog>
+        <btnStop>Stop</btnStop>
+        <checkMinimize>Minimize CleanRift to the notification area during installation</checkMinimize>
+        <installTip1>Continue with the installation while CleanRift watches for changes. Tracing stops automatically when all setup processes finish; otherwise stop it manually.</installTip1>
+        <installTip2>Please make sure than no other installation is currently running</installTip2>
+        <installTip3>If a previous version of this program is already installed, you should remove it first before installing a newer version</installTip3>
+        <InstallTrackerLocalizedName>Install Tracker</InstallTrackerLocalizedName>
+        <logCompleted>Completed</logCompleted>
+        <logEventCreateFile>Create File</logEventCreateFile>
+        <logEventCreateFolder>Create Folder</logEventCreateFolder>
+        <logEventCreateKey>Create Key</logEventCreateKey>
+        <logEventSetValue>Set Value</logEventSetValue>
+        <logStartingService>Starting Install Tracker service...</logStartingService>
+        <logTracingAnalyzing>Analyzing installation, please wait...</logTracingAnalyzing>
+        <logTrackingAllProcessesFinished>All installation processes are finished</logTrackingAllProcessesFinished>
+        <logTrackingDone>Done</logTrackingDone>
+        <logTrackingStarting>Starting '%s'...</logTrackingStarting>
+        <logTrackingStartingEror>Error: Cannot start the setup process (error %u)</logTrackingStartingEror>
+        <logTrackingStoppedByUser>Tracing is stopped by user</logTrackingStoppedByUser>
+        <selectInstallFile>Select an installation file</selectInstallFile>
+        <staticInstallProgress>Installation Progress:</staticInstallProgress>
+        <staticPathToProgram>Path to a setup file (.exe, .msi):</staticPathToProgram>
+        <staticRevertInfo>Revert option attempts to delete all file system/registry items created during the installation tracing</staticRevertInfo>
+        <Title>Install and Trace a Program</Title>
+        <TitleAppend>Install and Trace, append traced data to '%s'</TitleAppend>
+    </InstallTracker>
+    <InstallTrackerCustomEntryDialog>
+        <checkCreateCustomEntry>I'd like to create a custom item in the list</checkCreateCustomEntry>
+        <staticName>Name:</staticName>
+        <Title>No new installation entries were found during the tracing. Generally it means that the program is not installed correctly, but if you're sure that installation went fine you may create a new custom program in the Apps list. All currently found traces will refer to it.</Title>
+    </InstallTrackerCustomEntryDialog>
+    <InstallTrackerMultipleEntries>
+        <btnSelect>Select</btnSelect>
+        <Caption>Multiple installation entries detected</Caption>
+        <Title>The installation created several entries in the Windows registry. Select the main entry to show in the Apps list with the traced icon. Removing its traces will also remove the dependent entries.</Title>
+    </InstallTrackerMultipleEntries>
+    <ListCtrl>
+        <columnCompany>Company</columnCompany>
+        <columnInstallationDate>Installed On</columnInstallationDate>
+        <columnProgramName>Program Name</columnProgramName>
+        <columnSize>Size</columnSize>
+        <columnSource>Source</columnSource>
+        <columnStatus>Status</columnStatus>
+        <columnTraced>Traced</columnTraced>
+        <mark32bitItem>(32-bit)</mark32bitItem>
+        <sourceHKCURun>HKCU Run</sourceHKCURun>
+        <sourceHKCURunOnce>HKCU RunOnce</sourceHKCURunOnce>
+        <sourceHKLMRun>HKLM Run</sourceHKLMRun>
+        <sourceHKLMRunOnce>HKLM RunOnce</sourceHKLMRunOnce>
+        <sourceStartMenuAll>StartMenu All</sourceStartMenuAll>
+        <sourceStartMenuCU>StartMenu CU</sourceStartMenuCU>
+        <sourceWindowsStoreTask>Microsoft Store App</sourceWindowsStoreTask>
+        <sourceWindowsTask>Windows Task</sourceWindowsTask>
+        <staticLoading>Loading, please wait...</staticLoading>
+        <staticNoProgramsInCategory>There're no programs in '%s' category</staticNoProgramsInCategory>
+        <staticNoStartupItems>There're no programs that automatically run on Windows start</staticNoStartupItems>
+    </ListCtrl>
+    <MainMenu>
+        <mnuAction>&amp;Action</mnuAction>
+        <mnuActionBrowseLocation>Browse Location...</mnuActionBrowseLocation>
+        <mnuActionDelete>&amp;Force Removal</mnuActionDelete>
+        <mnuActionDeleteBatch>Batch &amp;Force Removal</mnuActionDeleteBatch>
+        <mnuActionJumpToProgramFolder>&amp;Installation Folder</mnuActionJumpToProgramFolder>
+        <mnuActionJumpToRegistry>&amp;Registry Entry</mnuActionJumpToRegistry>
+        <mnuActionJumpToWebSite>&amp;Program Website</mnuActionJumpToWebSite>
+        <mnuActionModify>&amp;Modify...</mnuActionModify>
+        <mnuActionOpenWindowsStore>Open in Microsoft Store</mnuActionOpenWindowsStore>
+        <mnuActionRemoveEntry>Remove &amp;Entry</mnuActionRemoveEntry>
+        <mnuActionRemoveEntryBatch>Batch Remove &amp;Entries</mnuActionRemoveEntryBatch>
+        <mnuActionUninstall>&amp;Uninstall...</mnuActionUninstall>
+        <mnuFile>&amp;File</mnuFile>
+        <mnuFileExit>E&amp;xit</mnuFileExit>
+        <mnuFileExport>&amp;Export to HTML...</mnuFileExport>
+        <mnuHelp>&amp;Help</mnuHelp>
+        <mnuHelpAbout>&amp;About...</mnuHelpAbout>
+        <mnuHelpOnline>Quick start guide...</mnuHelpOnline>
+        <mnuTools>&amp;Tools</mnuTools>
+        <mnuToolsAddRemove>&amp;Add/Remove Programs...</mnuToolsAddRemove>
+        <mnuToolsComponents>Windows &amp;Components...</mnuToolsComponents>
+        <mnuToolsDefrag>Disk Defragmenter</mnuToolsDefrag>
+        <mnuToolsOptions>&amp;Preferences...</mnuToolsOptions>
+        <mnuToolsSecurityCenter>Security Center</mnuToolsSecurityCenter>
+        <mnuToolsServices>Services</mnuToolsServices>
+        <mnuToolsSystemInfo>System Information</mnuToolsSystemInfo>
+        <mnuToolsSystemProperties>System Properties</mnuToolsSystemProperties>
+        <mnuToolsSystemRestore>System Restore</mnuToolsSystemRestore>
+        <mnuToolsSystemTools>System Tools</mnuToolsSystemTools>
+        <mnuToolsTaskScheduler>Task Scheduler</mnuToolsTaskScheduler>
+        <mnuTracedData>Traced Data</mnuTracedData>
+        <mnuTracedDataAppend>Append traced data (Install and Trace)...</mnuTracedDataAppend>
+        <mnuTracedDataAsXML>View as XML...</mnuTracedDataAsXML>
+        <mnuTracedDataUndoTracing>Undo Tracing</mnuTracedDataUndoTracing>
+        <mnuView>&amp;View</mnuView>
+        <mnuViewLanguage>Interface Language</mnuViewLanguage>
+        <mnuViewListColumnsReset>Reset Columns</mnuViewListColumnsReset>
+        <mnuViewMainToolbarButtonLabels>Show button labels below icons</mnuViewMainToolbarButtonLabels>
+        <mnuViewMainToolbarShow>Show Main Toolbar</mnuViewMainToolbarShow>
+        <mnuViewRefresh>&amp;Refresh</mnuViewRefresh>
+        <mnuViewSecondaryToolbar>Secondary Toolbar</mnuViewSecondaryToolbar>
+    </MainMenu>
+    <Messages>
+        <msgCannotOpenFolder>Cannot open the program folder.</msgCannotOpenFolder>
+        <msgCantModifyAutorunEntry>Cannot modify the properties of this entry.</msgCantModifyAutorunEntry>
+        <msgForceCancelWaiting>Are you sure you want to force cancel the uninstallation of this program?</msgForceCancelWaiting>
+        <msgForceCancelWaitingFooter>Force cancellation should only be used when the uninstaller is frozen or you urgently need to stop all running uninstall processes.</msgForceCancelWaitingFooter>
+        <msgForceRemovalCheck>Yes, I understand the responsibility</msgForceRemovalCheck>
+        <msgForceRemovalDescription>Force removal does not run the program's own uninstaller; it only erases the file system and registry items that belong to it.</msgForceRemovalDescription>
+        <msgForceRemovalDescriptionBatch>Batch force removal is an advanced feature and should be used carefully.</msgForceRemovalDescriptionBatch>
+        <msgForceRemovalDescriptionTraced>Force removal of a traced program is fast and thorough, and does not run its uninstaller.</msgForceRemovalDescriptionTraced>
+        <msgForceRemovalDescriptionWindowsComponent>Removing this product may cause Windows features or other software to stop working properly.</msgForceRemovalDescriptionWindowsComponent>
+        <msgForceRemovalQuestion>Are you sure you want to force-remove this program?</msgForceRemovalQuestion>
+        <msgForceRemovalQuestionBatch>Are you sure you want to force-remove the following programs?</msgForceRemovalQuestionBatch>
+        <msgForceRemovalTitle>Force Removal: %s</msgForceRemovalTitle>
+        <msgForceRemovalTitleBatch>Batch Force Removal</msgForceRemovalTitleBatch>
+        <msgQuickHelp>CleanRift removes programs and their leftovers.\n\nF1  Open this guide\nF5  Refresh the list\nCtrl+F  Search\nDel  Remove the selected program\n\nPreferences let you change the theme, language and removal wizard mode.</msgQuickHelp>
+        <msgRemoveEntryDescription>This only removes the item from the list. No files or registry entries are deleted. Use it for obsolete or invalid entries.</msgRemoveEntryDescription>
+        <msgRemoveEntryFailed>Could not delete the registry entry for this item.</msgRemoveEntryFailed>
+        <msgRemoveEntryQuestion>Are you sure you want to remove this entry?</msgRemoveEntryQuestion>
+        <msgRemoveMultipleItemsDescription>This removes the selected entries from the registry (start menu) so they no longer run when Windows starts.</msgRemoveMultipleItemsDescription>
+        <msgStartupDeleteConfirm>This completely erases the entry from the registry (start menu).</msgStartupDeleteConfirm>
+        <msgUndoTracing>Are you sure you want CleanRift to forget all traced data for this program?</msgUndoTracing>
+        <msgUninstallFailed>The uninstallation failed.\nDo you want to remove this program's registry entry and clean up its files?</msgUninstallFailed>
+        <msgNoTracedData>This program has no traced data.</msgNoTracedData>
+    </Messages>
+    <Misc>
+        <btnCancel>Cancel</btnCancel>
+        <btnClose>Close</btnClose>
+        <btnNo>No</btnNo>
+        <btnOK>OK</btnOK>
+        <btnYes>Yes</btnYes>
+        <statusCalculatingOccupiedSize>Calculating occupied size... %s</statusCalculatingOccupiedSize>
+        <statusRecentItems>recently installed</statusRecentItems>
+        <statusRecentItemsTip>View recently installed/modified programs</statusRecentItemsTip>
+        <statusStartupTotalInfo>%d programs total, %d are currently running</statusStartupTotalInfo>
+        <statusTotalInfo>%d programs of %s size in total</statusTotalInfo>
+        <statusUnknown>unknown</statusUnknown>
+        <trayOpen>Open CleanRift</trayOpen>
+        <btnExit>Exit</btnExit>
+    </Misc>
+    <RunningProcessesDialog>
+        <Instruction1>The following processes were detected:</Instruction1>
+        <Instruction2>It's recommended to terminate them manually before removal, but Removal Wizard can force terminate them.</Instruction2>
+        <Title>Force terminate running processes?</Title>
+    </RunningProcessesDialog>
+    <SecondaryToolbar>
+        <btnApps>Apps</btnApps>
+        <btnAppsToolTip>Applications</btnAppsToolTip>
+        <btnHidden>Hidden</btnHidden>
+        <btnHiddenToolTip>Hidden Components</btnHiddenToolTip>
+        <btnInstallAndTrace>Install and trace</btnInstallAndTrace>
+        <btnInstallAndTraceTooltip>Install a new program and watch all changes it makes to file system and registry</btnInstallAndTraceTooltip>
+        <btnRecentlyInstalled>Recently Installed (%u)</btnRecentlyInstalled>
+        <btnStoreApps>Microsoft Store Apps</btnStoreApps>
+        <btnStoreAppsToolTip>Apps installed from Microsoft Store</btnStoreAppsToolTip>
+        <btnSystem>System</btnSystem>
+        <btnSystemToolTip>System Components and Updates</btnSystemToolTip>
+    </SecondaryToolbar>
+    <ToolBar>
+        <btnHelp>Help</btnHelp>
+        <btnHelpToolTip>Open the quick start guide</btnHelpToolTip>
+        <btnPrefs>Preferences</btnPrefs>
+        <btnPrefsToolTip>CleanRift preferences</btnPrefsToolTip>
+        <btnRefresh>Refresh</btnRefresh>
+        <btnRefreshToolTip>Refresh programs list</btnRefreshToolTip>
+        <btnStartup>Startup</btnStartup>
+        <btnStartupToolTip>Applications that automatically run at startup</btnStartupToolTip>
+        <btnUninstaller>Uninstaller</btnUninstaller>
+        <btnUninstallerToolTip>Uninstall existing programs or install and trace new software</btnUninstallerToolTip>
+    </ToolBar>
+    <TracedXMLDialog>
+        <TracedXMLDialogCaption>%s traced data</TracedXMLDialogCaption>
+    </TracedXMLDialog>
+    <UninstallWizard>
+        <btnCancel>Cancel</btnCancel>
+        <btnClose>Close</btnClose>
+        <btnFinish>Finish</btnFinish>
+        <btnUninstall>Uninstall</btnUninstall>
+        <captionQuestionUninstall>Do you want to uninstall '%s'?</captionQuestionUninstall>
+        <captionQuestionUninstallBatch>Do you want to uninstall %u selected apps?</captionQuestionUninstallBatch>
+        <captionUninstalling>Uninstalling %s...</captionUninstalling>
+        <staticHyperlinkExport>Export to XML</staticHyperlinkExport>
+        <staticHyperlinkRemovalLog>Save removal log</staticHyperlinkRemovalLog>
+        <staticOverallInfo>%d files (%s) and %d registry items are still left on your computer</staticOverallInfo>
+        <staticScanStatusFound>CleanRift found the following traces left by the program. Review them and click Finish to remove the selected items.</staticScanStatusFound>
+        <staticScanStatusGeneratingTracesList>Generating traces list...</staticScanStatusGeneratingTracesList>
+        <staticScanStatusRemoved>%s has been successfully removed.</staticScanStatusRemoved>
+        <staticScanStatusRemovedBatch>All selected leftovers have been successfully removed.</staticScanStatusRemovedBatch>
+        <statusAllTracesRemoved>All Traces Removed</statusAllTracesRemoved>
+        <statusDeletingProgramTraces>Deleting program traces...</statusDeletingProgramTraces>
+        <statusLeftOverTracesFound>Some leftover traces found!</statusLeftOverTracesFound>
+        <statusNothingFound>No leftover traces found.</statusNothingFound>
+        <statusPerformingUninstall>Running the program's own uninstaller. It may ask for input.</statusPerformingUninstall>
+        <statusScanning>Scanning for leftover files, folders and registry items...</statusScanning>
+        <statusScanningTraced>Generating the list of leftover traced items, please wait...</statusScanningTraced>
+        <statusUninstallInfo>The Removal Wizard runs the program's uninstaller first and then cleans up the leftovers.</statusUninstallInfo>
+        <statusUninstallInfoBatch>The Removal Wizard runs each program's uninstaller and then shows the combined list of leftovers.</statusUninstallInfoBatch>
+        <treeItemFileSystem>File System (%d items)</treeItemFileSystem>
+        <treeItemRegistry>Registry (%d items)</treeItemRegistry>
+        <UninstallWizardCaption>Remove all traces of %s - Removal Wizard</UninstallWizardCaption>
+        <UninstallWizardLocalizedName>Removal Wizard</UninstallWizardLocalizedName>
+    </UninstallWizard>
+    <UninstallWizardConfirmation>
+        <btnNo>No</btnNo>
+        <btnYes>Yes</btnYes>
+        <checkDontAskAgain>Remember my choice and don't ask me again (may be changed in Preferences)</checkDontAskAgain>
+        <staticConfirm>The built-in uninstaller has finished its job. Would you like to perform a deep scan of your system registry and file system for unused registry entries and files left?</staticConfirm>
+    </UninstallWizardConfirmation>
+</Language>

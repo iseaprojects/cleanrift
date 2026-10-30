@@ -1,0 +1,15 @@
+bin/
+obj/
+artifacts/
+release/
+.vs/
+.idea/
+TestResults/
+*.user
+*.suo
+*.DotSettings.user
+*.pdb
+*.log
+*.zip
+*.msi
+*.tmp

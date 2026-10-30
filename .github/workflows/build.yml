@@ -1,0 +1,29 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Build
+        run: dotnet build CleanRift.sln -c Release --nologo
+
+      - name: Verify language files
+        shell: pwsh
+        run: |
+          .\tools\Build-Languages.ps1
+          git diff --exit-code -- src/CleanRift/Languages

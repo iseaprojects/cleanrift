@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <AssemblyName>CleanRift</AssemblyName>
+    <RootNamespace>CleanRift</RootNamespace>
+    <Version>1.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <InformationalVersion>1.0.0-beta.1</InformationalVersion>
+    <Product>CleanRift</Product>
+    <Company>CleanRift Project</Company>
+    <Authors>CleanRift contributors</Authors>
+    <Copyright>Copyright (c) 2026 CleanRift contributors</Copyright>
+    <Description>Remove programs completely, trace installations and manage startup items.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Languages\*.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Assets\app.ico" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="README.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

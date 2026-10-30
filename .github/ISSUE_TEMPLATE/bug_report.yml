@@ -1,0 +1,66 @@
+name: Bug report
+description: Report a reproducible problem with CleanRift
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing CleanRift. Do not include personal data, full registry
+        exports, or logs with private paths.
+
+  - type: input
+    id: version
+    attributes:
+      label: CleanRift version
+      description: For example, 1.0 Beta 1.
+      placeholder: 1.0 Beta 1
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and build
+      description: Run `winver` or `[Environment]::OSVersion.Version` and paste the result.
+      placeholder: Windows 11 24H2 (26100.xxxx)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you run CleanRift?
+      options:
+        - Portable ZIP
+        - Installed (per-user)
+        - Installed (all users)
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What did you do, what did you expect, and what happened?
+      placeholder: |
+        1. Open CleanRift
+        2. Select ...
+        3. Click ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Lines from %LOCALAPPDATA%\CleanRift\error.log, with private paths removed.
+      render: text
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I did not include passwords, tokens or personal data.
+          required: true
