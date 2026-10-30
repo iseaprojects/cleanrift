@@ -229,6 +229,9 @@
         <msgUndoTracing>¿Seguro que quieres que CleanRift olvide todos los datos rastreados de este programa?</msgUndoTracing>
         <msgUninstallFailed>La desinstalación falló.\n¿Quieres quitar la entrada del registro de este programa y limpiar sus archivos?</msgUninstallFailed>
         <msgNoTracedData>Este programa no tiene datos rastreados.</msgNoTracedData>
+        <msgPartialRemoval>No se pudieron eliminar algunos elementos seleccionados. Revisa los detalles a continuación.</msgPartialRemoval>
+        <msgPendingReboot>Algunos archivos se eliminarán después del próximo reinicio</msgPendingReboot>
+        <msgChooseExecutable>Elige un archivo ejecutable.</msgChooseExecutable>
     </Messages>
     <Misc>
         <btnCancel>Cancelar</btnCancel>

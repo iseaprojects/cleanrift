@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -54,6 +55,32 @@ public static class TraceStore
         return result;
     }
 
+    /// <summary>
+    /// Returns the trace for a product id, or a display-name match only when
+    /// it is unambiguous. Two products with the same name must never share one
+    /// trace, because removal would erase the other product's leftovers.
+    /// </summary>
+    public static TraceInfo? FindFor(Dictionary<string, TraceInfo> traces, string? id,
+        string? displayName)
+    {
+        if (!string.IsNullOrWhiteSpace(id) && traces.TryGetValue(id, out var direct))
+            return direct;
+        if (string.IsNullOrWhiteSpace(displayName))
+            return null;
+
+        TraceInfo? match = null;
+        foreach (var trace in traces.Values)
+        {
+            if (!string.Equals(trace.DisplayName, displayName, StringComparison.OrdinalIgnoreCase))
+                continue;
+            if (match != null)
+                return null;
+            match = trace;
+        }
+
+        return match;
+    }
+
     public static TraceInfo? Load(string file)
     {
         if (string.IsNullOrWhiteSpace(file) || !File.Exists(file))
@@ -61,6 +88,9 @@ public static class TraceStore
 
         try
         {
+            if (new FileInfo(file).Length > 64 * 1024 * 1024)
+                return null;
+
             var doc = XDocument.Load(file);
             var root = doc.Root;
             if (root == null)
@@ -72,10 +102,12 @@ public static class TraceStore
             else
                 name = Path.GetFileNameWithoutExtension(file);
 
+            var storedId = root.Attribute("id")?.Value?.Trim();
+            var displayName = root.Attribute("name")?.Value?.Trim();
             var trace = new TraceInfo
             {
-                Id = name,
-                DisplayName = name,
+                Id = string.IsNullOrEmpty(storedId) ? name : storedId,
+                DisplayName = string.IsNullOrEmpty(displayName) ? name : displayName,
                 File = file,
                 CreatedUtc = File.GetCreationTimeUtc(file)
             };
@@ -137,11 +169,19 @@ public static class TraceStore
 
     public static string Save(TraceInfo trace)
     {
+        if (string.IsNullOrWhiteSpace(trace.Id))
+            trace.Id = SafeFileName(trace.DisplayName);
+
         var file = trace.File;
         if (string.IsNullOrWhiteSpace(file) ||
             !string.Equals(Path.GetDirectoryName(file), TraceDirectory, StringComparison.OrdinalIgnoreCase))
         {
-            file = Path.Combine(TraceDirectory, SafeFileName(trace.DisplayName) + TraceSuffix);
+            // Include a short hash of the stable program id so two products
+            // that share a display name never overwrite each other's trace.
+            var stem = SafeFileName(trace.DisplayName);
+            if (stem.Length > 80)
+                stem = stem[..80].TrimEnd(' ', '.');
+            file = Path.Combine(TraceDirectory, stem + "_" + ShortHash(trace.Id) + TraceSuffix);
         }
 
         // CleanRift trace document, UTF-8 without BOM, version="1".
@@ -154,11 +194,14 @@ public static class TraceStore
             NewLineHandling = NewLineHandling.Replace
         };
 
-        using (var writer = XmlWriter.Create(file, settings))
+        AtomicFile.Write(file, stream =>
         {
+            using var writer = XmlWriter.Create(stream, settings);
             writer.WriteStartDocument();
             writer.WriteStartElement("CleanRiftTraces");
             writer.WriteAttributeString("version", "1");
+            writer.WriteAttributeString("id", trace.Id);
+            writer.WriteAttributeString("name", trace.DisplayName);
 
             writer.WriteStartElement("Folders");
             foreach (var folder in trace.Folders.Distinct(StringComparer.OrdinalIgnoreCase))
@@ -207,26 +250,39 @@ public static class TraceStore
             writer.WriteEndElement();
             writer.WriteEndElement();
             writer.WriteEndDocument();
-        }
+        });
 
         trace.File = file;
-        trace.Id = Path.GetFileName(file)[..^TraceSuffix.Length];
         trace.CreatedUtc = System.IO.File.GetCreationTimeUtc(file);
         return file;
     }
 
-    public static void Delete(string id)
+    private static string ShortHash(string value)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value ?? ""));
+        return Convert.ToHexString(bytes, 0, 4).ToLowerInvariant();
+    }
+
+    public static void Delete(string id, string? knownFile = null)
     {
         if (string.IsNullOrWhiteSpace(id))
             return;
 
         try
         {
+            if (!string.IsNullOrWhiteSpace(knownFile) && File.Exists(knownFile) &&
+                string.Equals(Path.GetDirectoryName(knownFile), TraceDirectory,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                File.Delete(knownFile);
+            }
+
             foreach (var file in Directory.EnumerateFiles(TraceDirectory, "*" + TraceSuffix))
             {
                 var name = Path.GetFileName(file)[..^TraceSuffix.Length];
                 if (string.Equals(name, id, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(SafeFileName(name), SafeFileName(id), StringComparison.OrdinalIgnoreCase))
+                    string.Equals(SafeFileName(name), SafeFileName(id), StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(ReadStoredId(file), id, StringComparison.OrdinalIgnoreCase))
                 {
                     System.IO.File.Delete(file);
                 }
@@ -235,6 +291,21 @@ public static class TraceStore
         catch
         {
             // Ignore; the caller only needs a best-effort delete.
+        }
+    }
+
+    private static string ReadStoredId(string file)
+    {
+        try
+        {
+            using var stream = File.OpenRead(file);
+            using var reader = XmlReader.Create(stream, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit });
+            reader.MoveToContent();
+            return reader.GetAttribute("id") ?? "";
+        }
+        catch
+        {
+            return "";
         }
     }
 

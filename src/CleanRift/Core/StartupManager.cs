@@ -74,7 +74,7 @@ public static class StartupManager
                 case StartupKind.ScheduledTask:
                 {
                     var fullName = item.TaskPath.TrimEnd('\\') + "\\" + item.TaskName;
-                    var (code, stdout, stderr) = ProcessUtil.Run("schtasks.exe",
+                    var (code, stdout, stderr) = ProcessUtil.Run(ProcessUtil.SchTasksPath,
                         $"/Change /TN \"{fullName}\" /{(enabled ? "ENABLE" : "DISABLE")}", 20000);
                     if (code == 0)
                         return true;
@@ -142,7 +142,7 @@ public static class StartupManager
                 case StartupKind.ScheduledTask:
                 {
                     var fullName = item.TaskPath.TrimEnd('\\') + "\\" + item.TaskName;
-                    var (code, stdout, stderr) = ProcessUtil.Run("schtasks.exe",
+                    var (code, stdout, stderr) = ProcessUtil.Run(ProcessUtil.SchTasksPath,
                         $"/Delete /TN \"{fullName}\" /F", 20000);
                     if (code == 0)
                         return true;
@@ -222,7 +222,7 @@ public static class StartupManager
                 TaskName = job.TaskName
             };
 
-            switch (job.Action)
+            switch ((job.Action ?? "").Trim().ToLowerInvariant())
             {
                 case "enable":
                     return SetEnabledCore(item, true, out error);
@@ -330,7 +330,7 @@ public static class StartupManager
         var arguments = enabled.HasValue
             ? $"/Change /TN \"{fullName}\" /{(enabled.Value ? "ENABLE" : "DISABLE")}"
             : $"/Delete /TN \"{fullName}\" /F";
-        var (code, stdout, stderr) = ProcessUtil.Run("schtasks.exe", arguments, 20000);
+        var (code, stdout, stderr) = ProcessUtil.Run(ProcessUtil.SchTasksPath, arguments, 20000);
         if (code == 0)
             return true;
         error = string.IsNullOrWhiteSpace(stderr) ? stdout.Trim() : stderr.Trim();
@@ -520,9 +520,16 @@ public static class StartupManager
         needsElevation = false;
         try
         {
+            name = name.Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
                 error = "Please enter a name";
+                return false;
+            }
+
+            if (name.Length > 200 || name.Contains('\r') || name.Contains('\n'))
+            {
+                error = "The startup name is too long or contains invalid characters";
                 return false;
             }
 
@@ -532,7 +539,21 @@ public static class StartupManager
                 return false;
             }
 
+            arguments = (arguments ?? "").Trim();
+            if (arguments.Length > 4096 || arguments.Contains('\r') || arguments.Contains('\n'))
+            {
+                error = "The startup arguments are too long or contain invalid characters";
+                return false;
+            }
+
             var expanded = Environment.ExpandEnvironmentVariables(target.Trim().Trim('"'));
+            if (!Path.IsPathFullyQualified(expanded) ||
+                expanded.StartsWith(@"\\", StringComparison.Ordinal))
+            {
+                error = "The startup target must be a local absolute path";
+                return false;
+            }
+
             if (!File.Exists(expanded) && type != StartupAddType.ScheduledTask)
             {
                 error = "The file does not exist:\n" + expanded;
@@ -583,8 +604,14 @@ public static class StartupManager
 
                 case StartupAddType.ScheduledTask:
                 {
+                    if (arguments.Contains('"'))
+                    {
+                        error = "Scheduled task arguments cannot contain quote characters";
+                        return false;
+                    }
+
                     var taskName = "CleanRift_" + SanitizeName(name);
-                    var (code, stdout, stderr) = ProcessUtil.Run("schtasks.exe",
+                    var (code, stdout, stderr) = ProcessUtil.Run(ProcessUtil.SchTasksPath,
                         $"/Create /TN \"{taskName}\" /TR \"{command}\" /SC ONLOGON " +
                         (highestPrivileges ? "/RL HIGHEST " : "") + "/F", 30000);
                     if (code == 0)
@@ -675,7 +702,26 @@ public static class StartupManager
     private static string SanitizeName(string name)
     {
         var invalid = Path.GetInvalidFileNameChars();
-        var cleaned = new string(name.Select(c => invalid.Contains(c) ? '_' : c).ToArray()).Trim();
+        var cleaned = new string((name ?? "").Select(c => invalid.Contains(c) ? '_' : c).ToArray())
+            .Trim()
+            .TrimEnd('.', ' ');
+
+        if (cleaned is "." or "..")
+            cleaned = "Startup item";
+
+        var reserved = new[]
+        {
+            "CON", "PRN", "AUX", "NUL",
+            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+        };
+
+        if (reserved.Contains(cleaned, StringComparer.OrdinalIgnoreCase))
+            cleaned = "_" + cleaned;
+
+        if (cleaned.Length > 120)
+            cleaned = cleaned[..120].TrimEnd('.', ' ');
+
         return string.IsNullOrWhiteSpace(cleaned) ? "Startup item" : cleaned;
     }
 }

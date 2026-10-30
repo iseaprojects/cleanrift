@@ -43,6 +43,7 @@ public sealed class InstallTrackerForm : Form
     private readonly Button _cancel;
 
     private CancellationTokenSource? _cts;
+    private bool _closeAfterCancel;
     private TraceInfo? _trace;
     private Phase _phase = Phase.Setup;
     private bool _working;
@@ -378,7 +379,7 @@ public sealed class InstallTrackerForm : Form
         try
         {
             _statusLabel.Text = "Indexing the system before installation...";
-            var beforePrograms = await Task.Run(() => _scanner.Scan(includeStore: false), token);
+            var beforePrograms = await Task.Run(() => _scanner.Scan(includeStore: false, token), token);
             var before = await Task.Run(() => _tracker.TakeSnapshot(token), token);
             token.ThrowIfCancellationRequested();
 
@@ -421,7 +422,7 @@ public sealed class InstallTrackerForm : Form
             }
 
             _statusLabel.Text = "Detecting installation entries...";
-            var afterPrograms = await Task.Run(() => _scanner.Scan(includeStore: false), token);
+            var afterPrograms = await Task.Run(() => _scanner.Scan(includeStore: false, token), token);
             var beforeIds = beforePrograms.Select(p => p.Id)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
             var newPrograms = afterPrograms
@@ -476,6 +477,12 @@ public sealed class InstallTrackerForm : Form
             _cts?.Dispose();
             _cts = null;
             ResetSetupState();
+            if (_closeAfterCancel)
+            {
+                _closeAfterCancel = false;
+                DialogResult = DialogResult.Cancel;
+                Close();
+            }
         }
         catch (Exception ex)
         {
@@ -488,6 +495,12 @@ public sealed class InstallTrackerForm : Form
             _cts?.Dispose();
             _cts = null;
             ResetSetupState();
+            if (_closeAfterCancel)
+            {
+                _closeAfterCancel = false;
+                DialogResult = DialogResult.Cancel;
+                Close();
+            }
         }
     }
 
@@ -497,6 +510,14 @@ public sealed class InstallTrackerForm : Form
         _phase = Phase.Done;
         _cts?.Dispose();
         _cts = null;
+        if (_closeAfterCancel)
+        {
+            _closeAfterCancel = false;
+            DialogResult = DialogResult.Cancel;
+            Close();
+            return;
+        }
+
         _progress.Visible = false;
         _stop.Visible = false;
         _revert.Visible = keepTrace && _trace != null;
@@ -659,7 +680,7 @@ public sealed class InstallTrackerForm : Form
         using var dialog = new SaveFileDialog
         {
             Filter = "Log files (*.log)|*.log|Text files (*.txt)|*.txt|All files (*.*)|*.*",
-            FileName = "install-traced.log"
+            FileName = "cleanrift-install-trace.log"
         };
         if (dialog.ShowDialog(this) != DialogResult.OK)
             return;
@@ -687,8 +708,19 @@ public sealed class InstallTrackerForm : Form
 
         try
         {
-            InstallTracker.Revert(_trace, CancellationToken.None);
-            TraceStore.Delete(_trace.Id);
+            UseWaitCursor = true;
+            var result = InstallTracker.Revert(_trace, CancellationToken.None);
+            if (result.Failed > 0)
+            {
+                var details = string.Join(Environment.NewLine, result.Errors.Take(10));
+                MessageDialog.Show(this, Text,
+                    LanguageManager.Instance.T("DelayedFilesRemovalDialog/Title",
+                        "Some files were not deleted"),
+                    details, MessageBoxButtons.OK, AppIcons.Warning);
+                return;
+            }
+
+            TraceStore.Delete(_trace.Id, _trace.File);
             Traced = false;
             MessageDialog.Info(this, Text, LanguageManager.Instance.T("InstallTracker/logCompleted", "Completed"));
             DialogResult = DialogResult.Cancel;
@@ -697,6 +729,10 @@ public sealed class InstallTrackerForm : Form
         catch (Exception ex)
         {
             MessageDialog.Error(this, Text, ex.Message);
+        }
+        finally
+        {
+            UseWaitCursor = false;
         }
     }
 
@@ -735,7 +771,10 @@ public sealed class InstallTrackerForm : Form
             return;
         }
 
+        // Let the tracking task unwind before the window disappears.
+        _closeAfterCancel = true;
         _cts?.Cancel();
+        e.Cancel = true;
     }
 
     /// <summary>Dialog for creating a custom list entry.</summary>

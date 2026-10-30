@@ -501,9 +501,10 @@ public sealed class PreferencesForm : Form
             : _schemeLight.Checked ? ColorScheme.Light
             : ColorScheme.Auto;
         _settings.TrayIcon = _trayIcon.Checked;
-        _settings.StartMinimized = _startMinimized.Checked;
-        _settings.MinimizeToTray = _minimizeToTray.Checked;
-        _settings.MinimizeOnClose = _minimizeOnClose.Checked;
+        // These options would hide the window without a way to restore it.
+        _settings.StartMinimized = _trayIcon.Checked && _startMinimized.Checked;
+        _settings.MinimizeToTray = _trayIcon.Checked && _minimizeToTray.Checked;
+        _settings.MinimizeOnClose = _trayIcon.Checked && _minimizeOnClose.Checked;
 
         _settings.SmallIcons = _smallIcons.Checked;
         _settings.Mark32Bit = _mark32Bit.Checked;

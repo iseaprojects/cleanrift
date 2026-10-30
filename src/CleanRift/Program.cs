@@ -7,6 +7,11 @@ namespace CleanRift;
 
 internal static class Program
 {
+    private static readonly JsonSerializerOptions JobJsonOptions = new()
+    {
+        WriteIndented = false
+    };
+
     [STAThread]
     private static void Main(string[] args)
     {
@@ -122,22 +127,38 @@ internal static class Program
 
     private static void RunJob(string jobFile)
     {
-        var resultFile = Path.ChangeExtension(jobFile, ".result.json");
         var result = new JobResult { Success = false };
+        var resultFile = "";
         try
         {
-            if (!File.Exists(jobFile))
+            var safe = PathSafety.IsSafeJobFile(jobFile, Elevation.JobDirectory,
+                out var fullJob, out var jobError);
+            if (!string.IsNullOrEmpty(fullJob) && PathSafety.IsUnder(fullJob, Elevation.JobDirectory))
+                resultFile = Path.ChangeExtension(fullJob, ".result.json");
+
+            if (!safe)
             {
-                result.Error = "Job file not found: " + jobFile;
+                result.Failed = 1;
+                result.Error = jobError;
             }
             else
             {
-                var json = File.ReadAllText(jobFile);
+                var json = File.ReadAllText(fullJob);
                 var job = JsonSerializer.Deserialize<RemovalJob>(json);
                 if (job == null)
+                {
+                    result.Failed = 1;
                     result.Error = "Invalid job file";
+                }
+                else if (!PathSafety.ValidateJob(job, out var validationError))
+                {
+                    result.Failed = 1;
+                    result.Error = validationError;
+                }
                 else
+                {
                     result = RemovalEngine.ApplyJob(job);
+                }
             }
         }
         catch (Exception ex)
@@ -151,10 +172,12 @@ internal static class Program
             result.Errors.Add(ex.ToString());
         }
 
+        if (string.IsNullOrEmpty(resultFile))
+            return;
+
         try
         {
-            File.WriteAllText(resultFile, JsonSerializer.Serialize(result,
-                new JsonSerializerOptions { WriteIndented = false }));
+            AtomicFile.WriteAllText(resultFile, JsonSerializer.Serialize(result, JobJsonOptions));
         }
         catch
         {

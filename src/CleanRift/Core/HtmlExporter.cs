@@ -90,6 +90,7 @@ public static class HtmlExporter
     public static string ExportPrograms(string filePath, IReadOnlyList<InstalledProgram> programs)
     {
         var lang = LanguageManager.Instance;
+        var mark32Bit = SettingsMark32Bit();
         var apps = programs.Where(p => !p.IsChild)
             .OrderBy(p => p.DisplayName, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
@@ -108,10 +109,10 @@ public static class HtmlExporter
 
         foreach (var program in apps)
         {
-            AppendProgramRow(builder, program);
+            AppendProgramRow(builder, program, mark32Bit);
             foreach (var child in programs.Where(p => p.IsChild && p.GroupKey == program.Id)
                          .OrderBy(p => p.DisplayName, StringComparer.CurrentCultureIgnoreCase))
-                AppendProgramRow(builder, child);
+                AppendProgramRow(builder, child, mark32Bit);
         }
 
         builder.Append(BuildFooter());
@@ -149,14 +150,14 @@ public static class HtmlExporter
         return filePath;
     }
 
-    private static void AppendProgramRow(StringBuilder builder, InstalledProgram program)
+    private static void AppendProgramRow(StringBuilder builder, InstalledProgram program, bool mark32Bit)
     {
         var lang = LanguageManager.Instance;
         var row = PrepareTemplate(ProgramsRow);
         row = Replace(row, "%padding%", string.Concat(Enumerable.Repeat(PaddingCell, Math.Max(0, program.Indent))));
 
         var name = Escape(program.DisplayName);
-        if (SettingsMark32Bit() && !program.Is64Bit && !program.IsStoreApp)
+        if (mark32Bit && !program.Is64Bit && !program.IsStoreApp)
             name += Replace(Bit32Markup, "%s", Escape(lang.T("ListCtrl/mark32bitItem", "(32-bit)")));
         row = Replace(row, "%program_name%", name);
         row = Replace(row, "%size%", Escape(program.SizeText));
@@ -230,6 +231,6 @@ public static class HtmlExporter
         var dir = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
-        File.WriteAllText(filePath, content, new UTF8Encoding(true));
+        AtomicFile.WriteAllText(filePath, content, new UTF8Encoding(true));
     }
 }

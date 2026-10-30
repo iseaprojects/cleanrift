@@ -247,18 +247,34 @@ public sealed class ForceRemovalForm : Form
 
     private async void OnPrimary()
     {
-        switch (_phase)
+        try
         {
-            case Phase.Confirm:
-                await ScanAsync();
-                break;
-            case Phase.Results:
-                await RemoveAsync();
-                break;
-            case Phase.Done:
-                DialogResult = DialogResult.OK;
-                Close();
-                break;
+            switch (_phase)
+            {
+                case Phase.Confirm:
+                    await ScanAsync();
+                    break;
+                case Phase.Results:
+                    await RemoveAsync();
+                    break;
+                case Phase.Done:
+                    DialogResult = DialogResult.OK;
+                    Close();
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            _working = false;
+            _cts?.Dispose();
+            _cts = null;
+            if (!IsDisposed)
+            {
+                _progress.Visible = false;
+                MessageDialog.Error(this, AppInfo.Name, ex.Message);
+                if (_phase is Phase.Scanning or Phase.Removing)
+                    RestoreResultsState();
+            }
         }
     }
 
@@ -289,10 +305,7 @@ public sealed class ForceRemovalForm : Form
                 foreach (var program in _programs)
                 {
                     token.ThrowIfCancellationRequested();
-                    var trace = traces.TryGetValue(program.Id, out var direct)
-                        ? direct
-                        : traces.Values.FirstOrDefault(t =>
-                            t.DisplayName.Equals(program.DisplayName, StringComparison.OrdinalIgnoreCase));
+                    var trace = TraceStore.FindFor(traces, program.Id, program.DisplayName);
 
                     var partial = _scanner.Scan(program, trace, token);
                     foreach (var child in partial.FileSystemRoot.Children)
@@ -410,11 +423,21 @@ public sealed class ForceRemovalForm : Form
         _progress.Visible = false;
         _phase = Phase.Done;
         Removed = result is { Failed: 0 };
-        _headerLabel.Text = lang.T("UninstallWizard/statusAllTracesRemoved", "All Traces Removed");
-        _bodyLabel.Text = _programs.Count == 1
-            ? lang.F("UninstallWizard/staticScanStatusRemoved", _programs[0].DisplayName)
-            : lang.T("UninstallWizard/staticScanStatusRemovedBatch",
-                "All selected leftovers have been successfully removed.");
+        if (Removed)
+        {
+            _headerLabel.Text = lang.T("UninstallWizard/statusAllTracesRemoved", "All Traces Removed");
+            _bodyLabel.Text = _programs.Count == 1
+                ? lang.F("UninstallWizard/staticScanStatusRemoved", _programs[0].DisplayName)
+                : lang.T("UninstallWizard/staticScanStatusRemovedBatch",
+                    "All selected leftovers have been successfully removed.");
+        }
+        else
+        {
+            _headerLabel.Text = lang.T("DelayedFilesRemovalDialog/Title",
+                "Some files were not deleted");
+            _bodyLabel.Text = lang.T("Messages/msgPartialRemoval",
+                "Some selected items could not be removed. Review the details below.");
+        }
         _primary.Visible = true;
         _primary.Enabled = true;
         _primary.Text = lang.T("UninstallWizard/btnClose", "Close");
@@ -434,7 +457,7 @@ public sealed class ForceRemovalForm : Form
         {
             foreach (var program in _programs.Where(p => p.IsTraced))
             {
-                TraceStore.Delete(program.Id);
+                TraceStore.Delete(program.Id, program.TraceFile);
                 program.IsTraced = false;
             }
         }
@@ -447,6 +470,12 @@ public sealed class ForceRemovalForm : Form
             MessageDialog.Show(this, lang.T("DelayedFilesRemovalDialog/Title", "Some files were not deleted"),
                 lang.T("DelayedFilesRemovalDialog/Title", "Some files were not deleted"), details,
                 MessageBoxButtons.OK, AppIcons.Warning);
+        }
+        else if (result is { ScheduledForReboot: > 0 })
+        {
+            MessageDialog.Info(this, AppInfo.Name,
+                result.ScheduledForReboot + " " +
+                lang.T("Messages/msgPendingReboot", "Some files will be removed after the next reboot"));
         }
     }
 

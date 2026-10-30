@@ -33,7 +33,6 @@ public sealed class MainForm : Form
     private readonly StartupScanner _startupScanner;
     private readonly IconCache _icons = new();
     private readonly Icon? _appIcon;
-    private readonly LeftoverScanner _leftovers = new();
 
     private readonly MenuStrip _menu = new();
     private readonly ToolStrip _toolbar = new();
@@ -68,7 +67,9 @@ public sealed class MainForm : Form
     private int _sortColumn;
     private bool _sortAscending = true;
     private bool _scanning;
+    private bool _refreshPending;
     private bool _startupScanning;
+    private bool _startupRefreshPending;
     private bool _closing;
     private bool _externalClose;
     private readonly StartupTarget _initialTarget;
@@ -92,16 +93,21 @@ public sealed class MainForm : Form
         Icon = _appIcon;
         MinimumSize = new Size(780, 480);
 
+        var virtualScreen = SystemInformation.VirtualScreen;
         var workArea = Screen.PrimaryScreen?.WorkingArea ?? new Rectangle(0, 0, 1024, 768);
-        var clientWidth = Math.Clamp(settings.WindowWidth, 764, workArea.Width - 20);
-        var clientHeight = Math.Clamp(settings.WindowHeight, 450, workArea.Height - 60);
+        var clientWidth = Math.Clamp(settings.WindowWidth, 764, Math.Max(764, virtualScreen.Width - 20));
+        var clientHeight = Math.Clamp(settings.WindowHeight, 450, Math.Max(450, workArea.Height - 60));
         ClientSize = new Size(clientWidth, clientHeight);
         if (settings.WindowLeft != int.MinValue && settings.WindowTop != int.MinValue)
         {
+            // Keep the window on a monitor that still exists (multi-monitor
+            // layouts may change between sessions).
+            var left = Math.Clamp(settings.WindowLeft, virtualScreen.Left,
+                Math.Max(virtualScreen.Left, virtualScreen.Right - Width));
+            var top = Math.Clamp(settings.WindowTop, virtualScreen.Top,
+                Math.Max(virtualScreen.Top, virtualScreen.Bottom - Height));
             StartPosition = FormStartPosition.Manual;
-            Location = new Point(
-                Math.Clamp(settings.WindowLeft, workArea.Left, Math.Max(workArea.Left, workArea.Right - Width)),
-                Math.Clamp(settings.WindowTop, workArea.Top, Math.Max(workArea.Top, workArea.Bottom - Height)));
+            Location = new Point(left, top);
         }
         else
         {
@@ -172,6 +178,7 @@ public sealed class MainForm : Form
         trayMenu.Items.Add(LanguageManager.Instance.T("Misc/btnExit", "Exit"), null,
             (_, _) => { _tray.Visible = false; Close(); });
         _tray.ContextMenuStrip = trayMenu;
+        _tray.Visible = _settings.TrayIcon;
 
         ApplyThemeAndTexts();
         RestoreWindowState();
@@ -206,7 +213,9 @@ public sealed class MainForm : Form
         };
         Resize += (_, _) =>
         {
-            if (WindowState == FormWindowState.Minimized && _settings.MinimizeToTray)
+            // Hiding without a tray icon would make the window unreachable.
+            if (WindowState == FormWindowState.Minimized && _settings.MinimizeToTray &&
+                _settings.TrayIcon)
                 HideToTray();
         };
         FormClosing += OnFormClosing;
@@ -856,10 +865,19 @@ public sealed class MainForm : Form
     private async Task RefreshProgramsAsync()
     {
         if (_scanning)
+        {
+            // A refresh was requested while a scan was running: run it once
+            // the current scan finishes instead of silently ignoring it.
+            _refreshPending = true;
             return;
+        }
+
+        _refreshPending = false;
         _scanning = true;
         _scanCts?.Cancel();
+        _scanCts?.Dispose();
         _scanCts = new CancellationTokenSource();
+        var token = _scanCts.Token;
         var selected = SelectedPrograms().Select(p => p.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var lang = LanguageManager.Instance;
@@ -878,15 +896,19 @@ public sealed class MainForm : Form
 
         try
         {
-            _programs = await Task.Run(() => _scanner.Scan(includeStore: true));
+            var programs = await Task.Run(() => _scanner.Scan(includeStore: true, token), token);
+            token.ThrowIfCancellationRequested();
             if (_closing)
                 return;
+
+            _programs = programs;
             ProgramScanner.ApplyState(_programs, _settings);
             ProgramScanner.UpdateKnownDates(_programs, _settings);
             ApplyCachedData();
 
             _statusLabel.Text = lang.T("ListCtrl/staticLoading", "Loading, please wait...");
-            await Task.Run(() => _icons.Preload(_programs));
+            await Task.Run(() => _icons.Preload(_programs), token);
+            token.ThrowIfCancellationRequested();
             if (_closing)
                 return;
 
@@ -900,9 +922,13 @@ public sealed class MainForm : Form
             UpdateStatus();
             _ = ComputeSizesAsync();
         }
+        catch (OperationCanceledException)
+        {
+            // Closing or a newer scan superseded this one.
+        }
         catch (Exception ex)
         {
-            if (!_closing)
+            if (!_closing && !IsDisposed)
                 MessageDialog.Error(this, "CleanRift", ex.Message);
         }
         finally
@@ -910,14 +936,26 @@ public sealed class MainForm : Form
             _scanner.Progress -= OnProgress;
             _scanning = false;
             if (!_closing && !IsDisposed)
+            {
                 Cursor = Cursors.Default;
+                if (_refreshPending)
+                {
+                    _refreshPending = false;
+                    _ = RefreshProgramsAsync();
+                }
+            }
         }
     }
 
     private async Task RefreshStartupAsync()
     {
         if (_startupScanning)
+        {
+            _startupRefreshPending = true;
             return;
+        }
+
+        _startupRefreshPending = false;
         _startupScanning = true;
         var lang = LanguageManager.Instance;
         _statusLabel.Text = lang.T("ListCtrl/staticLoading", "Loading, please wait...");
@@ -941,7 +979,7 @@ public sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            if (!_closing)
+            if (!_closing && !IsDisposed)
                 MessageDialog.Error(this, "CleanRift", ex.Message);
         }
         finally
@@ -949,7 +987,14 @@ public sealed class MainForm : Form
             _startupScanner.Progress -= OnProgress;
             _startupScanning = false;
             if (!_closing && !IsDisposed)
+            {
                 Cursor = Cursors.Default;
+                if (_startupRefreshPending)
+                {
+                    _startupRefreshPending = false;
+                    _ = RefreshStartupAsync();
+                }
+            }
         }
     }
 
@@ -993,12 +1038,14 @@ public sealed class MainForm : Form
     private async Task ComputeSizesAsync()
     {
         _sizeCts?.Cancel();
+        _sizeCts?.Dispose();
         _sizeCts = new CancellationTokenSource();
         var token = _sizeCts.Token;
-        var pending = _programs.Count(p => p.SizeBytes == 0 && !string.IsNullOrWhiteSpace(p.InstallLocation));
+        var programs = _programs;
+        var pending = programs.Count(p => p.SizeBytes == 0 && !string.IsNullOrWhiteSpace(p.InstallLocation));
         if (pending == 0)
         {
-            UninstallCache.Save(_programs);
+            UninstallCache.Save(programs);
             return;
         }
 
@@ -1010,7 +1057,7 @@ public sealed class MainForm : Form
         });
         try
         {
-            await _scanner.ComputeSizesAsync(_programs, progress, token);
+            await _scanner.ComputeSizesAsync(programs, progress, token);
             if (_closing)
                 return;
             if (!token.IsCancellationRequested)
@@ -1018,12 +1065,16 @@ public sealed class MainForm : Form
                 _sizeLabel.Text = "";
                 UpdateStatus();
                 UpdateVisibleSizeTexts();
-                UninstallCache.Save(_programs);
+                UninstallCache.Save(programs);
             }
         }
         catch (OperationCanceledException)
         {
             // ignore
+        }
+        catch
+        {
+            // Size calculation is best-effort; never surface it as fatal.
         }
     }
 
@@ -1184,15 +1235,15 @@ public sealed class MainForm : Form
         if (program.Mark32Bit() && _settings.Mark32Bit)
             item.ToolTipText += "  " + LanguageManager.Instance.T("ListCtrl/mark32bitItem", "(32-bit)");
 
-        var icon = program.Icon ?? AppIcons.AppIcon();
+        var icon = program.Icon ?? _appIcon;
         if (icon != null)
         {
             try
             {
-                var bitmap = icon.ToBitmap();
-                _listIcons.Images.Add(new Bitmap(bitmap, new Size(IconSize, IconSize)));
+                using var bitmap = icon.ToBitmap();
+                using var scaled = new Bitmap(bitmap, new Size(IconSize, IconSize));
+                _listIcons.Images.Add(scaled);
                 item.ImageIndex = _listIcons.Images.Count - 1;
-                bitmap.Dispose();
             }
             catch
             {
@@ -1229,15 +1280,15 @@ public sealed class MainForm : Form
             if (!startup.Enabled)
                 item.ForeColor = Theme.Current.Muted;
 
-            var icon = startup.Icon ?? AppIcons.AppIcon();
+            var icon = startup.Icon ?? _appIcon;
             if (icon != null)
             {
                 try
                 {
-                    var bitmap = icon.ToBitmap();
-                    _listIcons.Images.Add(new Bitmap(bitmap, new Size(IconSize, IconSize)));
+                    using var bitmap = icon.ToBitmap();
+                    using var scaled = new Bitmap(bitmap, new Size(IconSize, IconSize));
+                    _listIcons.Images.Add(scaled);
                     item.ImageIndex = _listIcons.Images.Count - 1;
-                    bitmap.Dispose();
                 }
                 catch
                 {
@@ -1350,7 +1401,7 @@ public sealed class MainForm : Form
             ["traced"] = single?.IsTraced == true,
             ["registry"] = single != null && !string.IsNullOrWhiteSpace(single.RegistryPath),
             ["folder"] = single != null && FolderFor(single) != null,
-            ["website"] = single != null && !string.IsNullOrWhiteSpace(single.UrlInfoAbout),
+            ["website"] = WebsiteFor(single) != null,
             ["store"] = single?.IsStoreApp == true,
             ["startupItem"] = startup.Count > 0,
             ["startupAny"] = _mode == ViewMode.Startup
@@ -1613,12 +1664,16 @@ public sealed class MainForm : Form
         if (program == null || string.IsNullOrWhiteSpace(program.ModifyPath))
             return;
 
-        var command = program.ModifyPath.Trim();
+        var (fileName, arguments) = UninstallRunner.SplitCommand(program.ModifyPath);
+        if (string.IsNullOrWhiteSpace(fileName))
+            return;
+
         try
         {
             var psi = new ProcessStartInfo
             {
-                FileName = command,
+                FileName = fileName,
+                Arguments = arguments,
                 UseShellExecute = true,
                 WorkingDirectory = Directory.Exists(program.InstallLocation)
                     ? program.InstallLocation
@@ -1670,23 +1725,22 @@ public sealed class MainForm : Form
             {
                 if (!string.IsNullOrWhiteSpace(program.RegistryPath))
                 {
-                    var key = program.OpenRegistryKey();
-                    if (key != null)
-                    {
-                        var parentPath = program.RegistryPath[..program.RegistryPath.LastIndexOf('\\')];
-                        key.Dispose();
-                        var parsed = LeftoverScanner.ParseKeyPath(parentPath);
-                        var sub = program.RegistryPath[(program.RegistryPath.LastIndexOf('\\') + 1)..];
-                        if (parsed != null)
-                        {
-                            var hive = parsed.Value.hive == "HKEY_LOCAL_MACHINE"
-                                ? RegistryHive.LocalMachine
-                                : RegistryHive.CurrentUser;
-                            var view = program.Is64Bit ? RegistryView.Registry64 : RegistryView.Registry32;
-                            using var baseKey = RegistryKey.OpenBaseKey(hive, view);
-                            baseKey.DeleteSubKeyTree(sub, throwOnMissingSubKey: false);
-                        }
-                    }
+                    var lastSlash = program.RegistryPath.LastIndexOf('\\');
+                    if (lastSlash <= 0)
+                        throw new InvalidOperationException("Invalid registry path");
+
+                    var parentPath = program.RegistryPath[..lastSlash];
+                    var sub = program.RegistryPath[(lastSlash + 1)..];
+                    var parsed = LeftoverScanner.ParseKeyPath(parentPath);
+                    if (parsed == null)
+                        throw new InvalidOperationException("Invalid registry path");
+
+                    var hive = parsed.Value.hive == "HKEY_LOCAL_MACHINE"
+                        ? RegistryHive.LocalMachine
+                        : RegistryHive.CurrentUser;
+                    var view = program.Is64Bit ? RegistryView.Registry64 : RegistryView.Registry32;
+                    using var baseKey = RegistryKey.OpenBaseKey(hive, view);
+                    baseKey.DeleteSubKeyTree(sub, throwOnMissingSubKey: false);
                 }
 
                 _settings.HiddenProgramIds.Remove(program.Id);
@@ -1716,10 +1770,7 @@ public sealed class MainForm : Form
         if (program == null)
             return;
         var traces = TraceStore.LoadAll();
-        var trace = traces.TryGetValue(program.Id, out var direct)
-            ? direct
-            : traces.Values.FirstOrDefault(t =>
-                t.DisplayName.Equals(program.DisplayName, StringComparison.OrdinalIgnoreCase));
+        var trace = TraceStore.FindFor(traces, program.Id, program.DisplayName);
         if (trace == null)
         {
             MessageDialog.Info(this, LanguageManager.Instance.T("MainMenu/mnuTracedData", "Traced Data"),
@@ -1742,7 +1793,7 @@ public sealed class MainForm : Form
             "");
         if (result.Result != DialogResult.Yes)
             return;
-        TraceStore.Delete(program.Id);
+        TraceStore.Delete(program.Id, program.TraceFile);
         _ = RefreshProgramsAsync();
     }
 
@@ -1778,7 +1829,7 @@ public sealed class MainForm : Form
 
             Process.Start(new ProcessStartInfo
             {
-                FileName = "regedit.exe",
+                FileName = SystemToolPath("regedit.exe"),
                 UseShellExecute = true
             });
         }
@@ -1821,7 +1872,7 @@ public sealed class MainForm : Form
 
             Process.Start(new ProcessStartInfo
             {
-                FileName = "explorer.exe",
+                FileName = SystemToolPath("explorer.exe"),
                 Arguments = "\"" + folder + "\"",
                 UseShellExecute = true
             });
@@ -1865,10 +1916,24 @@ public sealed class MainForm : Form
 
     private void OpenWebsite()
     {
-        var program = SelectedPrograms().FirstOrDefault();
+        var url = WebsiteFor(SelectedPrograms().FirstOrDefault());
+        if (url != null)
+            OpenUrl(url);
+    }
+
+    private static string? WebsiteFor(InstalledProgram? program)
+    {
         if (program == null)
-            return;
-        OpenUrl(string.IsNullOrWhiteSpace(program.UrlInfoAbout) ? program.HelpLink : program.UrlInfoAbout);
+            return null;
+        if (IsWebUrl(program.UrlInfoAbout))
+            return program.UrlInfoAbout;
+        return IsWebUrl(program.HelpLink) ? program.HelpLink : null;
+    }
+
+    private static bool IsWebUrl(string? url)
+    {
+        return Uri.TryCreate(url?.Trim(), UriKind.Absolute, out var uri) &&
+               (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 
     private void OpenStorePage()
@@ -1877,16 +1942,28 @@ public sealed class MainForm : Form
         if (program == null)
             return;
         var query = Uri.EscapeDataString(program.DisplayName);
-        OpenUrl("ms-windows-store://search/?query=" + query);
+        OpenShellTarget("ms-windows-store://search/?query=" + query);
     }
 
     private void OpenUrl(string url)
     {
         if (string.IsNullOrWhiteSpace(url))
             return;
+
+        // Registry-provided links are untrusted data. Only open web links;
+        // never hand an arbitrary protocol or local file to the shell.
+        if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            return;
+
+        OpenShellTarget(uri.AbsoluteUri);
+    }
+
+    private void OpenShellTarget(string target)
+    {
         try
         {
-            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            Process.Start(new ProcessStartInfo { FileName = target, UseShellExecute = true });
         }
         catch (Exception ex)
         {
@@ -1898,12 +1975,30 @@ public sealed class MainForm : Form
     {
         try
         {
-            Process.Start(new ProcessStartInfo { FileName = command, UseShellExecute = true });
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = SystemToolPath(command),
+                UseShellExecute = true
+            });
         }
         catch (Exception ex)
         {
             MessageDialog.Error(this, AppInfo.Name, ex.Message);
         }
+    }
+
+    private static string SystemToolPath(string name)
+    {
+        if (Path.IsPathRooted(name))
+            return name;
+
+        var system = Path.Combine(Environment.SystemDirectory, name);
+        if (File.Exists(system))
+            return system;
+
+        var windows = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.Windows), name);
+        return File.Exists(windows) ? windows : name;
     }
 
     // -------------------- Startup actions --------------------
@@ -1982,7 +2077,7 @@ public sealed class MainForm : Form
         {
             Filter = lang.F("HTMLReport/htmlFiles", "HTML Files") + " (*.html)|*.html|" +
                      lang.F("HTMLReport/allFiles", "All Files") + " (*.*)|*.*||",
-            FileName = "uninstall-tool-report.html"
+            FileName = "cleanrift-report.html"
         };
         if (dialog.ShowDialog(this) != DialogResult.OK)
             return;
@@ -2070,10 +2165,13 @@ public sealed class MainForm : Form
     private void ChangeLanguage(string file)
     {
         _settings.LanguageFile = file;
-        _settings.Save();
+        _settings.LastCategory = _category;
+        SaveSettings();
         LanguageManager.Instance.Load(file);
+        Theme.Current = Theme.FromScheme(_settings.ColorScheme);
         var next = new MainForm(_settings);
         next.Show();
+        _externalClose = true;
         Close();
     }
 
@@ -2158,7 +2256,7 @@ public sealed class MainForm : Form
     private void OnFormClosing(object? sender, FormClosingEventArgs e)
     {
         if (!_externalClose && e.CloseReason == CloseReason.UserClosing &&
-            _settings.MinimizeOnClose && _tray.Visible)
+            _settings.MinimizeOnClose && _settings.TrayIcon && _tray.Visible)
         {
             e.Cancel = true;
             HideToTray();
@@ -2166,7 +2264,11 @@ public sealed class MainForm : Form
         }
 
         _scanCts?.Cancel();
+        _scanCts?.Dispose();
+        _scanCts = null;
         _sizeCts?.Cancel();
+        _sizeCts?.Dispose();
+        _sizeCts = null;
         _closing = true;
         _filterTimer.Stop();
         _filterTimer.Dispose();
@@ -2176,6 +2278,9 @@ public sealed class MainForm : Form
         _icons.Dispose();
         _list.SmallImageList = null;
         _listIcons.Dispose();
+        var trayMenu = _tray.ContextMenuStrip;
+        _tray.ContextMenuStrip = null;
+        trayMenu?.Dispose();
         _tray.Visible = false;
         _tray.Dispose();
         _appIcon?.Dispose();

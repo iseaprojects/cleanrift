@@ -28,7 +28,6 @@ public sealed class UninstallWizardForm : Form
     private readonly UninstallRunner _runner = new();
     private readonly LeftoverScanner _scanner = new();
     private readonly List<string> _log = new();
-    private readonly List<TraceInfo?> _traces = new();
 
     private readonly Panel _headerPanel;
     private readonly PictureBox _iconBox;
@@ -294,26 +293,45 @@ public sealed class UninstallWizardForm : Form
 
     private async void OnPrimary()
     {
-        var lang = LanguageManager.Instance;
-        switch (_phase)
+        try
         {
-            case Phase.Confirm:
-                await RunUninstallAsync();
-                break;
+            switch (_phase)
+            {
+                case Phase.Confirm:
+                    await RunUninstallAsync();
+                    break;
 
-            case Phase.ScanPrompt:
-                _secondary.Visible = false;
-                await ScanAsync();
-                break;
+                case Phase.ScanPrompt:
+                    _secondary.Visible = false;
+                    await ScanAsync();
+                    break;
 
-            case Phase.Results:
-                await RemoveLeftoversAsync();
-                break;
+                case Phase.Results:
+                    await RemoveLeftoversAsync();
+                    break;
 
-            case Phase.Done:
-                DialogResult = DialogResult.OK;
-                Close();
-                break;
+                case Phase.Done:
+                    DialogResult = DialogResult.OK;
+                    Close();
+                    break;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _working = false;
+            _cts?.Dispose();
+            _cts = null;
+        }
+        catch (Exception ex)
+        {
+            _working = false;
+            _cts?.Dispose();
+            _cts = null;
+            if (!IsDisposed)
+            {
+                AppendLog("Error: " + ex.Message);
+                MessageDialog.Error(this, AppInfo.Name, ex.Message);
+            }
         }
     }
 
@@ -423,6 +441,8 @@ public sealed class UninstallWizardForm : Form
             if (outcome.Cancelled)
             {
                 _working = false;
+                _cts?.Dispose();
+                _cts = null;
                 Close();
                 return;
             }
@@ -516,8 +536,13 @@ public sealed class UninstallWizardForm : Form
         var seenKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var allTraces = TraceStore.LoadAll();
 
-        var progress = new Progress<string>(text => _bodyLabel.Text = text);
-        _scanner.Progress += text => ((IProgress<string>)progress).Report(text);
+        var progress = new Progress<string>(text =>
+        {
+            if (!IsDisposed)
+                _bodyLabel.Text = text;
+        });
+        void OnProgress(string text) => ((IProgress<string>)progress).Report(text);
+        _scanner.Progress += OnProgress;
 
         try
         {
@@ -526,10 +551,7 @@ public sealed class UninstallWizardForm : Form
                 foreach (var program in _programs)
                 {
                     token.ThrowIfCancellationRequested();
-                    var trace = allTraces.TryGetValue(program.Id, out var direct)
-                        ? direct
-                        : allTraces.Values.FirstOrDefault(t =>
-                            t.DisplayName.Equals(program.DisplayName, StringComparison.OrdinalIgnoreCase));
+                    var trace = TraceStore.FindFor(allTraces, program.Id, program.DisplayName);
 
                     var partial = _scanner.Scan(program, trace, token);
                     foreach (var child in partial.FileSystemRoot.Children)
@@ -558,6 +580,10 @@ public sealed class UninstallWizardForm : Form
         catch (Exception ex)
         {
             AppendLog("Scan error: " + ex.Message);
+        }
+        finally
+        {
+            _scanner.Progress -= OnProgress;
         }
 
         _scan = scan;
@@ -645,6 +671,18 @@ public sealed class UninstallWizardForm : Form
             UpdateFooterInfo();
             return;
         }
+        catch (Exception ex)
+        {
+            _working = false;
+            _cts?.Dispose();
+            _cts = null;
+            _progress.Style = ProgressBarStyle.Continuous;
+            AppendLog("Removal error: " + ex.Message);
+            MessageDialog.Error(this, AppInfo.Name, ex.Message);
+            SetPhase(Phase.Results);
+            UpdateFooterInfo();
+            return;
+        }
 
         foreach (var line in engine.Log)
             AppendLog(line);
@@ -657,7 +695,7 @@ public sealed class UninstallWizardForm : Form
         {
             foreach (var program in _programs.Where(p => p.IsTraced))
             {
-                TraceStore.Delete(program.Id);
+                TraceStore.Delete(program.Id, program.TraceFile);
                 program.IsTraced = false;
             }
         }
@@ -668,11 +706,22 @@ public sealed class UninstallWizardForm : Form
         _cts = null;
 
         SetPhase(Phase.Done);
-        _headerLabel.Text = lang.T("UninstallWizard/statusAllTracesRemoved", "All Traces Removed");
-        _bodyLabel.Text = _programs.Count == 1
-            ? lang.F("UninstallWizard/staticScanStatusRemoved", _programs[0].DisplayName)
-            : lang.T("UninstallWizard/staticScanStatusRemovedBatch",
-                "All selected leftovers have been successfully removed.");
+        if (_removed)
+        {
+            _headerLabel.Text = lang.T("UninstallWizard/statusAllTracesRemoved", "All Traces Removed");
+            _bodyLabel.Text = _programs.Count == 1
+                ? lang.F("UninstallWizard/staticScanStatusRemoved", _programs[0].DisplayName)
+                : lang.T("UninstallWizard/staticScanStatusRemovedBatch",
+                    "All selected leftovers have been successfully removed.");
+        }
+        else
+        {
+            _headerLabel.Text = lang.T("DelayedFilesRemovalDialog/Title",
+                "Some files were not deleted");
+            _bodyLabel.Text = lang.T("Messages/msgPartialRemoval",
+                "Some selected items could not be removed. Review the details below.");
+        }
+
         if (_removed)
         {
             _tree.Visible = false;
@@ -694,6 +743,12 @@ public sealed class UninstallWizardForm : Form
                 lang.T("DelayedFilesRemovalDialog/Title", "Some files were not deleted"), details,
                 MessageBoxButtons.OK, AppIcons.Warning);
         }
+        else if (result is { ScheduledForReboot: > 0 })
+        {
+            MessageDialog.Info(this, AppInfo.Name,
+                result.ScheduledForReboot + " " +
+                lang.T("Messages/msgPendingReboot", "Some files will be removed after the next reboot"));
+        }
     }
 
     private void AppendLog(string text)
@@ -713,7 +768,7 @@ public sealed class UninstallWizardForm : Form
         using var dialog = new SaveFileDialog
         {
             Filter = "Log files (*.log)|*.log|Text files (*.txt)|*.txt|All files (*.*)|*.*",
-            FileName = "uninstall-log.log"
+            FileName = "cleanrift-uninstall-log.log"
         };
         if (dialog.ShowDialog(this) == DialogResult.OK)
         {
@@ -733,7 +788,7 @@ public sealed class UninstallWizardForm : Form
         using var dialog = new SaveFileDialog
         {
             Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
-            FileName = "uninstall-scan.xml"
+            FileName = "cleanrift-scan.xml"
         };
         if (dialog.ShowDialog(this) == DialogResult.OK)
         {

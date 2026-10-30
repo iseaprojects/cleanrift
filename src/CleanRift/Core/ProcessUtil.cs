@@ -5,6 +5,18 @@ namespace CleanRift.Core;
 
 public static class ProcessUtil
 {
+    /// <summary>Absolute path to the in-box tools so a file next to the app
+    /// cannot hijack an elevated process through the current directory.</summary>
+    public static string SchTasksPath => SystemTool("schtasks.exe");
+
+    public static string PowerShellPath => SystemTool(@"WindowsPowerShell\v1.0\powershell.exe");
+
+    public static string SystemTool(string name)
+    {
+        var candidate = Path.Combine(Environment.SystemDirectory, name);
+        return File.Exists(candidate) ? candidate : name;
+    }
+
     public static (int exitCode, string stdout, string stderr) Run(string fileName, string arguments,
         int timeoutMs = 30000, string? workingDirectory = null)
     {
@@ -26,15 +38,18 @@ public static class ProcessUtil
             if (process == null)
                 return (-1, "", "Failed to start process");
 
-            var stdout = process.StandardOutput.ReadToEnd();
-            var stderr = process.StandardError.ReadToEnd();
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
             if (!process.WaitForExit(timeoutMs))
             {
                 try { process.Kill(entireProcessTree: true); } catch { }
-                return (-1, stdout, stderr + "\nTimed out");
+                try { process.WaitForExit(2000); } catch { }
+                return (-1, ReadCompleted(stdoutTask), ReadCompleted(stderrTask) + "\nTimed out");
             }
 
-            return (process.ExitCode, stdout, stderr);
+            // A child process can inherit the redirected handles and keep them
+            // open after the root exits. Never block forever waiting for EOF.
+            return (process.ExitCode, ReadCompleted(stdoutTask), ReadCompleted(stderrTask));
         }
         catch (Exception ex)
         {
@@ -42,10 +57,22 @@ public static class ProcessUtil
         }
     }
 
+    private static string ReadCompleted(Task<string> task)
+    {
+        try
+        {
+            return task.Wait(5000) ? task.Result : "";
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
     public static string RunPowerShell(string script, int timeoutMs = 30000)
     {
         var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
-        var (_, stdout, _) = Run("powershell.exe",
+        var (_, stdout, _) = Run(PowerShellPath,
             $"-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encoded}", timeoutMs);
         return stdout;
     }
@@ -76,22 +103,30 @@ public static class ProcessUtil
 
     public static bool IsRunning(string processName)
     {
+        Process[] processes = Array.Empty<Process>();
         try
         {
-            return Process.GetProcessesByName(processName).Length > 0;
+            processes = Process.GetProcessesByName(processName);
+            return processes.Length > 0;
         }
         catch
         {
             return false;
+        }
+        finally
+        {
+            foreach (var process in processes)
+                process.Dispose();
         }
     }
 
     public static List<Process> GetProcessTree(int rootPid)
     {
         var result = new List<Process>();
+        var snapshot = IntPtr.Zero;
         try
         {
-            var snapshot = NativeMethods.CreateToolhelp32Snapshot(NativeMethods.TH32CS_SNAPPROCESS, 0);
+            snapshot = NativeMethods.CreateToolhelp32Snapshot(NativeMethods.TH32CS_SNAPPROCESS, 0);
             if (snapshot == IntPtr.Zero || snapshot == new IntPtr(-1))
                 return result;
 
@@ -104,8 +139,6 @@ public static class ProcessUtil
                     entries.Add((entry.th32ProcessID, entry.th32ParentProcessID, entry.szExeFile));
                 } while (NativeMethods.Process32Next(snapshot, ref entry));
             }
-
-            NativeMethods.CloseHandle(snapshot);
 
             var pidSet = new HashSet<uint> { (uint)rootPid };
             var changed = true;
@@ -136,6 +169,11 @@ public static class ProcessUtil
         {
             // best effort
         }
+        finally
+        {
+            if (snapshot != IntPtr.Zero && snapshot != new IntPtr(-1))
+                NativeMethods.CloseHandle(snapshot);
+        }
 
         return result;
     }
@@ -144,7 +182,7 @@ public static class ProcessUtil
     {
         foreach (var process in GetProcessTree(pid))
         {
-            try { process.Kill(); } catch { }
+            try { process.Kill(); } catch { } finally { process.Dispose(); }
         }
     }
 
@@ -155,10 +193,25 @@ public static class ProcessUtil
         {
             if (cancel?.Invoke() == true)
                 return false;
-            var alive = GetProcessTree(pid).Any(p =>
+
+            var alive = false;
+            foreach (var process in GetProcessTree(pid))
             {
-                try { return !p.HasExited; } catch { return false; }
-            });
+                try
+                {
+                    if (!process.HasExited)
+                        alive = true;
+                }
+                catch
+                {
+                    // ignore
+                }
+                finally
+                {
+                    process.Dispose();
+                }
+            }
+
             if (!alive)
                 return true;
             Thread.Sleep(300);

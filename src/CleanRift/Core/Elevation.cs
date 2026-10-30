@@ -77,6 +77,9 @@ public static class Elevation
         {
             var dir = Path.Combine(Path.GetTempPath(), "CleanRift");
             Directory.CreateDirectory(dir);
+            var attributes = File.GetAttributes(dir);
+            if ((attributes & FileAttributes.ReparsePoint) != 0)
+                throw new IOException("The CleanRift job directory is a reparse point.");
             return dir;
         }
     }
@@ -95,12 +98,17 @@ public static class Elevation
 
     public static JobResult? Execute(RemovalJob job, bool wait = true)
     {
+        string? jobFile = null;
+        string? resultFile = null;
         try
         {
+            if (!PathSafety.ValidateJob(job, out var validationError))
+                return new JobResult { Success = false, Failed = 1, Error = validationError };
+
             var id = Guid.NewGuid().ToString("N");
-            var jobFile = Path.Combine(JobDirectory, "job_" + id + ".json");
-            var resultFile = Path.Combine(JobDirectory, "job_" + id + ".result.json");
-            File.WriteAllText(jobFile, JsonSerializer.Serialize(job));
+            jobFile = Path.Combine(JobDirectory, "job_" + id + ".json");
+            resultFile = Path.Combine(JobDirectory, "job_" + id + ".result.json");
+            AtomicFile.WriteAllText(jobFile, JsonSerializer.Serialize(job));
 
             var exe = Environment.ProcessPath ?? "";
             var prefix = "";
@@ -128,16 +136,15 @@ public static class Elevation
 
             if (!process.WaitForExit(600000))
             {
-                try { process.Kill(); } catch { }
+                try { process.Kill(entireProcessTree: true); } catch { }
                 return new JobResult { Success = false, Error = "Elevated operation timed out" };
             }
 
             if (File.Exists(resultFile))
             {
                 var json = File.ReadAllText(resultFile);
-                try { File.Delete(resultFile); } catch { }
-                try { File.Delete(jobFile); } catch { }
-                return JsonSerializer.Deserialize<JobResult>(json);
+                return JsonSerializer.Deserialize<JobResult>(json) ??
+                       new JobResult { Success = false, Error = "Invalid elevated result" };
             }
 
             return new JobResult
@@ -149,6 +156,18 @@ public static class Elevation
         catch (Exception ex)
         {
             return new JobResult { Success = false, Error = ex.Message };
+        }
+        finally
+        {
+            if (!string.IsNullOrEmpty(jobFile))
+            {
+                try { File.Delete(jobFile); } catch { }
+            }
+
+            if (!string.IsNullOrEmpty(resultFile))
+            {
+                try { File.Delete(resultFile); } catch { }
+            }
         }
     }
 }

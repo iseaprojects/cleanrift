@@ -1,4 +1,5 @@
 using CleanRift.Core;
+using CleanRift.UI;
 
 namespace CleanRift;
 
@@ -15,7 +16,7 @@ public sealed class SingleInstance : IDisposable
 
     private readonly Mutex _mutex;
     private readonly EventWaitHandle _event;
-    private readonly bool _ownsMutex;
+    private bool _ownsMutex;
     private RegisteredWaitHandle? _wait;
     private Form? _form;
     private bool _closePending;
@@ -66,6 +67,7 @@ public sealed class SingleInstance : IDisposable
             if (!_mutex.WaitOne(milliseconds))
                 return false;
 
+            _ownsMutex = true;
             _wait?.Unregister(null);
             _wait = null;
             Listen();
@@ -74,6 +76,7 @@ public sealed class SingleInstance : IDisposable
         catch (AbandonedMutexException)
         {
             // The previous process was terminated without releasing the mutex.
+            _ownsMutex = true;
             Listen();
             return true;
         }
@@ -111,7 +114,15 @@ public sealed class SingleInstance : IDisposable
         try
         {
             if (form.IsHandleCreated)
-                form.BeginInvoke(new Action(form.Close));
+            {
+                form.BeginInvoke(new Action(() =>
+                {
+                    if (form is MainForm main)
+                        main.RequestExternalClose();
+                    else
+                        form.Close();
+                }));
+            }
         }
         catch (Exception ex)
         {

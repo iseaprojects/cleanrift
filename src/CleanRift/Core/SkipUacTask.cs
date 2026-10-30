@@ -36,10 +36,19 @@ public static class SkipUacTask
         }
 
         var xml = BuildTaskXml(executable);
-        var file = Path.Combine(Path.GetTempPath(), "CleanRift_SkipUAC.xml");
+        var file = Path.Combine(Path.GetTempPath(),
+            "CleanRift_SkipUAC_" + Guid.NewGuid().ToString("N") + ".xml");
         try
         {
-            File.WriteAllText(file, xml, Encoding.Unicode);
+            using var stream = new FileStream(file, FileMode.CreateNew, FileAccess.Write,
+                FileShare.Read, 4096, FileOptions.WriteThrough);
+            using (var writer = new StreamWriter(stream, Encoding.Unicode, 4096, leaveOpen: true))
+            {
+                writer.Write(xml);
+                writer.Flush();
+            }
+
+            stream.Flush(flushToDisk: true);
             var result = RunSchTasks($"/Create /TN \"{Name}\" /XML \"{file}\" /F");
             if (result.ExitCode != 0)
                 error = FirstLine(result.Output);
@@ -173,30 +182,9 @@ public static class SkipUacTask
 
     private static (int ExitCode, string Output) RunSchTasks(string arguments)
     {
-        try
-        {
-            using var process = Process.Start(new ProcessStartInfo
-            {
-                FileName = Path.Combine(Environment.SystemDirectory, "schtasks.exe"),
-                Arguments = arguments,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            });
-
-            if (process == null)
-                return (-1, "schtasks.exe could not be started");
-
-            var output = process.StandardOutput.ReadToEnd() +
-                         process.StandardError.ReadToEnd();
-            process.WaitForExit(15000);
-            return (process.HasExited ? process.ExitCode : -1, output);
-        }
-        catch (Exception ex)
-        {
-            return (-1, ex.Message);
-        }
+        var (exitCode, stdout, stderr) = ProcessUtil.Run(
+            Path.Combine(Environment.SystemDirectory, "schtasks.exe"), arguments, 30000);
+        return (exitCode, stdout + stderr);
     }
 
     private static string FirstLine(string text)

@@ -274,3 +274,6 @@ DlgPreferences/staticWizardTracedNote,"El Asistente de eliminación siempre se e
 Misc/trayOpen,"Abrir CleanRift"
 Misc/btnExit,"Salir"
 Messages/msgNoTracedData,"Este programa no tiene datos rastreados."
+"Messages/msgPartialRemoval","No se pudieron eliminar algunos elementos seleccionados. Revisa los detalles a continuación."
+"Messages/msgPendingReboot","Algunos archivos se eliminarán después del próximo reinicio"
+"Messages/msgChooseExecutable","Elige un archivo ejecutable."
