@@ -81,14 +81,14 @@ $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("CleanRift $version")
 $lines.Add("Built: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
 $lines.Add('')
-$lines.Add("Portable ZIP: $zip")
+$lines.Add("Portable ZIP: $(Split-Path $zip -Leaf)")
 $lines.Add("SHA256: $((Get-FileHash $zip -Algorithm SHA256).Hash)")
 $exe = Join-Path $portable 'CleanRift.exe'
 $dll = Join-Path $portable 'CleanRift.dll'
 $lines.Add("CleanRift.exe SHA256: $((Get-FileHash $exe -Algorithm SHA256).Hash)")
 $lines.Add("CleanRift.dll SHA256: $((Get-FileHash $dll -Algorithm SHA256).Hash)")
 if (Test-Path $setup) {
-    $lines.Add("Setup EXE: $setup")
+    $lines.Add("Setup EXE: $(Split-Path $setup -Leaf)")
     $lines.Add("Setup SHA256: $((Get-FileHash $setup -Algorithm SHA256).Hash)")
 }
 $checksums = Join-Path $releaseRoot 'SHA256.txt'
