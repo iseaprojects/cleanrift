@@ -31,6 +31,11 @@ public sealed class AppSettings
 {
     private const string ProductFolder = "CleanRift";
 
+    private static readonly JsonSerializerOptions StateJsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
     public string LanguageFile { get; set; } = "";
     public bool ToolbarCaptions { get; set; } = true;
     public bool ToolbarVisible { get; set; } = true;
@@ -98,7 +103,7 @@ public sealed class AppSettings
 
         try
         {
-            if (File.Exists(path))
+            if (File.Exists(path) && new FileInfo(path).Length <= 8 * 1024 * 1024)
                 settings.ReadPreferences(path);
         }
         catch
@@ -140,10 +145,23 @@ public sealed class AppSettings
         string Get(string name, string fallback = "") =>
             values.TryGetValue(name, out var value) ? value : fallback;
 
-        bool GetBool(string name, bool fallback) =>
-            values.TryGetValue(name, out var value)
-                ? value is "1" or "true" or "True" || value.Equals("yes", StringComparison.OrdinalIgnoreCase)
-                : fallback;
+        bool GetBool(string name, bool fallback)
+        {
+            if (!values.TryGetValue(name, out var value))
+                return fallback;
+            value = value.Trim();
+            if (value == "1")
+                return true;
+            if (value is "0" or "")
+                return false;
+            if (bool.TryParse(value, out var parsed))
+                return parsed;
+            if (value.Equals("yes", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (value.Equals("no", StringComparison.OrdinalIgnoreCase))
+                return false;
+            return fallback;
+        }
 
         int GetInt(string name, int fallback) =>
             int.TryParse(Get(name), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
@@ -243,16 +261,17 @@ public sealed class AppSettings
         Bool("Window_Maximized", WindowMaximized);
         Int("Uninstall_WizardMode", (int)WizardMode);
 
-        var left = WindowLeft == int.MinValue ? 0 : WindowLeft;
-        var top = WindowTop == int.MinValue ? 0 : WindowTop;
-        builder.Append("    <Window_Bounds type=\"3\">CleanRiftRect(")
-            .Append(left).Append(", ").Append(top).Append(", ")
-            .Append(left + Math.Max(320, WindowWidth)).Append(", ")
-            .Append(top + Math.Max(240, WindowHeight))
-            .Append(")</Window_Bounds>\r\n");
+        if (WindowLeft != int.MinValue && WindowTop != int.MinValue)
+        {
+            builder.Append("    <Window_Bounds type=\"3\">CleanRiftRect(")
+                .Append(WindowLeft).Append(", ").Append(WindowTop).Append(", ")
+                .Append(WindowLeft + Math.Max(320, WindowWidth)).Append(", ")
+                .Append(WindowTop + Math.Max(240, WindowHeight))
+                .Append(")</Window_Bounds>\r\n");
+        }
 
         builder.Append("</CleanRiftPreferences>\r\n");
-        File.WriteAllText(path, builder.ToString(), new UTF8Encoding(false));
+        AtomicFile.WriteAllText(path, builder.ToString(), new UTF8Encoding(false));
     }
 
     private static int EncodeColumn(int width) => 0x10000 | Math.Clamp(width, 0, 0xFFFF);
@@ -285,7 +304,7 @@ public sealed class AppSettings
     {
         try
         {
-            if (!File.Exists(StatePath))
+            if (!File.Exists(StatePath) || new FileInfo(StatePath).Length > 8 * 1024 * 1024)
                 return;
 
             using var doc = JsonDocument.Parse(File.ReadAllText(StatePath));
@@ -332,8 +351,7 @@ public sealed class AppSettings
                 HiddenProgramIds,
                 KnownInstallDates
             };
-            File.WriteAllText(StatePath, JsonSerializer.Serialize(state,
-                new JsonSerializerOptions { WriteIndented = true }));
+            AtomicFile.WriteAllText(StatePath, JsonSerializer.Serialize(state, StateJsonOptions));
         }
         catch
         {

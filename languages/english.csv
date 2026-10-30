@@ -274,3 +274,6 @@ DlgPreferences/staticWizardTracedNote,"Removal Wizard always runs for traced pro
 Misc/trayOpen,"Open CleanRift"
 Misc/btnExit,"Exit"
 Messages/msgNoTracedData,"This program has no traced data."
+"Messages/msgPartialRemoval","Some selected items could not be removed. Review the details below."
+"Messages/msgPendingReboot","Some files will be removed after the next reboot"
+"Messages/msgChooseExecutable","Please choose an executable file."

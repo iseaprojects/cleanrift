@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — audit fixes
+
+- Hardened elevated removal jobs, protected paths/registry trees and command
+  execution (see `docs/AUDIT-2026-10.md`).
+- Fixed Store-app uninstall quoting, process/GDI leaks, scan cancellation,
+  tray/close behavior, multi-monitor restore and trace identity collisions.
+- Added automated tests and made settings/cache/trace writes atomic.
+
 ## 1.0.0-beta.1 — 2026-10-30
 
 First public beta.

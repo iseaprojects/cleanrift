@@ -329,10 +329,6 @@ public sealed class InstallTracker
     public SnapshotDiff Diff(InstallSnapshot before, InstallSnapshot after)
     {
         var diff = new SnapshotDiff();
-        var protectedRoots = LeftoverScanner.ProtectedPaths
-            .Where(p => !string.IsNullOrWhiteSpace(p))
-            .Select(p => p.TrimEnd('\\'))
-            .ToList();
 
         foreach (var folder in after.Folders)
         {
@@ -498,7 +494,7 @@ public sealed class InstallTracker
         return trace;
     }
 
-    public static void Revert(TraceInfo trace, CancellationToken token)
+    public static JobResult Revert(TraceInfo trace, CancellationToken token)
     {
         var items = new List<RemovalJobItem>();
         foreach (var folder in trace.Folders)
@@ -511,13 +507,36 @@ public sealed class InstallTracker
             items.Add(new RemovalJobItem { Kind = "value", Path = key, ValueName = name });
 
         var engine = new RemovalEngine();
-        engine.RemoveItems(items, token);
+        return engine.RemoveItems(items, token);
     }
 
     /// <summary>
     /// Runs a setup program and waits until the process tree exits. Returns the
     /// exit code, or null when tracking was cancelled.
     /// </summary>
+    private static int CountLiveChildren(int pid)
+    {
+        var count = 0;
+        foreach (var process in ProcessUtil.GetProcessTree(pid))
+        {
+            try
+            {
+                if (!process.HasExited && process.Id != pid)
+                    count++;
+            }
+            catch
+            {
+                // ignore
+            }
+            finally
+            {
+                process.Dispose();
+            }
+        }
+
+        return count;
+    }
+
     public int? RunSetup(string setupPath, CancellationToken token, Action<int>? started = null)
     {
         try
@@ -543,6 +562,8 @@ public sealed class InstallTracker
             if (process == null)
                 return -1;
 
+            try
+            {
             started?.Invoke(process.Id);
             Log?.Invoke(LanguageManager.Instance.F("InstallTracker/logTrackingStarting", setupPath));
 
@@ -563,14 +584,8 @@ public sealed class InstallTracker
                 if (rootGoneAt == DateTime.MinValue)
                     rootGoneAt = DateTime.UtcNow;
 
-                var children = ProcessUtil.GetProcessTree(process.Id)
-                    .Where(p =>
-                    {
-                        try { return !p.HasExited && p.Id != process.Id; }
-                        catch { return false; }
-                    })
-                    .ToList();
-                if (children.Count == 0)
+                var liveChildren = CountLiveChildren(process.Id);
+                if (liveChildren == 0)
                 {
                     if (DateTime.UtcNow - rootGoneAt > TimeSpan.FromSeconds(3))
                         break;
@@ -596,6 +611,11 @@ public sealed class InstallTracker
                 "All installation processes are finished"));
             try { return process.HasExited ? process.ExitCode : 0; }
             catch { return 0; }
+            }
+            finally
+            {
+                process.Dispose();
+            }
         }
         catch (Exception ex)
         {

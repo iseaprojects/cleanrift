@@ -13,24 +13,29 @@ namespace CleanRift.Core;
 public sealed class ProgramScanner
 {
     private const string UninstallKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
-    private const string UninstallKey32 = @"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
 
     public event Action<string>? Progress;
 
-    public List<InstalledProgram> Scan(bool includeStore = true)
+    public List<InstalledProgram> Scan(bool includeStore = true, CancellationToken token = default)
     {
         var programs = new List<InstalledProgram>();
-        ScanRegistryView(programs, "HKLM", is64Bit: true);
-        ScanRegistryView(programs, "HKLM", is64Bit: false);
-        ScanRegistryView(programs, "HKCU", is64Bit: true);
-        ScanRegistryView(programs, "HKCU", is64Bit: false);
-        ScanMsiProducts(programs);
+        ScanRegistryView(programs, "HKLM", is64Bit: true, token);
+        ScanRegistryView(programs, "HKLM", is64Bit: false, token);
+        ScanRegistryView(programs, "HKCU", is64Bit: true, token);
+        ScanRegistryView(programs, "HKCU", is64Bit: false, token);
+        token.ThrowIfCancellationRequested();
+        ScanMsiProducts(programs, token);
 
         if (includeStore)
         {
             try
             {
-                ScanStoreApps(programs);
+                token.ThrowIfCancellationRequested();
+                ScanStoreApps(programs, token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch
             {
@@ -38,11 +43,13 @@ public sealed class ProgramScanner
             }
         }
 
+        token.ThrowIfCancellationRequested();
         Deduplicate(programs);
         return programs;
     }
 
-    private void ScanRegistryView(List<InstalledProgram> programs, string hive, bool is64Bit)
+    private void ScanRegistryView(List<InstalledProgram> programs, string hive, bool is64Bit,
+        CancellationToken token)
     {
         Progress?.Invoke(is64Bit ? "Reading 64-bit registry..." : "Reading 32-bit registry...");
         try
@@ -54,6 +61,7 @@ public sealed class ProgramScanner
 
             foreach (var subName in uninstall.GetSubKeyNames())
             {
+                token.ThrowIfCancellationRequested();
                 try
                 {
                     using var key = uninstall.OpenSubKey(subName);
@@ -111,13 +119,17 @@ public sealed class ProgramScanner
                 }
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch
         {
             // Registry view unavailable.
         }
     }
 
-    private void ScanMsiProducts(List<InstalledProgram> programs)
+    private void ScanMsiProducts(List<InstalledProgram> programs, CancellationToken token)
     {
         Progress?.Invoke("Reading MSI products...");
         try
@@ -133,12 +145,14 @@ public sealed class ProgramScanner
 
             foreach (var sid in userData.GetSubKeyNames())
             {
+                token.ThrowIfCancellationRequested();
                 using var products = userData.OpenSubKey(sid + @"\Products");
                 if (products == null)
                     continue;
 
                 foreach (var product in products.GetSubKeyNames())
                 {
+                    token.ThrowIfCancellationRequested();
                     try
                     {
                         using var props = products.OpenSubKey(product + @"\InstallProperties");
@@ -194,13 +208,17 @@ public sealed class ProgramScanner
                 }
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch
         {
             // Installer data unavailable.
         }
     }
 
-    private void ScanStoreApps(List<InstalledProgram> programs)
+    private void ScanStoreApps(List<InstalledProgram> programs, CancellationToken token)
     {
         Progress?.Invoke("Reading Microsoft Store apps...");
         const string script = """
@@ -210,6 +228,7 @@ public sealed class ProgramScanner
               ConvertTo-Json -Compress -Depth 3
             """;
         var json = ProcessUtil.RunPowerShell(script, 45000).Trim();
+        token.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(json))
             return;
 
@@ -231,6 +250,7 @@ public sealed class ProgramScanner
 
             foreach (var element in elements)
             {
+                token.ThrowIfCancellationRequested();
                 try
                 {
                     var packageName = GetString(element, "Name");
@@ -257,7 +277,8 @@ public sealed class ProgramScanner
                         Source = ProgramSource.Store,
                         HiveName = "",
                         Is64Bit = Environment.Is64BitOperatingSystem,
-                        UninstallString = $"powershell -WindowStyle hidden \"Get-AppxPackage -name {packageName} | Remove-AppxPackage\"",
+                        UninstallString = "powershell -WindowStyle hidden \"Get-AppxPackage -name " +
+                                          QuotePowerShell(packageName) + " | Remove-AppxPackage\"",
                         Id = MakeId(ProgramSource.Store, "", false, fullName)
                     };
 
@@ -303,9 +324,12 @@ public sealed class ProgramScanner
                                      e.Parent?.Name.LocalName == "Properties")?.Value ?? "";
             if (!string.IsNullOrWhiteSpace(logo))
             {
-                logo = Path.Combine(installLocation, logo.Replace('/', '\\'));
-                if (!File.Exists(logo))
-                    logo = "";
+                var candidate = Path.GetFullPath(Path.Combine(installLocation, logo.Replace('/', '\\')));
+                var root = Path.GetFullPath(installLocation).TrimEnd('\\') + "\\";
+                logo = candidate.StartsWith(root, StringComparison.OrdinalIgnoreCase) &&
+                       File.Exists(candidate)
+                    ? candidate
+                    : "";
             }
 
             return (displayName, logo);
@@ -315,6 +339,9 @@ public sealed class ProgramScanner
             return ("", "");
         }
     }
+
+    private static string QuotePowerShell(string value) =>
+        "'" + (value ?? "").Replace("'", "''") + "'";
 
     private static string PrettifyPackageName(string packageName)
     {
@@ -376,9 +403,7 @@ public sealed class ProgramScanner
             program.IsHidden = settings.HiddenProgramIds.Contains(program.Id);
             program.IsRecent = program.InstallDate.HasValue &&
                                program.InstallDate.Value >= DateTime.Now.AddDays(-7);
-            traced.TryGetValue(program.Id, out var trace);
-            trace ??= traced.Values.FirstOrDefault(t => string.Equals(t.DisplayName, program.DisplayName,
-                StringComparison.OrdinalIgnoreCase));
+            var trace = TraceStore.FindFor(traced, program.Id, program.DisplayName);
             if (trace != null)
             {
                 program.IsTraced = true;
@@ -413,11 +438,13 @@ public sealed class ProgramScanner
 
     public static void UpdateKnownDates(List<InstalledProgram> programs, AppSettings settings)
     {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var program in programs)
         {
-            if (!program.InstallDate.HasValue)
+            if (!program.InstallDate.HasValue || string.IsNullOrEmpty(program.Id))
                 continue;
             var key = program.Id;
+            seen.Add(key);
             if (settings.KnownInstallDates.TryGetValue(key, out var old) &&
                 DateTime.TryParse(old, out var oldDate) &&
                 Math.Abs((program.InstallDate.Value - oldDate).TotalMinutes) > 1)
@@ -427,6 +454,11 @@ public sealed class ProgramScanner
 
             settings.KnownInstallDates[key] = program.InstallDate.Value.ToString("O");
         }
+
+        // Drop entries for products that are no longer installed so state.json
+        // does not grow forever.
+        foreach (var stale in settings.KnownInstallDates.Keys.Where(k => !seen.Contains(k)).ToList())
+            settings.KnownInstallDates.Remove(stale);
     }
 
     public async Task ComputeSizesAsync(IReadOnlyList<InstalledProgram> programs, IProgress<string>? progress = null,

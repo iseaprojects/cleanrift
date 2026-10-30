@@ -388,6 +388,11 @@ public sealed class DisabledStartupItem
 
 public static class DisabledStartupStore
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
     private static string FilePath => Path.Combine(AppSettings.DataDirectory,
         "DisabledStartupItems.json");
 
@@ -395,7 +400,7 @@ public static class DisabledStartupStore
     {
         try
         {
-            if (!File.Exists(FilePath))
+            if (!File.Exists(FilePath) || new FileInfo(FilePath).Length > 8 * 1024 * 1024)
                 return new List<DisabledStartupItem>();
             return JsonSerializer.Deserialize<List<DisabledStartupItem>>(File.ReadAllText(FilePath)) ??
                    new List<DisabledStartupItem>();
@@ -410,11 +415,7 @@ public static class DisabledStartupStore
     {
         try
         {
-            var dir = Path.GetDirectoryName(FilePath);
-            if (!string.IsNullOrEmpty(dir))
-                Directory.CreateDirectory(dir);
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(items.ToList(),
-                new JsonSerializerOptions { WriteIndented = true }));
+            AtomicFile.WriteAllText(FilePath, JsonSerializer.Serialize(items.ToList(), JsonOptions));
         }
         catch
         {

@@ -204,7 +204,7 @@ public sealed class InstalledProgram
             ? RegistryHive.LocalMachine
             : RegistryHive.CurrentUser;
         var view = Is64Bit ? RegistryView.Registry64 : RegistryView.Registry32;
-        var baseKey = RegistryKey.OpenBaseKey(hive, view);
+        using var baseKey = RegistryKey.OpenBaseKey(hive, view);
         var sub = RegistryPath;
         foreach (var prefix in new[] { "HKEY_LOCAL_MACHINE\\", "HKEY_CURRENT_USER\\" })
         {

@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace CleanRift.Core;
 
@@ -19,6 +20,10 @@ internal static class NativeMethods
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     public static extern bool MoveFileEx(string lpExistingFileName, string? lpNewFileName, uint dwFlags);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern uint GetLongPathName(string lpszShortPath, StringBuilder lpszLongPath,
+        uint cchBuffer);
 
     [DllImport("shell32.dll")]
     public static extern bool IsUserAnAdmin();

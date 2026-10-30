@@ -229,6 +229,9 @@
         <msgUndoTracing>Are you sure you want CleanRift to forget all traced data for this program?</msgUndoTracing>
         <msgUninstallFailed>The uninstallation failed.\nDo you want to remove this program's registry entry and clean up its files?</msgUninstallFailed>
         <msgNoTracedData>This program has no traced data.</msgNoTracedData>
+        <msgPartialRemoval>Some selected items could not be removed. Review the details below.</msgPartialRemoval>
+        <msgPendingReboot>Some files will be removed after the next reboot</msgPendingReboot>
+        <msgChooseExecutable>Please choose an executable file.</msgChooseExecutable>
     </Messages>
     <Misc>
         <btnCancel>Cancel</btnCancel>

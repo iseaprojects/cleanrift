@@ -54,7 +54,9 @@ public sealed class LeftoverTreeControl : UserControl
                 if (File.Exists(item.FullPath))
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                     {
-                        FileName = "explorer.exe",
+                        FileName = Path.Combine(
+                            Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                            "explorer.exe"),
                         Arguments = "/select,\"" + item.FullPath + "\"",
                         UseShellExecute = true
                     });
@@ -83,28 +85,37 @@ public sealed class LeftoverTreeControl : UserControl
     public new void Load(ScanResult scan)
     {
         _scan = scan;
+        _updating = true;
         _tree.BeginUpdate();
-        _tree.Nodes.Clear();
-        _map.Clear();
+        try
+        {
+            _tree.Nodes.Clear();
+            _map.Clear();
 
-        var fsNode = _tree.Nodes.Add(LanguageManager.Instance.F("UninstallWizard/treeItemFileSystem",
-            scan.FileSystemRoot.Children.Sum(c => c.TotalCount)));
-        fsNode.ImageKey = fsNode.SelectedImageKey = "folder";
-        fsNode.Tag = scan.FileSystemRoot;
-        fsNode.Checked = true;
-        foreach (var child in scan.FileSystemRoot.Children)
-            AddNode(fsNode, child);
+            var fsNode = _tree.Nodes.Add(LanguageManager.Instance.F("UninstallWizard/treeItemFileSystem",
+                scan.FileSystemRoot.Children.Sum(c => c.TotalCount)));
+            fsNode.ImageKey = fsNode.SelectedImageKey = "folder";
+            fsNode.Tag = scan.FileSystemRoot;
+            fsNode.Checked = true;
+            foreach (var child in scan.FileSystemRoot.Children)
+                AddNode(fsNode, child);
 
-        var regNode = _tree.Nodes.Add(LanguageManager.Instance.F("UninstallWizard/treeItemRegistry",
-            scan.RegistryRoot.Children.Sum(c => c.TotalCount)));
-        regNode.ImageKey = regNode.SelectedImageKey = "key";
-        regNode.Tag = scan.RegistryRoot;
-        regNode.Checked = true;
-        foreach (var child in scan.RegistryRoot.Children)
-            AddNode(regNode, child);
+            var regNode = _tree.Nodes.Add(LanguageManager.Instance.F("UninstallWizard/treeItemRegistry",
+                scan.RegistryRoot.Children.Sum(c => c.TotalCount)));
+            regNode.ImageKey = regNode.SelectedImageKey = "key";
+            regNode.Tag = scan.RegistryRoot;
+            regNode.Checked = true;
+            foreach (var child in scan.RegistryRoot.Children)
+                AddNode(regNode, child);
 
-        _tree.ExpandAll();
-        _tree.EndUpdate();
+            _tree.ExpandAll();
+        }
+        finally
+        {
+            _tree.EndUpdate();
+            _updating = false;
+        }
+
         SummaryChanged?.Invoke();
     }
 

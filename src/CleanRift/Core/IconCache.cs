@@ -151,9 +151,19 @@ public sealed class IconCache : IDisposable
                 {
                     using var icon = Icon.FromHandle(handle);
                     var clone = (Icon)icon.Clone();
-                    NativeMethods.DestroyIcon(handle);
+                    // ExtractIconEx may fill both arrays; both handles belong
+                    // to the caller and must be released.
+                    if (large[0] != IntPtr.Zero)
+                        NativeMethods.DestroyIcon(large[0]);
+                    if (small[0] != IntPtr.Zero)
+                        NativeMethods.DestroyIcon(small[0]);
                     return clone;
                 }
+
+                if (large[0] != IntPtr.Zero)
+                    NativeMethods.DestroyIcon(large[0]);
+                if (small[0] != IntPtr.Zero)
+                    NativeMethods.DestroyIcon(small[0]);
             }
         }
         catch

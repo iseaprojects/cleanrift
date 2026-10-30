@@ -49,19 +49,27 @@ public sealed class UninstallRunner
 
             if (program.IsStoreApp)
             {
-                // Store packages are removed through PowerShell; the command is
-                // already a complete powershell.exe invocation.
-                fileName = "powershell.exe";
-                arguments = "-NoLogo -NoProfile -WindowStyle Hidden -Command \"" +
-                            commandLine.Replace("\"", "\\\"") + "\"";
-                if (commandLine.StartsWith("powershell", StringComparison.OrdinalIgnoreCase))
+                // Store packages are removed through PowerShell. Extract the
+                // inner command instead of nesting the whole invocation, and
+                // strip the quotes that came from the registered UninstallString.
+                fileName = ProcessUtil.PowerShellPath;
+                var inner = commandLine.Trim();
+                var idx = inner.IndexOf("Get-AppxPackage", StringComparison.OrdinalIgnoreCase);
+                if (idx > 0)
+                    inner = inner[idx..];
+                if (inner.Length >= 2 && inner[0] == '"' && inner[^1] == '"')
+                    inner = inner[1..^1];
+                else if (inner.EndsWith('"'))
+                    inner = inner[..^1];
+                inner = inner.Trim();
+                if (inner.Length == 0)
                 {
-                    // Extract the command after powershell switches.
-                    var idx = commandLine.IndexOf("Get-AppxPackage", StringComparison.OrdinalIgnoreCase);
-                    if (idx > 0)
-                        arguments = "-NoLogo -NoProfile -WindowStyle Hidden -Command \"" +
-                                    commandLine[idx..] + "\"";
+                    outcome.Error = "Invalid Microsoft Store removal command.";
+                    return outcome;
                 }
+
+                arguments = "-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden " +
+                            "-Command \"" + inner.Replace("\"", "\\\"") + "\"";
             }
 
             var psi = new ProcessStartInfo
@@ -126,15 +134,15 @@ public sealed class UninstallRunner
                     continue;
                 }
 
-                var children = GetLiveChildren(process.Id);
-                if (children.Count == 0 && !graceGiven && DateTime.UtcNow - rootExitedAt < TimeSpan.FromSeconds(2))
+                var liveChildren = CountLiveChildren(process.Id);
+                if (liveChildren == 0 && !graceGiven && DateTime.UtcNow - rootExitedAt < TimeSpan.FromSeconds(2))
                 {
                     // Some uninstallers spawn a detached child right before exiting.
                     Thread.Sleep(600);
                     continue;
                 }
 
-                if (children.Count == 0)
+                if (liveChildren == 0)
                 {
                     graceGiven = true;
                     break;
@@ -166,6 +174,9 @@ public sealed class UninstallRunner
                 // ignore
             }
 
+            lock (_running)
+                _running.Remove(process);
+            process.Dispose();
             return outcome;
         }
         catch (Exception ex)
@@ -182,29 +193,34 @@ public sealed class UninstallRunner
             foreach (var process in _running.ToList())
             {
                 try { ProcessUtil.KillTree(process.Id); } catch { }
+                finally { process.Dispose(); }
             }
 
             _running.Clear();
         }
     }
 
-    private static List<Process> GetLiveChildren(int pid)
+    private static int CountLiveChildren(int pid)
     {
-        var result = new List<Process>();
+        var count = 0;
         foreach (var process in ProcessUtil.GetProcessTree(pid))
         {
             try
             {
                 if (!process.HasExited && process.Id != pid)
-                    result.Add(process);
+                    count++;
             }
             catch
             {
                 // ignore
             }
+            finally
+            {
+                process.Dispose();
+            }
         }
 
-        return result;
+        return count;
     }
 
     public static string BuildCommandLine(InstalledProgram program, bool quiet)
@@ -216,7 +232,12 @@ public sealed class UninstallRunner
         if (program.IsStoreApp)
         {
             if (string.IsNullOrWhiteSpace(raw))
-                return $"-WindowStyle Hidden \"Get-AppxPackage -name {program.PackageFullName} | Remove-AppxPackage\"";
+            {
+                var package = (program.PackageFullName ?? "").Replace("'", "''");
+                return "-WindowStyle Hidden \"Get-AppxPackage -name '" + package +
+                       "' | Remove-AppxPackage\"";
+            }
+
             return raw;
         }
 

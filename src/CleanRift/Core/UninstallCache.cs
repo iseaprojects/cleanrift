@@ -26,6 +26,8 @@ public static class UninstallCache
         {
             if (!File.Exists(FilePath))
                 return null;
+            if (new FileInfo(FilePath).Length > 32 * 1024 * 1024)
+                return null;
 
             var bytes = File.ReadAllBytes(FilePath);
             if (bytes.Length <= Magic.Length)
@@ -43,7 +45,8 @@ public static class UninstallCache
                 return null;
             if (cache.Machine != Environment.MachineName)
                 return null;
-            if (DateTime.UtcNow - cache.SavedUtc > MaxAge)
+            var age = DateTime.UtcNow - cache.SavedUtc;
+            if (age < TimeSpan.Zero || age > MaxAge)
                 return null;
 
             return cache.Entries.Select(ToProgram).ToList();
@@ -76,7 +79,7 @@ public static class UninstallCache
             var directory = Path.GetDirectoryName(FilePath);
             if (!string.IsNullOrEmpty(directory))
                 Directory.CreateDirectory(directory);
-            File.WriteAllBytes(FilePath, payload);
+            AtomicFile.WriteAllBytes(FilePath, payload);
         }
         catch
         {

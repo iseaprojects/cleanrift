@@ -37,6 +37,7 @@ public sealed class LeftoverScanner
         var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var seenKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var names = BuildNameVariants(program);
+        var strongNames = BuildDisplayNameVariants(program);
 
         Progress?.Invoke(LanguageManager.Instance.T("UninstallWizard/statusScanning",
             "Scanning for leftover files, folders and registry items..."));
@@ -88,7 +89,7 @@ public sealed class LeftoverScanner
         // 3. Folders matching the product/publisher name.
         try
         {
-            foreach (var candidate in FindMatchingFolders(program, names, token))
+            foreach (var candidate in FindMatchingFolders(program, names, strongNames, token))
             {
                 token.ThrowIfCancellationRequested();
                 AddFileRoot(result, seenPaths, candidate, traced: false);
@@ -124,7 +125,7 @@ public sealed class LeftoverScanner
         // 5. Registry.
         try
         {
-            ScanRegistry(program, names, result, seenKeys, token);
+            ScanRegistry(program, names, strongNames, result, seenKeys, token);
         }
         catch (OperationCanceledException)
         {
@@ -144,6 +145,29 @@ public sealed class LeftoverScanner
 
     public static List<string> BuildNameVariants(InstalledProgram program)
     {
+        var variants = BuildDisplayNameVariants(program);
+        void Add(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return;
+            var cleaned = CleanName(value);
+            if (cleaned.Length >= 2)
+                variants.Add(cleaned);
+        }
+
+        var publisher = program.Publisher ?? "";
+        Add(publisher);
+        Add(publisher.Replace(" Corporation", "").Replace(" Inc.", "").Replace(" Ltd.", ""));
+
+        return variants.Where(v => v.Length >= 2).ToList();
+    }
+
+    /// <summary>
+    /// Variants derived from the product itself (not from the publisher).
+    /// Only these may match a whole top-level folder or registry key.
+    /// </summary>
+    public static List<string> BuildDisplayNameVariants(InstalledProgram program)
+    {
         var variants = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         void Add(string? value)
         {
@@ -154,13 +178,12 @@ public sealed class LeftoverScanner
                 variants.Add(cleaned);
         }
 
-        Add(program.DisplayName);
-        Add(Regex.Replace(program.DisplayName, @"\s*\(.*?\)\s*$", ""));
-        Add(Regex.Replace(program.DisplayName, @"\s+v?\d+(\.\d+)*.*$", ""));
-        Add(Regex.Replace(program.DisplayName, @"\s+(x64|x86|64-bit|32-bit|64 bit|32 bit)$", "",
+        var display = program.DisplayName ?? "";
+        Add(display);
+        Add(Regex.Replace(display, @"\s*\(.*?\)\s*$", ""));
+        Add(Regex.Replace(display, @"\s+v?\d+(\.\d+)*.*$", ""));
+        Add(Regex.Replace(display, @"\s+(x64|x86|64-bit|32-bit|64 bit|32 bit)$", "",
             RegexOptions.IgnoreCase));
-        Add(program.Publisher);
-        Add(program.Publisher.Replace(" Corporation", "").Replace(" Inc.", "").Replace(" Ltd.", ""));
 
         if (!string.IsNullOrWhiteSpace(program.InstallLocation))
         {
@@ -187,7 +210,7 @@ public sealed class LeftoverScanner
     }
 
     private IEnumerable<string> FindMatchingFolders(InstalledProgram program, List<string> names,
-        CancellationToken token)
+        List<string> strongNames, CancellationToken token)
     {
         var found = new List<string>();
         var roots = new List<string?>
@@ -227,13 +250,17 @@ public sealed class LeftoverScanner
                 if (ShouldSkipFolder(name))
                     continue;
 
-                if (names.Any(n => NamesMatch(n, name)))
+                var exactFolder = strongNames.Any(n => Normalize(n) == Normalize(name));
+                if (exactFolder)
                 {
                     found.Add(dir);
                     continue;
                 }
 
-                // Publisher folder containing a product folder.
+                // Publisher folder containing a product folder. A fuzzy match on
+                // the umbrella folder itself is not enough: only descend and
+                // target the product subfolder so a shared vendor directory is
+                // never offered for wholesale deletion.
                 try
                 {
                     foreach (var sub in Directory.EnumerateDirectories(dir))
@@ -307,7 +334,7 @@ public sealed class LeftoverScanner
 
                 var target = ShortcutUtil.ResolveTarget(file);
                 if (!string.IsNullOrEmpty(target) && !string.IsNullOrEmpty(installDir) &&
-                    target.StartsWith(installDir, StringComparison.OrdinalIgnoreCase))
+                    IsSameOrUnder(target, installDir))
                 {
                     result.Add(file);
                 }
@@ -317,8 +344,8 @@ public sealed class LeftoverScanner
         return result;
     }
 
-    private void ScanRegistry(InstalledProgram program, List<string> names, ScanResult result,
-        HashSet<string> seenKeys, CancellationToken token)
+    private void ScanRegistry(InstalledProgram program, List<string> names, List<string> strongNames,
+        ScanResult result, HashSet<string> seenKeys, CancellationToken token)
     {
         // The registered uninstall key itself.
         if (!string.IsNullOrWhiteSpace(program.RegistryPath))
@@ -334,7 +361,7 @@ public sealed class LeftoverScanner
                 ScanUninstallEntries(hive, view, program, result, seenKeys, token);
 
                 // Software\<product> and Software\<publisher>\<product>.
-                ScanSoftware(hive, view, names, result, seenKeys);
+                ScanSoftware(hive, view, names, strongNames, result, seenKeys);
 
                 // App Paths.
                 ScanAppPaths(hive, view, program, result, seenKeys);
@@ -451,8 +478,8 @@ public sealed class LeftoverScanner
         }
     }
 
-    private static void ScanSoftware(string hive, RegistryView view, List<string> names, ScanResult result,
-        HashSet<string> seenKeys)
+    private static void ScanSoftware(string hive, RegistryView view, List<string> names,
+        List<string> strongNames, ScanResult result, HashSet<string> seenKeys)
     {
         try
         {
@@ -471,14 +498,17 @@ public sealed class LeftoverScanner
                     sub.Equals("RegisteredApplications", StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                if (names.Any(n => NamesMatch(n, sub)))
+                var exactKey = strongNames.Any(n => Normalize(n) == Normalize(sub));
+                if (exactKey)
                 {
                     AddRegistryRoot(result, seenKeys,
                         $@"{hive}\SOFTWARE\{sub}", traced: false);
                     continue;
                 }
 
-                // One level down: publisher\product.
+                // One level down: publisher\product. Do not remove the whole
+                // top-level key on a fuzzy match; it is often a vendor umbrella
+                // that is shared by several products.
                 try
                 {
                     using var publisher = software.OpenSubKey(sub);
@@ -526,7 +556,7 @@ public sealed class LeftoverScanner
                     if (key == null)
                         continue;
                     var value = key.GetString("").Trim().Trim('"');
-                    if (value.StartsWith(installDir, StringComparison.OrdinalIgnoreCase))
+                    if (IsSameOrUnder(value, installDir))
                     {
                         AddRegistryRoot(result, seenKeys,
                             $@"{hive}\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{sub}", traced: false);
@@ -571,7 +601,7 @@ public sealed class LeftoverScanner
                     if (string.IsNullOrWhiteSpace(data))
                         continue;
                     if (markers.Count == 0 ||
-                        !markers.Any(m => data.Contains(m, StringComparison.OrdinalIgnoreCase)))
+                        !markers.Any(m => ReferencesPath(data, m)))
                         continue;
                     AddRegistryValue(result, seenKeys, $@"{hive}\{path}", name, traced: false);
                 }
@@ -702,7 +732,9 @@ public sealed class LeftoverScanner
         try
         {
             var normalized = keyPath.TrimEnd('\\');
-            if (!seen.Add("K|" + normalized))
+            if (string.IsNullOrWhiteSpace(normalized) ||
+                !seen.Add("K|" + normalized) ||
+                PathSafety.IsProtectedRegistryKey(normalized, out _))
                 return;
 
             var item = new LeftoverItem
@@ -821,8 +853,11 @@ public sealed class LeftoverScanner
         });
     }
 
-    public static (string hive, string subPath)? ParseKeyPath(string fullPath)
+    public static (string hive, string subPath)? ParseKeyPath(string? fullPath)
     {
+        if (string.IsNullOrWhiteSpace(fullPath))
+            return null;
+
         foreach (var hive in new[] { "HKEY_LOCAL_MACHINE", "HKEY_CURRENT_USER", "HKLM", "HKCU" })
         {
             if (!fullPath.StartsWith(hive + "\\", StringComparison.OrdinalIgnoreCase))
@@ -839,33 +874,46 @@ public sealed class LeftoverScanner
         return null;
     }
 
-    private static bool IsProtected(string path)
-    {
-        try
-        {
-            var full = Path.GetFullPath(path).TrimEnd('\\');
-            if (full.Length <= 3)
-                return true;
-            foreach (var root in ProtectedPaths)
-            {
-                if (string.IsNullOrWhiteSpace(root))
-                    continue;
-                if (full.Equals(root.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
-                    return true;
-            }
+    private static bool IsProtected(string path) => PathSafety.IsProtectedPath(path);
 
-            var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            if (!string.IsNullOrEmpty(windows) &&
-                full.StartsWith(windows + "\\", StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-        catch
+    private static bool IsSameOrUnder(string path, string parent)
+    {
+        if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(parent))
+            return false;
+        var full = path.Trim().Trim('"').TrimEnd('\\');
+        var root = parent.Trim().Trim('"').TrimEnd('\\');
+        if (root.Length == 0)
+            return false;
+        return full.Equals(root, StringComparison.OrdinalIgnoreCase) ||
+               full.StartsWith(root + "\\", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Returns true when a command line references the given path as a whole
+    /// path, not merely as a prefix of a different product's path.
+    /// </summary>
+    private static bool ReferencesPath(string command, string path)
+    {
+        var needle = path.Trim().Trim('"').TrimEnd('\\');
+        if (needle.Length < 3)
+            return false;
+
+        var index = 0;
+        while ((index = command.IndexOf(needle, index, StringComparison.OrdinalIgnoreCase)) >= 0)
         {
-            return true;
+            var beforeOk = index == 0 || IsCommandBoundary(command[index - 1]);
+            var end = index + needle.Length;
+            var afterOk = end >= command.Length || IsCommandBoundary(command[end]);
+            if (beforeOk && afterOk)
+                return true;
+            index = end;
         }
 
         return false;
     }
+
+    private static bool IsCommandBoundary(char c) =>
+        c is '"' or '\'' or ' ' or '\t' or ',' or ';' or '=' or '\\' or '\0';
 
     private static bool IsInsideAny(string path, IEnumerable<string> parents)
     {

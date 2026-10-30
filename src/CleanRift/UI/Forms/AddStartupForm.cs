@@ -218,7 +218,8 @@ public sealed class AddStartupForm : Form
         var target = _path.Text.Trim().Trim('"');
         if (string.IsNullOrWhiteSpace(target))
         {
-            MessageDialog.Info(this, Text, "Please choose an executable file.");
+            MessageDialog.Info(this, Text, LanguageManager.Instance.T("Messages/msgChooseExecutable",
+                "Please choose an executable file."));
             return;
         }
 
