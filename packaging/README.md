@@ -42,13 +42,13 @@ key:
 
 ```powershell
 choco apikey --key <your-api-key> --source https://push.chocolatey.org/
-choco push cleanrift.1.0.0-beta3.1.nupkg --source https://push.chocolatey.org/
+choco push cleanrift.1.0.0-beta3-1.nupkg --source https://push.chocolatey.org/
 ```
 
 Once approved, users can install with:
 
 ```powershell
-choco install cleanrift
+choco install cleanrift --pre
 ```
 
 ## Scoop

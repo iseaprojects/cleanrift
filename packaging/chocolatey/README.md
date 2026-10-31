@@ -1,7 +1,7 @@
 # Chocolatey package
 
 Package ID: `cleanrift`
-Version: `1.0.0-beta3.1`
+Version: `1.0.0-beta3-1`
 
 ## Build
 
@@ -9,14 +9,14 @@ Version: `1.0.0-beta3.1`
 choco pack
 ```
 
-This creates `cleanrift.1.0.0-beta3.1.nupkg`.
+This creates `cleanrift.1.0.0-beta3-1.nupkg`.
 
 ## Test
 
 Run in an elevated shell and use a disposable machine or VM:
 
 ```powershell
-choco install cleanrift --source . --yes
+choco install cleanrift --pre --source . --yes
 choco uninstall cleanrift --yes
 ```
 
@@ -27,12 +27,12 @@ account and API key. Never commit the key.
 
 ```powershell
 choco apikey --key <your-api-key> --source https://push.chocolatey.org/
-choco push cleanrift.1.0.0-beta3.1.nupkg --source https://push.chocolatey.org/
+choco push cleanrift.1.0.0-beta3-1.nupkg --source https://push.chocolatey.org/
 ```
 
 The package is submitted for moderation. After approval, users can install
 with:
 
 ```powershell
-choco install cleanrift
+choco install cleanrift --pre
 ```
