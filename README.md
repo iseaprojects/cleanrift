@@ -7,11 +7,39 @@ CleanRift is an independent, open-source project released under the MIT License.
 It is not affiliated with, endorsed by or sponsored by any third-party software
 vendor.
 
+[![build](https://github.com/iseaprojects/cleanrift/actions/workflows/build.yml/badge.svg)](https://github.com/iseaprojects/cleanrift/actions/workflows/build.yml)
+[![release](https://img.shields.io/github/v/release/iseaprojects/cleanrift?include_prereleases&label=release)](https://github.com/iseaprojects/cleanrift/releases)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 > **Beta software.** Removal operations move files and registry entries to
 > quarantine by default and can be restored from Tools → Quarantine and undo.
 > Disable quarantine in Preferences if you want permanent deletion.
 
+## Download
+
+**Latest: [CleanRift 1.0 Beta 3](https://github.com/iseaprojects/cleanrift/releases/tag/v1.0.0-beta.3)** (pre-release)
+
+- [Portable ZIP](https://github.com/iseaprojects/cleanrift/releases/download/v1.0.0-beta.3/CleanRift-1.0-beta3-portable.zip)
+  — unzip and run `CleanRift.exe`; no installation required.
+- [Installer](https://github.com/iseaprojects/cleanrift/releases/download/v1.0.0-beta.3/CleanRift-1.0-beta3-setup.exe)
+  — per-user Inno Setup installer.
+- [SHA-256 checksums](https://github.com/iseaprojects/cleanrift/releases/download/v1.0.0-beta.3/SHA256.txt).
+
+Windows 10/11 x64. The executable is not code-signed yet, so Windows SmartScreen
+may show a warning; verify the checksums above if you prefer.
+
+## Screenshots
+
 ![CleanRift main window](docs/screens/main-light.png)
+
+| Quarantine and undo | Action history |
+| --- | --- |
+| ![Quarantine and undo](docs/screens/quarantine-light.png) | ![Action history](docs/screens/history-light.png) |
+
+![Preferences](docs/screens/preferences-light.png)
+
+Dark theme: [history](docs/screens/history-dark.png) ·
+[quarantine](docs/screens/quarantine-dark.png).
 
 ## Status
 
@@ -61,8 +89,8 @@ Outputs:
 - `artifacts/release/CleanRift-1.0-beta3-portable.zip`
 - `artifacts/release/CleanRift-1.0-beta3-setup.exe` (if `ISCC.exe` is found)
 
-The language XML files are generated from `languages/english.csv` and
-`languages/spanish.csv`:
+The language XML files are generated from `languages/*.csv` (English, Spanish,
+French, German, Italian and Brazilian Portuguese):
 
 ```powershell
 .\tools\Build-Languages.ps1
@@ -86,13 +114,30 @@ Optional switches:
 | `/install_from_task_bar` | Open the Install and Trace page |
 | `/startup_from_task_bar` | Open the Startup page |
 | `/store_apps_from_task_bar` | Open the Microsoft Store page |
+| `/install_and_trace <setup>` | Open Install and Trace with a setup file |
 | `--job <file>` | Apply an elevated removal/startup job |
 
 ## Data and privacy
 
-CleanRift stores settings, traces and cache in `%LOCALAPPDATA%\CleanRift`. It does
-not send telemetry, does not contact a server and does not download updates.
-See [docs/PRIVACY.md](docs/PRIVACY.md).
+CleanRift stores settings, traces, action history and quarantine data in
+`%LOCALAPPDATA%\CleanRift`. It does not send telemetry, does not contact a
+server and does not download updates. See [docs/PRIVACY.md](docs/PRIVACY.md).
+
+## Verify a download
+
+Each release includes `SHA256.txt`. Compare the downloaded file with PowerShell:
+
+```powershell
+Get-FileHash .\CleanRift-1.0-beta3-portable.zip -Algorithm SHA256
+Get-FileHash .\CleanRift-1.0-beta3-setup.exe -Algorithm SHA256
+```
+
+## Contributing and security
+
+Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Please report
+security issues privately through
+[GitHub Security Advisories](https://github.com/iseaprojects/cleanrift/security/advisories/new)
+instead of opening a public issue. See [SECURITY.md](SECURITY.md).
 
 ## Project layout
 
@@ -109,7 +154,8 @@ docs/               design, beta and privacy notes
 
 MIT. See [LICENSE](LICENSE).
 
-“CleanRift” is a working name. Before a public launch, verify that the name and
-domain do not conflict with existing trademarks in your jurisdiction. This
-repository does not contain third-party artwork, icons or language files; the
-icons are drawn by `tools/Build-BrandAssets.ps1` and `AppIcons.cs`.
+“CleanRift” is a working name and has not been trademark-cleared. If you plan to
+redistribute the project commercially, verify that the name and domain do not
+conflict with existing trademarks in your jurisdiction. This repository does
+not contain third-party artwork, icons or language files; the icons are drawn by
+`tools/Build-BrandAssets.ps1` and `AppIcons.cs`.
