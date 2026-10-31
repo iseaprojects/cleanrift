@@ -20,11 +20,14 @@ public sealed class LiveFileMonitor : IDisposable
     private readonly Action<string>? _log;
     private readonly Func<string, bool> _ignored;
 
+    private const int MaxTrackedPaths = 500_000;
+
     private long _created;
     private long _deleted;
     private long _renamed;
     private bool _started;
     private bool _disposed;
+    private bool _truncated;
 
     public LiveFileMonitor(Action<string>? log = null, Func<string, bool>? ignored = null)
     {
@@ -34,6 +37,9 @@ public sealed class LiveFileMonitor : IDisposable
 
     /// <summary>True when at least one watcher lost events (buffer overflow).</summary>
     public bool Overflowed { get; private set; }
+
+    /// <summary>True when the trace hit the in-memory path limit.</summary>
+    public bool Truncated => _truncated;
 
     public long EventCount =>
         Interlocked.Read(ref _created) + Interlocked.Read(ref _deleted) +
@@ -238,6 +244,14 @@ public sealed class LiveFileMonitor : IDisposable
             // newly installed file. Never schedule it for removal.
             if (_baselineFiles.Contains(full) || _baselineFolders.Contains(full))
                 return;
+
+            if (_files.Count + _folders.Count >= MaxTrackedPaths)
+            {
+                if (!_truncated)
+                    _log?.Invoke("Live monitor reached its path limit; using snapshot fallback.");
+                _truncated = true;
+                return;
+            }
 
             if (isDirectory)
                 _folders.Add(full);

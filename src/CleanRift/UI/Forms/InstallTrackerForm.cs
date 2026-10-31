@@ -442,10 +442,11 @@ public sealed class InstallTrackerForm : Form
 
             StopLiveStatus();
             live.Stop();
-            var liveComplete = liveRoots == roots.Count && !live.Overflowed;
+            var liveComplete = liveRoots == roots.Count && !live.Overflowed && !live.Truncated;
             AppendLog($"Live monitor: {live.EventCount} events, {live.FileCount} new files, " +
                       $"{live.FolderCount} new folders, {liveRoots} roots" +
-                      (live.Overflowed ? " (buffer overflow; snapshot fallback merged)" : ""));
+                      (live.Overflowed ? " (buffer overflow; snapshot fallback merged)" : "") +
+                      (live.Truncated ? " (path limit reached; snapshot fallback merged)" : ""));
 
             token.ThrowIfCancellationRequested();
             AppendLog($"Setup finished with exit code {exitCode}");
