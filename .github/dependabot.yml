@@ -16,6 +16,9 @@ updates:
       application-dependencies:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Test dependencies.
   - package-ecosystem: "nuget"
@@ -32,6 +35,9 @@ updates:
       test-dependencies:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # GitHub Actions used by the build workflow.
   - package-ecosystem: "github-actions"
@@ -48,3 +54,6 @@ updates:
       github-actions:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
