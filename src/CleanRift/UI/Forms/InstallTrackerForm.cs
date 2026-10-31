@@ -7,9 +7,10 @@ using CleanRift.UI.Controls;
 namespace CleanRift.UI.Forms;
 
 /// <summary>
-/// Install and Trace. CleanRift takes a before/after snapshot of the usual
-/// installation roots and stores the difference as trace data, which the
-/// Removal Wizard consumes later.
+/// Install and Trace. CleanRift watches the usual installation roots in real
+/// time while the setup runs and combines those events with a before/after
+/// snapshot (registry and fallback). The result is trace data consumed by the
+/// Removal Wizard later.
 /// </summary>
 public sealed class InstallTrackerForm : Form
 {
@@ -26,6 +27,7 @@ public sealed class InstallTrackerForm : Form
     private readonly InstallTracker _tracker = new();
     private readonly ProgramScanner _scanner = new();
     private readonly List<string> _log = new();
+    private readonly System.Windows.Forms.Timer _liveTimer = new() { Interval = 500 };
 
     private readonly Label _headerLabel;
     private readonly Label _subHeader;
@@ -43,6 +45,7 @@ public sealed class InstallTrackerForm : Form
     private readonly Button _cancel;
 
     private CancellationTokenSource? _cts;
+    private LiveFileMonitor? _live;
     private bool _closeAfterCancel;
     private TraceInfo? _trace;
     private Phase _phase = Phase.Setup;
@@ -109,13 +112,13 @@ public sealed class InstallTrackerForm : Form
         var pathLabel = new Label
         {
             Text = lang.T("InstallTracker/staticPathToProgram", "Path to a setup file (.exe, .msi):"),
-            Location = new Point(0, 0),
+            Location = new Point(16, 4),
             AutoSize = true
         };
         _path = new TextBox
         {
-            Location = new Point(0, 20),
-            Width = _pathHost.ClientSize.Width,
+            Location = new Point(16, 22),
+            Width = Math.Max(80, _pathHost.ClientSize.Width - 32),
             BorderStyle = BorderStyle.FixedSingle
         };
         _browse = new Button
@@ -128,8 +131,8 @@ public sealed class InstallTrackerForm : Form
         _pathHost.Controls.AddRange(new Control[] { pathLabel, _path, _browse });
         _pathHost.Resize += (_, _) =>
         {
-            _browse.Location = new Point(_pathHost.ClientSize.Width - 16 - _browse.Width, 19);
-            _path.Width = Math.Max(80, _browse.Left - 8);
+            _browse.Location = new Point(_pathHost.ClientSize.Width - 16 - _browse.Width, 21);
+            _path.Width = Math.Max(80, _browse.Left - 8 - 16);
         };
 
         var tips = new Panel { Dock = DockStyle.Top, Height = 120, Padding = new Padding(18, 2, 16, 4) };
@@ -276,6 +279,13 @@ public sealed class InstallTrackerForm : Form
         _revert.Click += (_, _) => RevertChanges();
 
         _tracker.Log += text => AppendLog(text);
+        _liveTimer.Tick += (_, _) =>
+        {
+            if (_live == null || _phase != Phase.Working)
+                return;
+            _statusLabel.Text = LanguageManager.Instance.F("InstallTracker/statusLiveTracking",
+                "Watching for changes... %u events", _live.EventCount);
+        };
         FormClosing += OnFormClosing;
         Theme.ApplyDialogTheme(this);
         Shown += (_, _) => _path.Focus();
@@ -286,6 +296,17 @@ public sealed class InstallTrackerForm : Form
         base.OnHandleCreated(e);
         Theme.ApplyDarkTitleBar(this);
         Theme.ApplyDarkInputThemes(this);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _liveTimer.Stop();
+            _liveTimer.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     private void LayoutButtons()
@@ -378,7 +399,8 @@ public sealed class InstallTrackerForm : Form
 
         try
         {
-            _statusLabel.Text = "Indexing the system before installation...";
+            _statusLabel.Text = LanguageManager.Instance.T("InstallTracker/logIndexingBefore",
+                "Indexing the system before installation...");
             var beforePrograms = await Task.Run(() => _scanner.Scan(includeStore: false, token), token);
             var before = await Task.Run(() => _tracker.TakeSnapshot(token), token);
             token.ThrowIfCancellationRequested();
@@ -388,9 +410,42 @@ public sealed class InstallTrackerForm : Form
             _statusLabel.Text = LanguageManager.Instance.T("InstallTracker/logTrackingStarting",
                 "Starting the setup program...");
 
+            // Real-time filesystem tracking starts only after the baseline, so
+            // indexing noise is not attributed to the installer.
+            using var live = new LiveFileMonitor(text => AppendLog(text));
+            var roots = InstallTracker.FileRoots().ToList();
+            var liveRoots = live.Start(roots, before);
+            if (liveRoots == 0)
+            {
+                AppendLog("Warning: no filesystem roots could be watched; using snapshot only.");
+            }
+            else
+            {
+                _live = live;
+                _liveTimer.Start();
+            }
+
             var exitCode = await Task.Run(() => _tracker.RunSetup(path, token), token);
             if (exitCode == null)
                 throw new OperationCanceledException(token);
+
+            // Give FileSystemWatcher a moment to drain the last events emitted
+            // just before the setup process tree exited.
+            try
+            {
+                await Task.Delay(350, token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Stop below still flushes what has already arrived.
+            }
+
+            StopLiveStatus();
+            live.Stop();
+            var liveComplete = liveRoots == roots.Count && !live.Overflowed;
+            AppendLog($"Live monitor: {live.EventCount} events, {live.FileCount} new files, " +
+                      $"{live.FolderCount} new folders, {liveRoots} roots" +
+                      (live.Overflowed ? " (buffer overflow; snapshot fallback merged)" : ""));
 
             token.ThrowIfCancellationRequested();
             AppendLog($"Setup finished with exit code {exitCode}");
@@ -398,10 +453,14 @@ public sealed class InstallTrackerForm : Form
                 "Analyzing installation, please wait...");
             _phase = Phase.Analyzing;
 
-            var after = await Task.Run(() => _tracker.TakeSnapshot(token), token);
+            var after = await Task.Run(
+                () => _tracker.TakeSnapshot(token, includeFiles: !liveComplete), token);
             token.ThrowIfCancellationRequested();
+            if (!liveComplete)
+                AppendLog("Final filesystem snapshot used because real-time coverage was incomplete.");
 
             var diff = _tracker.Diff(before, after);
+            live.MergeInto(diff);
             AppendLog($"Detected {diff.Folders.Count} folders, {diff.Files.Count} files, " +
                       $"{diff.RegistryKeys.Count} keys and {diff.RegistryValues.Count} registry values");
             if (before.Truncated || after.Truncated)
@@ -421,7 +480,8 @@ public sealed class InstallTrackerForm : Form
                 return;
             }
 
-            _statusLabel.Text = "Detecting installation entries...";
+            _statusLabel.Text = LanguageManager.Instance.T("InstallTracker/logDetectingEntries",
+                "Detecting installation entries...");
             var afterPrograms = await Task.Run(() => _scanner.Scan(includeStore: false, token), token);
             var beforeIds = beforePrograms.Select(p => p.Id)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -458,6 +518,7 @@ public sealed class InstallTrackerForm : Form
 
             var id = target?.Id ?? "custom:" + Guid.NewGuid().ToString("N");
             var display = target?.DisplayName ?? customName;
+            InstallTracker.AddCustomInstallLocation(diff, target?.InstallLocation, before.TakenUtc);
             var built = _tracker.BuildTrace(diff, id, display);
             TraceStore.Save(built);
             _trace = built;
@@ -467,6 +528,7 @@ public sealed class InstallTrackerForm : Form
         }
         catch (OperationCanceledException)
         {
+            StopLiveStatus();
             AppendLog(LanguageManager.Instance.T("InstallTracker/logTrackingStoppedByUser",
                 "Tracing is stopped by user"));
             _statusLabel.Text = LanguageManager.Instance.T("InstallTracker/logTrackingStoppedByUser",
@@ -486,6 +548,7 @@ public sealed class InstallTrackerForm : Form
         }
         catch (Exception ex)
         {
+            StopLiveStatus();
             AppendLog("Error: " + ex.Message);
             _statusLabel.Text = "Error: " + ex.Message;
             RestoreWindow();
@@ -506,6 +569,7 @@ public sealed class InstallTrackerForm : Form
 
     private void Finish(bool keepTrace = true)
     {
+        StopLiveStatus();
         _working = false;
         _phase = Phase.Done;
         _cts?.Dispose();
@@ -736,6 +800,12 @@ public sealed class InstallTrackerForm : Form
         }
     }
 
+    private void StopLiveStatus()
+    {
+        _liveTimer.Stop();
+        _live = null;
+    }
+
     private void AppendLog(string text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -751,9 +821,20 @@ public sealed class InstallTrackerForm : Form
         }
 
         if (IsHandleCreated && InvokeRequired)
-            BeginInvoke((Action)Add);
+        {
+            try
+            {
+                BeginInvoke((Action)Add);
+            }
+            catch
+            {
+                // The form closed while a background event was arriving.
+            }
+        }
         else
+        {
             Add();
+        }
     }
 
     private void OnFormClosing(object? sender, FormClosingEventArgs e)
@@ -764,7 +845,8 @@ public sealed class InstallTrackerForm : Form
         var confirm = MessageDialog.Confirm(this,
             LanguageManager.Instance.T("InstallTracker/InstallTrackerLocalizedName", "Install Tracker"),
             LanguageManager.Instance.T("InstallTracker/btnStop", "Stop"),
-            "Tracing is still running. Stop tracing and close the window?");
+            LanguageManager.Instance.T("InstallTracker/staticCloseWhileTracing",
+                "Tracing is still running. Stop tracing and close the window?"));
         if (confirm.Result != DialogResult.Yes)
         {
             e.Cancel = true;

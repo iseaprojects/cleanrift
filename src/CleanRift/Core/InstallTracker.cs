@@ -31,10 +31,11 @@ public sealed class SnapshotDiff
 }
 
 /// <summary>
-/// Install and Trace implementation. CleanRift compares before/after snapshots
-/// of the usual installation roots and stores the difference as trace data,
-/// which the Removal Wizard consumes later. It does not load a kernel driver.
-/// rest of the application consumes.
+/// Install and Trace implementation. Filesystem changes are captured in real
+/// time by <see cref="LiveFileMonitor"/> while the setup program runs, and
+/// before/after snapshots provide the registry difference and a fallback for
+/// roots that cannot be watched. The result is stored as trace data consumed
+/// by the Removal Wizard. No kernel driver is loaded.
 /// </summary>
 public sealed class InstallTracker
 {
@@ -44,7 +45,8 @@ public sealed class InstallTracker
 
     public event Action<string>? Log;
 
-    public InstallSnapshot TakeSnapshot(CancellationToken token, TimeSpan? maxDuration = null)
+    public InstallSnapshot TakeSnapshot(CancellationToken token, TimeSpan? maxDuration = null,
+        bool includeFiles = true)
     {
         var snapshot = new InstallSnapshot();
         var deadline = DateTime.UtcNow + (maxDuration ?? TimeSpan.FromSeconds(90));
@@ -64,21 +66,25 @@ public sealed class InstallTracker
             SnapshotRegistry(hive, view, path, snapshot, token, deadline, depth: 0);
         }
 
-        foreach (var root in FileRoots())
+        if (includeFiles)
         {
-            if (token.IsCancellationRequested || DateTime.UtcNow > deadline)
+            foreach (var root in FileRoots())
             {
-                snapshot.Truncated = true;
-                break;
-            }
+                if (token.IsCancellationRequested || DateTime.UtcNow > deadline)
+                {
+                    snapshot.Truncated = true;
+                    break;
+                }
 
-            Log?.Invoke("Indexing " + root);
-            SnapshotDirectory(root, snapshot, token, deadline);
-            Log?.Invoke($"  {root}: {snapshot.Files.Count} files, {snapshot.Folders.Count} folders so far");
+                Log?.Invoke("Indexing " + root);
+                SnapshotDirectory(root, snapshot, token, deadline);
+                Log?.Invoke($"  {root}: {snapshot.Files.Count} files, {snapshot.Folders.Count} folders so far");
+            }
         }
 
         snapshot.TakenUtc = DateTime.UtcNow;
-        Log?.Invoke($"Snapshot finished in {(int)(DateTime.UtcNow - started).TotalSeconds}s: " +
+        Log?.Invoke((includeFiles ? "Snapshot" : "Registry-only snapshot") +
+                    $" finished in {(int)(DateTime.UtcNow - started).TotalSeconds}s: " +
                     $"{snapshot.Files.Count} files, {snapshot.Folders.Count} folders, " +
                     $"{snapshot.Keys.Count} keys, {snapshot.Values.Count} values");
         return snapshot;
@@ -86,6 +92,7 @@ public sealed class InstallTracker
 
     public static IEnumerable<string> FileRoots()
     {
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var list = new List<string?>
         {
             Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
@@ -93,7 +100,14 @@ public sealed class InstallTracker
             Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments)
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments),
+            Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
+            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
+            string.IsNullOrWhiteSpace(userProfile)
+                ? null
+                : Path.Combine(userProfile, "AppData", "LocalLow")
         };
 
         return list.Where(p => !string.IsNullOrWhiteSpace(p) && Directory.Exists(p))
@@ -106,11 +120,14 @@ public sealed class InstallTracker
         yield return ("HKEY_LOCAL_MACHINE", RegistryView.Registry64, "SOFTWARE");
         yield return ("HKEY_LOCAL_MACHINE", RegistryView.Registry32, "SOFTWARE");
         yield return ("HKEY_CURRENT_USER", RegistryView.Registry64, "SOFTWARE");
+        yield return ("HKEY_CURRENT_USER", RegistryView.Registry32, "SOFTWARE");
         yield return ("HKEY_LOCAL_MACHINE", RegistryView.Registry64,
             @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
         yield return ("HKEY_LOCAL_MACHINE", RegistryView.Registry32,
             @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
         yield return ("HKEY_CURRENT_USER", RegistryView.Registry64,
+            @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
+        yield return ("HKEY_CURRENT_USER", RegistryView.Registry32,
             @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
         yield return ("HKEY_LOCAL_MACHINE", RegistryView.Registry64,
             @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths");
@@ -334,21 +351,22 @@ public sealed class InstallTracker
         {
             if (before.Folders.Contains(folder))
                 continue;
-            if (IsNoise(folder))
+            if (IsNoisePath(folder))
                 continue;
             diff.Folders.Add(folder);
         }
 
         foreach (var file in after.Files)
         {
-            if (before.Files.Contains(file) || IsNoise(file))
+            if (before.Files.Contains(file) || IsNoisePath(file))
                 continue;
             diff.Files.Add(file);
         }
 
         foreach (var key in after.Keys)
         {
-            if (before.Keys.Contains(key) || IsNoiseRegistry(key))
+            if (before.Keys.Contains(key) || IsNoiseRegistry(key) ||
+                PathSafety.IsProtectedRegistryKey(key, out _))
                 continue;
             diff.RegistryKeys.Add(key);
         }
@@ -360,6 +378,11 @@ public sealed class InstallTracker
                 after.ValueData.TryGetValue(value, out var newHash) && oldHash == newHash)
                 continue;
             if (IsNoiseRegistry(value))
+                continue;
+
+            var valueKey = value.Split('\u0001', 2);
+            if (valueKey.Length == 2 &&
+                PathSafety.IsProtectedRegistryKey(valueKey[0], forValue: true, out _))
                 continue;
             var split = value.Split('\u0001', 2);
             if (split.Length != 2)
@@ -374,27 +397,74 @@ public sealed class InstallTracker
         return diff;
     }
 
-    private static bool IsNoise(string path)
+    private static readonly string[] NoiseSegments =
+    {
+        "node_modules", "Package Cache", "WindowsApps", "$Recycle.Bin", "Temp",
+        "Packages", "Microsoft", "Google", "Mozilla", "Cache", "Caches",
+        "Code Cache", "GPUCache", "ShaderCache", ".git", "CleanRift",
+        "Common Files", "Windows Defender", "Windows NT", "System32", "SysWOW64"
+    };
+
+    private static readonly string[] ShellRoots =
+    {
+        Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+        Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
+        Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+        Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu)
+    };
+
+    public static bool IsNoisePath(string path)
     {
         try
         {
-            var appDir = AppContext.BaseDirectory.TrimEnd('\\');
-            if (path.StartsWith(appDir, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(path))
                 return true;
+
+            var full = Path.GetFullPath(path);
+            var appDir = Path.GetFullPath(AppContext.BaseDirectory).TrimEnd('\\');
+            if (full.StartsWith(appDir + "\\", StringComparison.OrdinalIgnoreCase) ||
+                full.Equals(appDir, StringComparison.OrdinalIgnoreCase))
+                return true;
+
             // Never include CleanRift's own data folder in a trace: it contains
             // preferences, cache, logs and the trace files themselves.
-            var traceDir = TraceStore.TraceDirectory.TrimEnd('\\');
-            if (path.StartsWith(traceDir + "\\", StringComparison.OrdinalIgnoreCase))
+            var traceDir = Path.GetFullPath(TraceStore.TraceDirectory).TrimEnd('\\');
+            if (full.StartsWith(traceDir + "\\", StringComparison.OrdinalIgnoreCase) ||
+                full.Equals(traceDir, StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (path.Contains(@"\Microsoft\Windows\Explorer\", StringComparison.OrdinalIgnoreCase))
+
+            if (full.StartsWith(Path.GetTempPath().TrimEnd('\\') + "\\",
+                    StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (path.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase) &&
-                path.Contains(@"\Temp\", StringComparison.OrdinalIgnoreCase))
+
+            if (full.Contains(@"\Microsoft\Windows\Explorer\", StringComparison.OrdinalIgnoreCase))
                 return true;
+
+            // Desktop and Start Menu are tracked only for shortcuts. A document
+            // the user creates there while setup runs is not an installed file.
+            var shellRoot = ShellRoots.FirstOrDefault(root =>
+                !string.IsNullOrWhiteSpace(root) &&
+                (full.StartsWith(root.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase) ||
+                 full.Equals(root.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase)));
+            if (shellRoot != null && !Directory.Exists(full) &&
+                !full.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase) &&
+                !full.EndsWith(".url", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (PathSafety.IsProtectedPath(full))
+                return true;
+
+            var parts = full.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            foreach (var part in parts)
+            {
+                if (NoiseSegments.Contains(part, StringComparer.OrdinalIgnoreCase))
+                    return true;
+            }
         }
         catch
         {
-            // ignore
+            // If the path cannot be inspected, keep it out of the trace.
+            return true;
         }
 
         return false;
@@ -418,6 +488,42 @@ public sealed class InstallTracker
         return false;
     }
 
+    /// <summary>
+    /// Adds a newly created install directory that lives outside the usual
+    /// snapshot roots (for example D:\Apps\Product). Existing directories are
+    /// never added, so an update installation cannot erase its own folder.
+    /// </summary>
+    public static void AddCustomInstallLocation(SnapshotDiff diff, string? location,
+        DateTime notBeforeUtc)
+    {
+        if (string.IsNullOrWhiteSpace(location))
+            return;
+
+        try
+        {
+            var dir = Path.GetFullPath(location.Trim().Trim('"')).TrimEnd('\\');
+            if (!Directory.Exists(dir) || PathSafety.IsProtectedPath(dir))
+                return;
+
+            if (FileRoots().Any(root => PathSafety.IsUnder(dir, root)))
+                return;
+
+            if (Directory.GetCreationTimeUtc(dir) < notBeforeUtc.AddMinutes(-1))
+                return;
+
+            if (diff.Folders.Any(folder =>
+                    folder.Equals(dir, StringComparison.OrdinalIgnoreCase) ||
+                    PathSafety.IsUnder(dir, folder)))
+                return;
+
+            diff.Folders.Add(dir);
+        }
+        catch
+        {
+            // A custom install path is a best-effort enhancement.
+        }
+    }
+
     public TraceInfo BuildTrace(SnapshotDiff diff, string id, string displayName)
     {
         var trace = new TraceInfo
@@ -429,7 +535,7 @@ public sealed class InstallTracker
 
         // Only store the outermost new folders; the child files are redundant.
         var folderSet = new HashSet<string>(diff.Folders, StringComparer.OrdinalIgnoreCase);
-        foreach (var folder in diff.Folders)
+        foreach (var folder in folderSet)
         {
             var parent = Path.GetDirectoryName(folder);
             var isNested = false;
@@ -448,7 +554,7 @@ public sealed class InstallTracker
                 trace.Folders.Add(folder);
         }
 
-        foreach (var file in diff.Files)
+        foreach (var file in diff.Files.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             var parent = Path.GetDirectoryName(file);
             var insideFolder = false;
@@ -468,7 +574,7 @@ public sealed class InstallTracker
         }
 
         var keySet = new HashSet<string>(diff.RegistryKeys, StringComparer.OrdinalIgnoreCase);
-        foreach (var key in diff.RegistryKeys)
+        foreach (var key in keySet)
         {
             var isNested = false;
             var index = key.LastIndexOf('\\');
@@ -488,8 +594,12 @@ public sealed class InstallTracker
                 trace.RegistryKeys.Add(key);
         }
 
+        var seenValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var (key, name) in diff.RegistryValues)
-            trace.RegistryValues.Add((key, name));
+        {
+            if (seenValues.Add(key + "\u0001" + name))
+                trace.RegistryValues.Add((key, name));
+        }
 
         return trace;
     }

@@ -755,11 +755,35 @@ public sealed class UninstallWizardForm : Form
     {
         if (string.IsNullOrWhiteSpace(text))
             return;
-        _log.Add($"[{DateTime.Now:HH:mm:ss}] {text}");
-        if (_logBox.IsHandleCreated)
+
+        void Add()
         {
-            _logBox.AppendText(_log[^1] + Environment.NewLine);
-            _logBox.ScrollToCaret();
+            if (_log.Count >= 20_000)
+                return;
+
+            var line = $"[{DateTime.Now:HH:mm:ss}] {text}";
+            _log.Add(line);
+            if (_logBox.IsHandleCreated)
+            {
+                _logBox.AppendText(line + Environment.NewLine);
+                _logBox.ScrollToCaret();
+            }
+        }
+
+        if (IsHandleCreated && InvokeRequired)
+        {
+            try
+            {
+                BeginInvoke((Action)Add);
+            }
+            catch
+            {
+                // The form closed while a background event was arriving.
+            }
+        }
+        else
+        {
+            Add();
         }
     }
 

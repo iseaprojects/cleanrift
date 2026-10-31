@@ -22,7 +22,8 @@ This is the first public beta. The core workflows are implemented:
 - Uninstall a program with its own uninstaller and review leftover files,
   folders and registry keys.
 - Force removal, including batch force removal, with an explicit confirmation.
-- Install and Trace: snapshot an installation and review the changes.
+- Install and Trace: watch an installation in real time, fall back to snapshots
+  when needed, and review the changes (see `docs/TRACKER.md`).
 - Startup manager: Run/RunOnce keys, StartupApproved state and scheduled tasks.
 - HTML export, themes (light/dark/auto), English and Spanish UI.
 - Single instance, UAC elevation, optional SkipUAC scheduled task and jump list.

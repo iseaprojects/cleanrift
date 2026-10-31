@@ -131,6 +131,10 @@
         <staticRevertInfo>La opción Revertir intenta eliminar todos los archivos y claves del registro creados durante el rastreo.</staticRevertInfo>
         <Title>Instalar y rastrear un programa</Title>
         <TitleAppend>Instalar y rastrear; añadir datos a «%s»</TitleAppend>
+        <logIndexingBefore>Indexando el sistema antes de la instalación...</logIndexingBefore>
+        <logDetectingEntries>Detectando entradas de instalación...</logDetectingEntries>
+        <staticCloseWhileTracing>El seguimiento sigue activo. ¿Detener el seguimiento y cerrar la ventana?</staticCloseWhileTracing>
+        <statusLiveTracking>Vigilando cambios... %u eventos</statusLiveTracking>
     </InstallTracker>
     <InstallTrackerCustomEntryDialog>
         <checkCreateCustomEntry>Quiero crear un elemento personalizado en la lista</checkCreateCustomEntry>
