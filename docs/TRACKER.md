@@ -9,15 +9,19 @@ load a kernel driver and does not require a reboot.
 2. CleanRift scans installed programs and takes a baseline snapshot. The
    baseline includes Program Files, ProgramData, AppData/Local,
    AppData/Roaming, AppData/LocalLow, Public Documents, Start Menu and Desktop.
-3. A real-time monitor starts. It uses `FileSystemWatcher`
-   (`ReadDirectoryChangesW`) on those roots and records created/renamed paths.
-   Files created and deleted during setup are removed from the trace.
+3. Two real-time monitors start:
+   - filesystem: `FileSystemWatcher` (`ReadDirectoryChangesW`) records
+     created/renamed paths and drops files deleted during setup;
+   - registry: an ETW kernel registry session records new keys and values.
+     Events are filtered to the setup process tree and the standard MSI
+     workers (`msiexec`, `TrustedInstaller`, `TiWorker`, `dism`).
 4. The setup program runs normally. CleanRift waits for its process tree.
-5. The monitor is stopped. If it covered every root and did not overflow, the
-   final filesystem snapshot is skipped; registry changes still use a
-   before/after snapshot.
-6. If a watcher failed or overflowed, CleanRift performs the full final
-   snapshot and merges it with whatever the live monitor observed.
+5. The monitors are stopped. If the filesystem monitor covered every root and
+   did not overflow, the final filesystem snapshot is skipped. The final
+   registry snapshot is still taken and merged with the ETW events as the
+   authoritative fallback.
+6. If a monitor failed or overflowed, CleanRift performs the full final
+   snapshot and merges it with whatever the live monitors observed.
 7. A newly created install directory outside the standard roots (for example
    `D:\Apps\Product`) is added when its creation time proves it is new.
 
@@ -44,8 +48,9 @@ changes that no longer exist at the end may be missing.
   program writing to the same roots during the installation window can appear
   in the trace. The existing filters remove the common noise, but a busy system
   is still a busy system.
-- Registry data is captured by the before/after snapshot rather than a live
-  registry ETW stream.
+- Registry events are captured with an ETW kernel session when administrator
+  rights are available. The final registry snapshot is still taken as the
+  authoritative fallback, so a dropped ETW event cannot hide a change.
 - A kernel minifilter would give exact process attribution and cannot be
   bypassed by buffer limits, but it requires driver signing and installation.
   That is intentionally out of scope for this beta.

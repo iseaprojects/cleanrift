@@ -17,6 +17,7 @@ Core/
   RemovalEngine       deletes files, folders and registry items
   InstallTracker      real-time filesystem tracing + registry snapshot diff
   LiveFileMonitor     FileSystemWatcher/ReadDirectoryChangesW event collector
+  LiveRegistryMonitor ETW kernel registry event collector
   TraceStore          trace XML read/write
   StartupScanner      Run/RunOnce, StartupApproved, scheduled tasks, Store
   StartupManager      enable/disable/delete/create startup entries
