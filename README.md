@@ -1,6 +1,6 @@
 # CleanRift
 
-**CleanRift 1.0 Beta 3** — a Windows uninstaller that removes programs, reviews
+**CleanRift 1.0 Beta 3.1** — a Windows uninstaller that removes programs, reviews
 their leftovers, traces new installations and manages startup items.
 
 CleanRift is an independent, open-source project released under the MIT License.
@@ -17,13 +17,13 @@ vendor.
 
 ## Download
 
-**Latest: [CleanRift 1.0 Beta 3](https://github.com/iseaprojects/cleanrift/releases/tag/v1.0.0-beta.3)** (beta)
+**Latest: [CleanRift 1.0 Beta 3.1](https://github.com/iseaprojects/cleanrift/releases/tag/v1.0.0-beta.3.1)** (beta)
 
-- [Portable ZIP](https://github.com/iseaprojects/cleanrift/releases/download/v1.0.0-beta.3/CleanRift-1.0-beta3-portable.zip)
+- [Portable ZIP](https://github.com/iseaprojects/cleanrift/releases/download/v1.0.0-beta.3.1/CleanRift-1.0-beta3.1-portable.zip)
   — unzip and run `CleanRift.exe`; no installation required.
-- [Installer](https://github.com/iseaprojects/cleanrift/releases/download/v1.0.0-beta.3/CleanRift-1.0-beta3-setup.exe)
+- [Installer](https://github.com/iseaprojects/cleanrift/releases/download/v1.0.0-beta.3.1/CleanRift-1.0-beta3.1-setup.exe)
   — per-user Inno Setup installer.
-- [SHA-256 checksums](https://github.com/iseaprojects/cleanrift/releases/download/v1.0.0-beta.3/SHA256.txt).
+- [SHA-256 checksums](https://github.com/iseaprojects/cleanrift/releases/download/v1.0.0-beta.3.1/SHA256.txt).
 
 Windows 10/11 x64. The executable is not code-signed yet, so Windows SmartScreen
 may show a warning; verify the checksums above if you prefer.
@@ -43,7 +43,7 @@ Dark theme: [history](docs/screens/history-dark.png) ·
 
 ## Status
 
-This is the third public beta. The core workflows are implemented:
+This is the third public beta, with a small 3.1 patch. The core workflows are implemented:
 
 - Scan installed programs from the registry (32/64-bit), MSI installer data and
   Microsoft Store packages.
@@ -85,9 +85,9 @@ Create the portable package and, when Inno Setup is available, the installer:
 
 Outputs:
 
-- `artifacts/release/CleanRift-1.0-beta3-portable/`
-- `artifacts/release/CleanRift-1.0-beta3-portable.zip`
-- `artifacts/release/CleanRift-1.0-beta3-setup.exe` (if `ISCC.exe` is found)
+- `artifacts/release/CleanRift-1.0-beta3.1-portable/`
+- `artifacts/release/CleanRift-1.0-beta3.1-portable.zip`
+- `artifacts/release/CleanRift-1.0-beta3.1-setup.exe` (if `ISCC.exe` is found)
 
 The language XML files are generated from `languages/*.csv` (English, Spanish,
 French, German, Italian and Brazilian Portuguese):
@@ -128,8 +128,8 @@ server and does not download updates. See [docs/PRIVACY.md](docs/PRIVACY.md).
 Each release includes `SHA256.txt`. Compare the downloaded file with PowerShell:
 
 ```powershell
-Get-FileHash .\CleanRift-1.0-beta3-portable.zip -Algorithm SHA256
-Get-FileHash .\CleanRift-1.0-beta3-setup.exe -Algorithm SHA256
+Get-FileHash .\CleanRift-1.0-beta3.1-portable.zip -Algorithm SHA256
+Get-FileHash .\CleanRift-1.0-beta3.1-setup.exe -Algorithm SHA256
 ```
 
 ## Contributing and security

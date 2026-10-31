@@ -1,4 +1,4 @@
-CLEANRIFT 1.0 BETA 3
+CLEANRIFT 1.0 BETA 3.1
 ==================
 
 CleanRift removes programs completely, helps review the files and registry

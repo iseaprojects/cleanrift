@@ -1,4 +1,4 @@
-# CleanRift 1.0 Beta 3 — scope and known limitations
+# CleanRift 1.0 Beta 3.1 — scope and known limitations
 
 ## What is included
 
@@ -79,7 +79,7 @@ note:
 Include:
 
 1. Windows version and build.
-2. CleanRift version (`1.0 Beta 3`).
+2. CleanRift version (`1.0 Beta 3.1`).
 3. Steps to reproduce.
 4. Whether the app was portable or installed.
 5. Relevant lines from `%LOCALAPPDATA%\CleanRift\error.log` with private paths
