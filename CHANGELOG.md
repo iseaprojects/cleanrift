@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0-beta.3.1 — 2026-10-31
+
+Patch release with dependency updates only:
+
+- Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16 → 3.2.8.
+- Microsoft.NET.Test.Sdk 17.12.0 → 17.14.1.
+- xunit 2.9.2 → 2.9.3.
+
+No functional changes.
+
 ## 1.0.0-beta.3 — 2026-10-30
 
 - Added automatic quarantine cleanup: configurable retention (30 days by

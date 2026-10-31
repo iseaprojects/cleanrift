@@ -4,7 +4,7 @@ namespace CleanRift.Core;
 public static class AppInfo
 {
     public const string Name = "CleanRift";
-    public const string Version = "1.0 Beta 3";
+    public const string Version = "1.0 Beta 3.1";
     public const string DisplayName = Name + " " + Version;
     public const string Company = "CleanRift Project";
     public const string Copyright = "Copyright (c) 2026 CleanRift contributors";
