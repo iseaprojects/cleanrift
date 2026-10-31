@@ -24,7 +24,8 @@ First public beta.
   data and Microsoft Store packages.
 - Standard uninstall, Removal Wizard for leftovers, Force Removal and batch
   Force Removal.
-- Install and Trace with snapshot comparison and trace XML.
+- Install and Trace with real-time filesystem events, registry snapshot diff
+  and trace XML.
 - Startup manager for Run/RunOnce, StartupApproved and scheduled tasks.
 - HTML export for programs and startup items.
 - Light, dark and automatic themes.
