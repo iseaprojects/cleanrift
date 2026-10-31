@@ -11,5 +11,6 @@ TestResults/
 *.pdb
 *.log
 *.zip
+*.nupkg
 *.msi
 *.tmp

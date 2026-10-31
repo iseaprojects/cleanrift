@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0-beta.3.1",
+  "description": "Open-source Windows uninstaller with quarantine and undo.",
+  "homepage": "https://github.com/iseaprojects/cleanrift",
+  "license": "MIT",
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/iseaprojects/cleanrift/releases/download/v1.0.0-beta.3.1/CleanRift-1.0-beta3.1-portable.zip",
+      "hash": "9DAB41BE43DDB03AF330657D03AE212917BB780A9E9CF9625B5299D4D06C4D42"
+    }
+  },
+  "bin": "CleanRift.exe",
+  "shortcuts": [
+    [
+      "CleanRift.exe",
+      "CleanRift"
+    ]
+  ],
+  "notes": [
+    "CleanRift asks for administrator rights when it starts.",
+    "Settings, history and quarantine are stored in %LOCALAPPDATA%\\CleanRift."
+  ]
+}
