@@ -10,10 +10,13 @@ public sealed class RemovalEngineQuarantineTests
     {
         var path = Path.Combine(Path.GetTempPath(),
             "cleanrift-engine-" + Guid.NewGuid().ToString("N") + ".txt");
+        var historyFile = Path.Combine(Path.GetTempPath(),
+            "cleanrift-engine-history-" + Guid.NewGuid().ToString("N") + ".json");
         File.WriteAllText(path, "hello");
 
         var engine = new RemovalEngine(quarantine: true, backupRegistry: false,
-            createRestorePoint: false, description: "unit test");
+            createRestorePoint: false, description: "unit test",
+            history: new ActionHistoryStore(historyFile));
         var result = engine.RemoveItems(new[]
         {
             new RemovalJobItem { Kind = "file", Path = path }
@@ -31,7 +34,10 @@ public sealed class RemovalEngineQuarantineTests
         }
         finally
         {
-            File.Delete(path);
+            if (File.Exists(path))
+                File.Delete(path);
+            if (File.Exists(historyFile))
+                File.Delete(historyFile);
             QuarantineStore.DeleteBatch(result.QuarantineBatchId, out _);
         }
     }

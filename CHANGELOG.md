@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0-beta.3 — 2026-10-30
+
+- Added automatic quarantine cleanup: configurable retention (30 days by
+  default) and a total size limit, with recent batches protected for undo.
+- Added an action history with undo for removals, trace reverts, queue runs and
+  quarantine operations.
+- Added French, German, Italian and Brazilian Portuguese translations.
+- Fixed the count text in the quarantine/history footer and the queue status
+  text.
+
 ## 1.0.0-beta.2 — 2026-10-30
 
 - Added quarantine with restore, registry backups, System Restore points and a

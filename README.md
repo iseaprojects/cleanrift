@@ -1,6 +1,6 @@
 # CleanRift
 
-**CleanRift 1.0 Beta 2** — a Windows uninstaller that removes programs, reviews
+**CleanRift 1.0 Beta 3** — a Windows uninstaller that removes programs, reviews
 their leftovers, traces new installations and manages startup items.
 
 CleanRift is an independent, open-source project released under the MIT License.
@@ -15,7 +15,7 @@ vendor.
 
 ## Status
 
-This is the first public beta. The core workflows are implemented:
+This is the third public beta. The core workflows are implemented:
 
 - Scan installed programs from the registry (32/64-bit), MSI installer data and
   Microsoft Store packages.
@@ -23,13 +23,14 @@ This is the first public beta. The core workflows are implemented:
 - Uninstall queue for several programs, one after another.
 - Review leftover files, folders and registry keys; Force Removal with explicit
   confirmation and a clear preview.
-- Quarantine with undo, registry backups, optional System Restore points
-  (see `docs/SAFETY.md`).
+- Quarantine with undo, registry backups, optional System Restore points,
+  automatic quarantine cleanup and an action history (see `docs/SAFETY.md`).
 - Install and Trace: real-time filesystem and ETW registry monitoring, live
   event list and snapshot fallback (see `docs/TRACKER.md`).
 - Startup manager with an estimated startup-impact column.
 - Optional Explorer “Install and trace” context menu for setup files.
-- HTML export, themes (light/dark/auto), English and Spanish UI.
+- HTML export, themes (light/dark/auto) and six UI languages: English,
+  Spanish, French, German, Italian and Brazilian Portuguese.
 - Single instance, UAC elevation, optional SkipUAC scheduled task and jump list.
 
 Known limitations are listed in [README.txt](src/CleanRift/README.txt) and
@@ -56,9 +57,9 @@ Create the portable package and, when Inno Setup is available, the installer:
 
 Outputs:
 
-- `artifacts/release/CleanRift-1.0-beta2-portable/`
-- `artifacts/release/CleanRift-1.0-beta2-portable.zip`
-- `artifacts/release/CleanRift-1.0-beta2-setup.exe` (if `ISCC.exe` is found)
+- `artifacts/release/CleanRift-1.0-beta3-portable/`
+- `artifacts/release/CleanRift-1.0-beta3-portable.zip`
+- `artifacts/release/CleanRift-1.0-beta3-setup.exe` (if `ISCC.exe` is found)
 
 The language XML files are generated from `languages/english.csv` and
 `languages/spanish.csv`:

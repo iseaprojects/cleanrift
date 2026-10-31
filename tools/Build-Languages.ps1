@@ -6,7 +6,11 @@ $ErrorActionPreference = 'Stop'
 
 $languages = @(
     @{ File = 'english.csv'; Name = 'English'; LangId = 1033; Output = 'English.xml' },
-    @{ File = 'spanish.csv'; Name = ('Espa' + [char]0x00F1 + 'ol'); LangId = 3082; Output = 'Spanish.xml' }
+    @{ File = 'spanish.csv'; Name = ('Espa' + [char]0x00F1 + 'ol'); LangId = 3082; Output = 'Spanish.xml' },
+    @{ File = 'french.csv'; Name = ('Fran' + [char]0x00E7 + 'ais'); LangId = 1036; Output = 'French.xml' },
+    @{ File = 'german.csv'; Name = 'Deutsch'; LangId = 1031; Output = 'German.xml' },
+    @{ File = 'italian.csv'; Name = 'Italiano'; LangId = 1040; Output = 'Italian.xml' },
+    @{ File = 'portuguese.csv'; Name = ('Portugu' + [char]0x00EA + 's (Brasil)'); LangId = 1046; Output = 'Portuguese.xml' }
 )
 
 $outputDir = Join-Path $Root 'src\CleanRift\Languages'

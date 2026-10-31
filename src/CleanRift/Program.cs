@@ -99,6 +99,13 @@ internal static class Program
                     "Install and trace with CleanRift"), out _);
         }
 
+        if (settings.QuarantineAutoClean)
+        {
+            var retentionDays = settings.QuarantineRetentionDays;
+            var maxSizeMb = settings.QuarantineMaxSizeMb;
+            _ = Task.Run(() => QuarantineStore.Cleanup(retentionDays, maxSizeMb));
+        }
+
         // Taskbar jump list: Install and trace / Microsoft Store Apps / Startup.
         if (!string.IsNullOrEmpty(Environment.ProcessPath))
             JumpList.Register(Environment.ProcessPath);

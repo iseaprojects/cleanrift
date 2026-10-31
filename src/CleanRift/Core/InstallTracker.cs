@@ -629,7 +629,8 @@ public sealed class InstallTracker
         settings ??= new AppSettings();
         var engine = new RemovalEngine(settings.QuarantineRemovals,
             settings.BackupRegistry, settings.CreateRestorePoint,
-            "Revert trace: " + trace.DisplayName);
+            "Revert trace: " + trace.DisplayName,
+            historyKind: ActionHistoryKind.Revert);
         return engine.RemoveItems(items, token);
     }
 

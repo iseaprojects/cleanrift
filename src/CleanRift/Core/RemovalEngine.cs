@@ -20,15 +20,24 @@ public sealed class RemovalEngine
     private readonly bool _backupRegistry;
     private readonly bool _createRestorePoint;
     private readonly string _description;
+    private readonly bool _recordHistory;
+    private readonly ActionHistoryKind _historyKind;
+    private readonly ActionHistoryStore _history;
     private QuarantineSession? _session;
 
     public RemovalEngine(bool quarantine = false, bool backupRegistry = false,
-        bool createRestorePoint = false, string description = "")
+        bool createRestorePoint = false, string description = "",
+        bool recordHistory = true,
+        ActionHistoryKind historyKind = ActionHistoryKind.Removal,
+        ActionHistoryStore? history = null)
     {
         _quarantine = quarantine;
         _backupRegistry = backupRegistry;
         _createRestorePoint = createRestorePoint;
         _description = description;
+        _recordHistory = recordHistory;
+        _historyKind = historyKind;
+        _history = history ?? ActionHistory.Default;
     }
 
     public string QuarantineBatchId => _session?.Id ?? "";
@@ -216,6 +225,7 @@ public sealed class RemovalEngine
                 _result.QuarantineBatchId = _session.Id;
         }
 
+        RecordHistory();
         return _result;
     }
 
@@ -288,6 +298,39 @@ public sealed class RemovalEngine
         }
 
         return true;
+    }
+
+    private void RecordHistory()
+    {
+        if (!_recordHistory)
+            return;
+
+        try
+        {
+            JobResult result;
+            lock (_lock)
+                result = _result;
+            if (result.Deleted == 0 && result.Failed == 0 &&
+                result.ScheduledForReboot == 0)
+                return;
+
+            _history.Add(new ActionHistoryEntry
+            {
+                Kind = _historyKind,
+                Title = string.IsNullOrWhiteSpace(_description)
+                    ? "CleanRift removal"
+                    : _description,
+                Deleted = result.Deleted,
+                Failed = result.Failed,
+                ScheduledForReboot = result.ScheduledForReboot,
+                QuarantineBatchId = result.QuarantineBatchId,
+                Errors = result.Errors.Take(20).ToList()
+            });
+        }
+        catch
+        {
+            // History must never break a removal.
+        }
     }
 
     private bool DeleteDirect(RemovalJobItem item, out bool accessDenied)
@@ -628,7 +671,7 @@ public sealed class RemovalEngine
         }
 
         var engine = new RemovalEngine(job.Quarantine, job.BackupRegistry,
-            job.CreateRestorePoint, job.Description);
+            job.CreateRestorePoint, job.Description, recordHistory: false);
         return engine.RemoveItems(job.Items, CancellationToken.None);
     }
 

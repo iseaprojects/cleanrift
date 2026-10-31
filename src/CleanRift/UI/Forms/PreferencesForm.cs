@@ -22,6 +22,9 @@ public sealed class PreferencesForm : Form
     private readonly CheckBox _quarantine;
     private readonly CheckBox _backupRegistry;
     private readonly CheckBox _restorePoint;
+    private readonly CheckBox _quarantineCleanup;
+    private readonly NumericUpDown _retentionDays;
+    private readonly NumericUpDown _maxSizeMb;
     private readonly CheckBox _silentUninstall;
 
     private readonly CheckBox _toolbarCaptions;
@@ -125,6 +128,20 @@ public sealed class PreferencesForm : Form
             "Back up removed registry keys and values", settings.BackupRegistry);
         _restorePoint = Check("DlgPreferences/checkRestorePoint",
             "Create a System Restore point before removal", settings.CreateRestorePoint);
+        _quarantineCleanup = Check("DlgPreferences/checkQuarantineCleanup",
+            "Delete old quarantine batches automatically", settings.QuarantineAutoClean);
+        _retentionDays = Numeric(1, 365, settings.QuarantineRetentionDays, 70);
+        _maxSizeMb = Numeric(100, 102400, settings.QuarantineMaxSizeMb, 90);
+        var retentionRow = Row(
+            FieldLabel("DlgPreferences/quarantineRetentionLabel",
+                "Delete batches older than:"),
+            _retentionDays,
+            FieldLabel("DlgPreferences/quarantineRetentionSuffix", "days"));
+        var sizeRow = Row(
+            FieldLabel("DlgPreferences/quarantineMaxSizeLabel",
+                "Keep quarantine under:"),
+            _maxSizeMb,
+            FieldLabel("DlgPreferences/quarantineMaxSizeSuffix", "MB"));
 
         general.Controls.Add(_skipUac);
         general.Controls.Add(_checkUpdates);
@@ -135,6 +152,18 @@ public sealed class PreferencesForm : Form
         general.Controls.Add(_quarantine);
         general.Controls.Add(_backupRegistry);
         general.Controls.Add(_restorePoint);
+        general.Controls.Add(_quarantineCleanup);
+        general.Controls.Add(retentionRow);
+        general.Controls.Add(sizeRow);
+        general.Controls.Add(Note("DlgPreferences/quarantineCleanupNote",
+            "Cleanup runs at startup. Recent batches are always kept so undo remains available."));
+        _retentionDays.Enabled = _quarantineCleanup.Checked;
+        _maxSizeMb.Enabled = _quarantineCleanup.Checked;
+        _quarantineCleanup.CheckedChanged += (_, _) =>
+        {
+            _retentionDays.Enabled = _quarantineCleanup.Checked;
+            _maxSizeMb.Enabled = _quarantineCleanup.Checked;
+        };
         general.Controls.Add(Note("DlgPreferences/checkSkipUACHelpText",
             "Activating this option allows to bypass UAC confirmation when launching CleanRift. When turned on, " +
             "CleanRift creates a Windows Task Scheduler elevated task which is executed every time you'd like to run the app."));
@@ -516,6 +545,9 @@ public sealed class PreferencesForm : Form
         _settings.QuarantineRemovals = _quarantine.Checked;
         _settings.BackupRegistry = _backupRegistry.Checked;
         _settings.CreateRestorePoint = _restorePoint.Checked;
+        _settings.QuarantineAutoClean = _quarantineCleanup.Checked;
+        _settings.QuarantineRetentionDays = (int)_retentionDays.Value;
+        _settings.QuarantineMaxSizeMb = (int)_maxSizeMb.Value;
         _settings.SilentUninstall = _silentUninstall.Checked;
 
         _settings.ToolbarCaptions = _toolbarCaptions.Checked;
@@ -558,6 +590,13 @@ public sealed class PreferencesForm : Form
         {
             MessageDialog.Error(this, Text, shellError);
         }
+
+        if (_settings.QuarantineAutoClean)
+        {
+            var retentionDays = _settings.QuarantineRetentionDays;
+            var maxSizeMb = _settings.QuarantineMaxSizeMb;
+            _ = Task.Run(() => QuarantineStore.Cleanup(retentionDays, maxSizeMb));
+        }
     }
 
     private static FlowLayoutPanel NewPage(TabControl tabs, string title)
@@ -589,6 +628,42 @@ public sealed class PreferencesForm : Form
         check.ForeColor = Theme.Current.IsDark
             ? Color.FromArgb(125, 132, 134)
             : Color.FromArgb(140, 140, 140);
+    }
+
+    private static NumericUpDown Numeric(int minimum, int maximum, int value, int width) =>
+        new()
+        {
+            Minimum = minimum,
+            Maximum = maximum,
+            Value = Math.Clamp(value, minimum, maximum),
+            Width = width,
+            Margin = new Padding(0, 2, 4, 0),
+            TextAlign = HorizontalAlignment.Right,
+            BackColor = Theme.Current.Window,
+            ForeColor = Theme.Current.Text
+        };
+
+    private static Label FieldLabel(string key, string fallback) => new()
+    {
+        Text = LanguageManager.Instance.T(key, fallback),
+        AutoSize = true,
+        Margin = new Padding(0, 5, 4, 0),
+        UseMnemonic = false
+    };
+
+    private static FlowLayoutPanel Row(params Control[] controls)
+    {
+        var panel = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            WrapContents = false,
+            FlowDirection = FlowDirection.LeftToRight,
+            Margin = new Padding(32, 0, 12, 6),
+            BackColor = Theme.Current.Window
+        };
+        panel.Controls.AddRange(controls);
+        return panel;
     }
 
     private static CheckBox Check(string key, string fallback, bool value)

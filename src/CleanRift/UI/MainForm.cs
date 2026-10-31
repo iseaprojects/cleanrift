@@ -626,6 +626,8 @@ public sealed class MainForm : Form
         systemTools.DropDownItems.Add(SystemTool("MainMenu/mnuToolsTaskScheduler", "taskschd.msc"));
         tools.DropDownItems.Add(systemTools);
         tools.DropDownItems.Add(new ToolStripSeparator());
+        tools.DropDownItems.Add(Item("MainMenu/mnuToolsHistory",
+            (_, _) => ShowHistory()));
         tools.DropDownItems.Add(Item("MainMenu/mnuToolsQuarantine",
             (_, _) => ShowQuarantine()));
         tools.DropDownItems.Add(Item("MainMenu/mnuToolsOptions", (_, _) => OpenPreferences()));
@@ -1829,7 +1831,8 @@ public sealed class MainForm : Form
         var engine = new RemovalEngine(_settings.QuarantineRemovals,
             _settings.BackupRegistry, _settings.CreateRestorePoint,
             "Remove entry: " + string.Join(", ",
-                selected.Take(3).Select(p => p.DisplayName)));
+                selected.Take(3).Select(p => p.DisplayName)),
+            historyKind: ActionHistoryKind.RemoveEntry);
         var removed = engine.RemoveItems(items, CancellationToken.None);
         if (removed.Failed > 0)
         {
@@ -2255,6 +2258,12 @@ public sealed class MainForm : Form
         next.Show();
         _externalClose = true;
         Close();
+    }
+
+    private void ShowHistory()
+    {
+        using var form = new ActionHistoryForm();
+        form.ShowDialog(this);
     }
 
     private void ShowQuarantine()

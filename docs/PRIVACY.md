@@ -19,6 +19,7 @@ CleanRift stores its data under `%LOCALAPPDATA%\CleanRift`:
 | `state.json` | Last category, hidden entries, known install dates |
 | `cache.dat` | Program list and size cache (CleanRift format) |
 | `*_Traces.xml` | Install traces created by Install and Trace |
+| `history.json` | Local action history (removals, reverts and quarantine operations) |
 | `DisabledStartupItems.json` | Startup entries disabled from CleanRift |
 | `Quarantine\` | Removed files and registry backups kept for undo |
 | `error.log`, `elevation.log`, `instance.log`, `jumplist.log` | Diagnostics |

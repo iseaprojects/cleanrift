@@ -62,6 +62,9 @@ public sealed class AppSettings
     public bool QuarantineRemovals { get; set; } = true;
     public bool BackupRegistry { get; set; } = true;
     public bool CreateRestorePoint { get; set; } = true;
+    public bool QuarantineAutoClean { get; set; } = true;
+    public int QuarantineRetentionDays { get; set; } = 30;
+    public int QuarantineMaxSizeMb { get; set; } = 2048;
     public bool SilentUninstall { get; set; }
     public string LastCategory { get; set; } = "apps";
     public int WindowLeft { get; set; } = int.MinValue;
@@ -189,6 +192,11 @@ public sealed class AppSettings
         QuarantineRemovals = GetBool("Safety_Quarantine", QuarantineRemovals);
         BackupRegistry = GetBool("Safety_RegistryBackup", BackupRegistry);
         CreateRestorePoint = GetBool("Safety_RestorePoint", CreateRestorePoint);
+        QuarantineAutoClean = GetBool("Safety_QuarantineCleanup", QuarantineAutoClean);
+        QuarantineRetentionDays = Math.Clamp(
+            GetInt("Safety_QuarantineDays", QuarantineRetentionDays), 1, 365);
+        QuarantineMaxSizeMb = Math.Clamp(
+            GetInt("Safety_QuarantineMaxMb", QuarantineMaxSizeMb), 100, 102400);
         SilentUninstall = GetBool("Uninstall_Silent", SilentUninstall);
         CheckForUpdates = GetBool("Updates_CheckOnStartup", CheckForUpdates);
         ToolbarCaptions = GetBool("Toolbar_Captions", ToolbarCaptions);
@@ -263,6 +271,9 @@ public sealed class AppSettings
         Bool("Safety_Quarantine", QuarantineRemovals);
         Bool("Safety_RegistryBackup", BackupRegistry);
         Bool("Safety_RestorePoint", CreateRestorePoint);
+        Bool("Safety_QuarantineCleanup", QuarantineAutoClean);
+        Int("Safety_QuarantineDays", QuarantineRetentionDays);
+        Int("Safety_QuarantineMaxMb", QuarantineMaxSizeMb);
         Bool("Uninstall_Silent", SilentUninstall);
         Bool("Toolbar_Captions", ToolbarCaptions);
         Bool("Toolbar_Visible", ToolbarVisible);

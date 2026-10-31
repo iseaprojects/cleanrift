@@ -14,7 +14,7 @@
     </DlgAddNewStartupProgram>
     <DlgPreferences>
         <betaAppListNote>Los grupos de actualizaciones, la ventana de programas recientes y el botón de recientes de la barra secundaria no están disponibles en la beta 1.0.</betaAppListNote>
-        <betaGeneralNote>La comprobación de actualizaciones, el icono del Panel de control y la navegación con Total Commander no están disponibles en la beta 1.0. El comando Instalar y rastrear" del Explorador es opcional y se puede desactivar aquí."</betaGeneralNote>
+        <betaGeneralNote>La comprobación de actualizaciones, el icono del Panel de control y la navegación con Total Commander no están disponibles en la beta 1.0. El comando Instalar y rastrear del Explorador es opcional y se puede desactivar aquí.</betaGeneralNote>
         <categoryAppList>Lista de aplicaciones</categoryAppList>
         <categoryGeneral>General</categoryGeneral>
         <categoryInterface>Interfaz</categoryInterface>
@@ -61,6 +61,12 @@
         <checkRestorePoint>Crear un punto de restauración del sistema antes de eliminar</checkRestorePoint>
         <safetyNote>La cuarentena y los respaldos del registro se pueden restaurar desde Herramientas &gt; Cuarentena y deshacer.</safetyNote>
         <checkSilentUninstall>Intentar desinstalación silenciosa cuando el programa ofrece un comando silencioso</checkSilentUninstall>
+        <checkQuarantineCleanup>Eliminar automáticamente los lotes antiguos de cuarentena</checkQuarantineCleanup>
+        <quarantineRetentionLabel>Eliminar lotes anteriores a:</quarantineRetentionLabel>
+        <quarantineRetentionSuffix>días</quarantineRetentionSuffix>
+        <quarantineMaxSizeLabel>Mantener la cuarentena por debajo de:</quarantineMaxSizeLabel>
+        <quarantineMaxSizeSuffix>MB</quarantineMaxSizeSuffix>
+        <quarantineCleanupNote>La limpieza se ejecuta al iniciar. Los lotes recientes siempre se conservan para poder deshacer.</quarantineCleanupNote>
     </DlgPreferences>
     <ExplorerBar>
         <itemAddNewStartupItem>Añadir un programa...</itemAddNewStartupItem>
@@ -220,6 +226,7 @@
         <mnuViewSecondaryToolbar>Barra secundaria</mnuViewSecondaryToolbar>
         <mnuActionQueue>Cola de desinstalación...</mnuActionQueue>
         <mnuToolsQuarantine>Cuarentena y deshacer</mnuToolsQuarantine>
+        <mnuToolsHistory>Historial de acciones</mnuToolsHistory>
     </MainMenu>
     <Messages>
         <msgCannotOpenFolder>No se pudo abrir la carpeta del programa.</msgCannotOpenFolder>
@@ -337,7 +344,7 @@
     </UninstallWizardConfirmation>
     <Quarantine>
         <Caption>Cuarentena y deshacer</Caption>
-        <Description>Los archivos y entradas de registro eliminados se guardan aquí hasta que los borres.</Description>
+        <Description>Los archivos y entradas de registro eliminados se guardan aquí hasta que los borres o la limpieza automática los elimine.</Description>
         <ColumnDate>Creado</ColumnDate>
         <ColumnDescription>Operación</ColumnDescription>
         <ColumnFiles>Archivos</ColumnFiles>
@@ -370,4 +377,38 @@
     <ShellIntegration>
         <installAndTrace>Instalar y rastrear con CleanRift</installAndTrace>
     </ShellIntegration>
+    <History>
+        <Caption>Historial de acciones</Caption>
+        <Description>Eliminaciones, reversiones de rastreo y operaciones de cuarentena.</Description>
+        <ColumnDate>Fecha</ColumnDate>
+        <ColumnAction>Acción</ColumnAction>
+        <ColumnDetails>Detalles</ColumnDetails>
+        <ColumnResult>Resultado</ColumnResult>
+        <ColumnUndo>Deshacer</ColumnUndo>
+        <Empty>Todavía no hay acciones registradas.</Empty>
+        <Count>%u acción(es)</Count>
+        <btnUndo>Deshacer</btnUndo>
+        <btnDetails>Detalles</btnDetails>
+        <btnClear>Borrar historial</btnClear>
+        <btnOpenQuarantine>Abrir cuarentena</btnOpenQuarantine>
+        <UndoConfirm>¿Restaurar todos los elementos de esta acción?</UndoConfirm>
+        <UndoUnavailable>Esta acción no tiene un lote de cuarentena que restaurar.</UndoUnavailable>
+        <ClearConfirm>¿Borrar todo el historial de acciones?</ClearConfirm>
+        <ClearDescription>Los lotes de cuarentena no se borran; solo se limpia la lista de acciones.</ClearDescription>
+        <ResultSuccess>Completada</ResultSuccess>
+        <ResultPartial>Completada parcialmente</ResultPartial>
+        <ResultFailed>Fallida</ResultFailed>
+        <ResultUndone>Deshecha</ResultUndone>
+        <DetailsTitle>Detalles de la acción</DetailsTitle>
+        <DetailsFormat>Fecha: %s\nAcción: %s\nDetalles: %s\nEliminados: %u\nProgramados para reinicio: %u\nFallidos: %u\nLote de cuarentena: %s\nErrores: %s</DetailsFormat>
+        <ActionRemoval>Eliminación</ActionRemoval>
+        <ActionRevert>Reversión de rastreo</ActionRevert>
+        <ActionQueue>Cola de desinstalación</ActionQueue>
+        <ActionRestore>Restauración de cuarentena</ActionRestore>
+        <ActionDelete>Borrado de cuarentena</ActionDelete>
+        <ActionRemoveEntry>Eliminación de entrada</ActionRemoveEntry>
+        <Yes>Sí</Yes>
+        <No>No</No>
+        <None>Ninguno</None>
+    </History>
 </Language>
