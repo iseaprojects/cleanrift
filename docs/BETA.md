@@ -7,8 +7,8 @@
 - Standard uninstall plus the Removal Wizard for leftover files, folders and
   registry entries.
 - Force Removal, including batch mode.
-- Install and Trace with real-time filesystem events and a registry snapshot
-  diff (see `docs/TRACKER.md`).
+- Install and Trace with real-time filesystem events and an ETW registry
+  session, plus a snapshot fallback (see `docs/TRACKER.md`).
 - Startup manager: Run/RunOnce, StartupApproved and scheduled tasks.
 - HTML export of programs and startup items.
 - Light, dark and automatic themes; English and Spanish UI.
@@ -28,9 +28,10 @@ note:
 
 ## Known limitations
 
-- **No kernel driver.** Filesystem changes are captured in real time with
-  `ReadDirectoryChangesW`; registry changes use a before/after snapshot. If the
-  watcher buffer overflows, the final snapshot is used as a fallback.
+- **No kernel driver.** Filesystem changes are captured with
+  `ReadDirectoryChangesW` and registry changes with an ETW kernel session. If
+  either monitor is unavailable, the before/after snapshot is used as the
+  fallback.
 - **Unsigned build.** Windows SmartScreen may warn until the executable is
   code-signed.
 - **x64 only.** The published build targets Windows 10/11 x64.

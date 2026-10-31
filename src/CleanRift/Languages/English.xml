@@ -134,7 +134,7 @@
         <logIndexingBefore>Indexing the system before installation...</logIndexingBefore>
         <logDetectingEntries>Detecting installation entries...</logDetectingEntries>
         <staticCloseWhileTracing>Tracing is still running. Stop tracing and close the window?</staticCloseWhileTracing>
-        <statusLiveTracking>Watching for changes... %u events</statusLiveTracking>
+        <statusLiveTracking>Watching for changes... %u file events, %u registry events</statusLiveTracking>
     </InstallTracker>
     <InstallTrackerCustomEntryDialog>
         <checkCreateCustomEntry>I'd like to create a custom item in the list</checkCreateCustomEntry>

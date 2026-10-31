@@ -2,12 +2,13 @@
 
 ## Unreleased — audit fixes and real-time tracker
 
-- Install Tracker now watches filesystem changes in real time and merges them
-  with the registry snapshot diff; see `docs/TRACKER.md`.
+- Install Tracker now watches filesystem changes in real time and captures
+  registry changes with an ETW kernel session; the final snapshot remains the
+  authoritative registry fallback. See `docs/TRACKER.md`.
 - Tracks Start Menu, Desktop, LocalLow and newly created custom install
   folders; pre-existing paths are never recorded, so updates stay safe.
-- Registry-only final snapshot when the live monitor covered every root, which
-  makes tracing faster.
+- Filesystem-only final snapshot when the live filesystem monitor covered every
+  root, which makes tracing faster.
 - Hardened elevated removal jobs, protected paths/registry trees and command
   execution (see `docs/AUDIT-2026-10.md`).
 - Fixed Store-app uninstall quoting, process/GDI leaks, scan cancellation,

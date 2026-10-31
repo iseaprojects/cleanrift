@@ -46,6 +46,7 @@ public sealed class InstallTrackerForm : Form
 
     private CancellationTokenSource? _cts;
     private LiveFileMonitor? _live;
+    private LiveRegistryMonitor? _liveRegistry;
     private bool _closeAfterCancel;
     private TraceInfo? _trace;
     private Phase _phase = Phase.Setup;
@@ -281,10 +282,11 @@ public sealed class InstallTrackerForm : Form
         _tracker.Log += text => AppendLog(text);
         _liveTimer.Tick += (_, _) =>
         {
-            if (_live == null || _phase != Phase.Working)
+            if (_phase != Phase.Working || (_live == null && _liveRegistry == null))
                 return;
             _statusLabel.Text = LanguageManager.Instance.F("InstallTracker/statusLiveTracking",
-                "Watching for changes... %u events", _live.EventCount);
+                "Watching for changes... %u file events, %u registry events",
+                _live?.EventCount ?? 0, _liveRegistry?.EventCount ?? 0);
         };
         FormClosing += OnFormClosing;
         Theme.ApplyDialogTheme(this);
@@ -413,19 +415,26 @@ public sealed class InstallTrackerForm : Form
             // Real-time filesystem tracking starts only after the baseline, so
             // indexing noise is not attributed to the installer.
             using var live = new LiveFileMonitor(text => AppendLog(text));
+            using var liveRegistry = new LiveRegistryMonitor(text => AppendLog(text));
             var roots = InstallTracker.FileRoots().ToList();
             var liveRoots = live.Start(roots, before);
             if (liveRoots == 0)
-            {
                 AppendLog("Warning: no filesystem roots could be watched; using snapshot only.");
-            }
-            else
-            {
-                _live = live;
-                _liveTimer.Start();
-            }
 
-            var exitCode = await Task.Run(() => _tracker.RunSetup(path, token), token);
+            var registryLive = liveRegistry.Start(before);
+            if (!registryLive)
+                AppendLog("Registry changes will be captured by the final snapshot.");
+
+            if (liveRoots > 0)
+                _live = live;
+            if (registryLive)
+                _liveRegistry = liveRegistry;
+            if (_live != null || _liveRegistry != null)
+                _liveTimer.Start();
+
+            var exitCode = await Task.Run(
+                () => _tracker.RunSetup(path, token, pid => liveRegistry.SetRootProcess(pid)),
+                token);
             if (exitCode == null)
                 throw new OperationCanceledException(token);
 
@@ -442,11 +451,17 @@ public sealed class InstallTrackerForm : Form
 
             StopLiveStatus();
             live.Stop();
+            liveRegistry.Stop();
+
             var liveComplete = liveRoots == roots.Count && !live.Overflowed && !live.Truncated;
-            AppendLog($"Live monitor: {live.EventCount} events, {live.FileCount} new files, " +
+            AppendLog($"Live filesystem monitor: {live.EventCount} events, {live.FileCount} new files, " +
                       $"{live.FolderCount} new folders, {liveRoots} roots" +
                       (live.Overflowed ? " (buffer overflow; snapshot fallback merged)" : "") +
                       (live.Truncated ? " (path limit reached; snapshot fallback merged)" : ""));
+            AppendLog(registryLive
+                ? $"Live registry monitor: {liveRegistry.EventCount} events, " +
+                  $"{liveRegistry.KeyCount} keys, {liveRegistry.ValueCount} values"
+                : "Live registry monitor was unavailable; registry uses the snapshot diff.");
 
             token.ThrowIfCancellationRequested();
             AppendLog($"Setup finished with exit code {exitCode}");
@@ -462,6 +477,7 @@ public sealed class InstallTrackerForm : Form
 
             var diff = _tracker.Diff(before, after);
             live.MergeInto(diff);
+            liveRegistry.MergeInto(diff);
             AppendLog($"Detected {diff.Folders.Count} folders, {diff.Files.Count} files, " +
                       $"{diff.RegistryKeys.Count} keys and {diff.RegistryValues.Count} registry values");
             if (before.Truncated || after.Truncated)

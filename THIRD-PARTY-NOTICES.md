@@ -13,6 +13,10 @@ icons, language files or application code from other uninstallers.
   runtime license is also available at
   https://github.com/dotnet/runtime/blob/main/LICENSE.TXT.
 
+- **Microsoft.Diagnostics.Tracing.TraceEvent** — Copyright (c) Microsoft
+  Corporation. MIT License. Used for real-time ETW registry tracing.
+  https://github.com/microsoft/perfview
+
 ## Build and packaging
 
 - **Inno Setup** — Copyright (c) Jordan Russell. Inno Setup is used only to

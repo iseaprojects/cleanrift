@@ -134,7 +134,7 @@
         <logIndexingBefore>Indexando el sistema antes de la instalación...</logIndexingBefore>
         <logDetectingEntries>Detectando entradas de instalación...</logDetectingEntries>
         <staticCloseWhileTracing>El seguimiento sigue activo. ¿Detener el seguimiento y cerrar la ventana?</staticCloseWhileTracing>
-        <statusLiveTracking>Vigilando cambios... %u eventos</statusLiveTracking>
+        <statusLiveTracking>Vigilando cambios... %u eventos de archivos, %u eventos de registro</statusLiveTracking>
     </InstallTracker>
     <InstallTrackerCustomEntryDialog>
         <checkCreateCustomEntry>Quiero crear un elemento personalizado en la lista</checkCreateCustomEntry>

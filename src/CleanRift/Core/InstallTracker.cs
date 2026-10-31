@@ -46,7 +46,7 @@ public sealed class InstallTracker
     public event Action<string>? Log;
 
     public InstallSnapshot TakeSnapshot(CancellationToken token, TimeSpan? maxDuration = null,
-        bool includeFiles = true)
+        bool includeFiles = true, bool includeRegistry = true)
     {
         var snapshot = new InstallSnapshot();
         var deadline = DateTime.UtcNow + (maxDuration ?? TimeSpan.FromSeconds(90));
@@ -55,15 +55,18 @@ public sealed class InstallTracker
         // Registry first: it is fast and contains the uninstall entries the
         // wizard needs. The file system walk is much slower and may be
         // truncated on huge profiles; that must not hide registry changes.
-        foreach (var (hive, view, path) in RegistryRoots())
+        if (includeRegistry)
         {
-            if (token.IsCancellationRequested || DateTime.UtcNow > deadline)
+            foreach (var (hive, view, path) in RegistryRoots())
             {
-                snapshot.Truncated = true;
-                break;
-            }
+                if (token.IsCancellationRequested || DateTime.UtcNow > deadline)
+                {
+                    snapshot.Truncated = true;
+                    break;
+                }
 
-            SnapshotRegistry(hive, view, path, snapshot, token, deadline, depth: 0);
+                SnapshotRegistry(hive, view, path, snapshot, token, deadline, depth: 0);
+            }
         }
 
         if (includeFiles)
@@ -83,7 +86,11 @@ public sealed class InstallTracker
         }
 
         snapshot.TakenUtc = DateTime.UtcNow;
-        Log?.Invoke((includeFiles ? "Snapshot" : "Registry-only snapshot") +
+        var kind = includeFiles && includeRegistry ? "Snapshot"
+            : includeFiles ? "Filesystem snapshot"
+            : includeRegistry ? "Registry-only snapshot"
+            : "Empty final snapshot";
+        Log?.Invoke(kind +
                     $" finished in {(int)(DateTime.UtcNow - started).TotalSeconds}s: " +
                     $"{snapshot.Files.Count} files, {snapshot.Folders.Count} folders, " +
                     $"{snapshot.Keys.Count} keys, {snapshot.Values.Count} values");
@@ -469,6 +476,8 @@ public sealed class InstallTracker
 
         return false;
     }
+
+    public static bool IsNoiseRegistryPath(string path) => IsNoiseRegistry(path);
 
     private static bool IsNoiseRegistry(string path)
     {
