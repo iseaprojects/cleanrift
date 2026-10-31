@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Language Name="Français" LangID="1036" Version="1">
+    <DelayedFilesRemovalDialog>
+        <Title>Certains fichiers n'ont pas été supprimés</Title>
+    </DelayedFilesRemovalDialog>
+    <DlgAddNewStartupProgram>
+        <checkHighestPriviledges>Exécuter la tâche avec les privilèges les plus élevés</checkHighestPriviledges>
+        <DlgAddNewStartupProgramCaption>Ajouter un programme au démarrage</DlgAddNewStartupProgramCaption>
+        <filterAllFiles>Tous les fichiers</filterAllFiles>
+        <filterExecutableFiles>Fichiers exécutables</filterExecutableFiles>
+        <labelArguments>Arguments (facultatif) :</labelArguments>
+        <labelPathToExecutableFile>Chemin du fichier exécutable :</labelPathToExecutableFile>
+        <labelStartupType>Type de démarrage :</labelStartupType>
+    </DlgAddNewStartupProgram>
+    <DlgPreferences>
+        <betaAppListNote>Les groupes de mises à jour logicielles, la fenêtre des éléments récents et le bouton correspondant de la barre d'outils ne sont pas disponibles dans la version bêta 1.0.</betaAppListNote>
+        <betaGeneralNote>La recherche de mises à jour, l'icône du Panneau de configuration et la navigation Total Commander ne sont pas disponibles dans la version bêta 1.0. La commande Explorer « Installer et tracer » est facultative et peut être désactivée ici.</betaGeneralNote>
+        <categoryAppList>Liste des applications</categoryAppList>
+        <categoryGeneral>Général</categoryGeneral>
+        <categoryInterface>Interface</categoryInterface>
+        <categoryUninstallWizard>Assistant de suppression</categoryUninstallWizard>
+        <checkCheckForBetaVersions>Inclure les versions bêta</checkCheckForBetaVersions>
+        <checkCheckForUpdates>Rechercher les mises à jour au démarrage</checkCheckForUpdates>
+        <checkControlPanelIcon>Afficher un raccourci CleanRift dans le Panneau de configuration</checkControlPanelIcon>
+        <checkDisplayPopup>Afficher une fenêtre avec les programmes récemment installés</checkDisplayPopup>
+        <checkDisplayUpdates>Afficher les mises à jour logicielles</checkDisplayUpdates>
+        <checkHighlighRecent>Mettre en surbrillance les programmes récemment installés</checkHighlighRecent>
+        <checkMark32bitApps>Marquer les applications 32 bits</checkMark32bitApps>
+        <checkMinimizeOnClose>Réduire dans la zone de notification à la fermeture de la fenêtre</checkMinimizeOnClose>
+        <checkMinimizeToTray>Réduire dans la zone de notification lors de la réduction de la fenêtre</checkMinimizeToTray>
+        <checkRecentOnSecondaryToolbar>Afficher les programmes récents dans la barre d'outils secondaire</checkRecentOnSecondaryToolbar>
+        <checkShellExtension>Ajouter « Installer et tracer » au menu contextuel de l'Explorateur pour les fichiers d'installation (exe/msi)</checkShellExtension>
+        <checkSkipUAC>Utiliser le Planificateur de tâches pour éviter la confirmation UAC (si possible)</checkSkipUAC>
+        <checkSkipUACHelpText>Si cette option est activée, CleanRift crée une tâche planifiée Windows avec élévation afin que les lancements ultérieurs évitent la confirmation UAC. Vous pouvez la désactiver à tout moment.</checkSkipUACHelpText>
+        <checkSmallIcons>Liste compacte des applications</checkSmallIcons>
+        <checkStartMinimized>Démarrer automatiquement CleanRift réduit dans la zone de notification au démarrage de Windows</checkStartMinimized>
+        <checkToolBarCaptions>Afficher les libellés des boutons de la barre d'outils</checkToolBarCaptions>
+        <checkTotalCommander>Ouvrir les dossiers des programmes avec Total Commander (si installé)</checkTotalCommander>
+        <checkTrayIcon>Afficher l'icône CleanRift dans la zone de notification</checkTrayIcon>
+        <colorSchemeAuto>Suivre le mode clair/sombre de Windows</colorSchemeAuto>
+        <colorSchemeDark>Mode sombre</colorSchemeDark>
+        <colorSchemeLight>Mode clair (par défaut)</colorSchemeLight>
+        <comboItemTreeUpdatesAlwaysExpanded>Toujours développé</comboItemTreeUpdatesAlwaysExpanded>
+        <comboItemTreeUpdatesCollapsed>Réduit au départ</comboItemTreeUpdatesCollapsed>
+        <comboItemTreeUpdatesExpanded>Développé au départ</comboItemTreeUpdatesExpanded>
+        <comboItemWizardOption1>Demander avant de lancer</comboItemWizardOption1>
+        <comboItemWizardOption2>Automatiquement</comboItemWizardOption2>
+        <comboItemWizardOption3>Désactiver</comboItemWizardOption3>
+        <DlgPreferencesCaption>Préférences</DlgPreferencesCaption>
+        <frameColorScheme>Thème de couleurs</frameColorScheme>
+        <staticInterfaceLanguage>Langue de l'interface :</staticInterfaceLanguage>
+        <staticRecentlyInstalled>Programmes récemment installés :</staticRecentlyInstalled>
+        <staticTreeLikeUpdates>Mises à jour logicielles en sous-éléments :</staticTreeLikeUpdates>
+        <staticWizardDesctiption>Une fois le désinstalleur du programme terminé, l'Assistant de suppression peut analyser le registre et le système de fichiers à la recherche de résidus. Choisissez s'il doit s'exécuter automatiquement, être désactivé ou vous être proposé à chaque fois. Les programmes tracés utilisent toujours l'Assistant de suppression.</staticWizardDesctiption>
+        <staticWizardUsage>Lancer l'Assistant de suppression après le désinstalleur intégré :</staticWizardUsage>
+        <subitemsHelpText>Développez ou réduisez les groupes avec la souris ou les touches Gauche/Droite. Si une recherche correspond à un sous-élément, son groupe s'ouvre automatiquement.</subitemsHelpText>
+        <staticTrayGroup>Icône de la zone de notification (barre d'état système) :</staticTrayGroup>
+        <staticWizardTracedNote>L'Assistant de suppression s'exécute toujours pour les programmes tracés et ne peut pas être désactivé pour ceux-ci.</staticWizardTracedNote>
+        <checkQuarantine>Déplacer les fichiers supprimés vers la quarantaine (annulation disponible dans Outils)</checkQuarantine>
+        <checkBackupRegistry>Sauvegarder les clés et valeurs de registre supprimées</checkBackupRegistry>
+        <checkRestorePoint>Créer un point de restauration système avant la suppression</checkRestorePoint>
+        <safetyNote>La quarantaine et les sauvegardes de registre peuvent être restaurées depuis Outils &gt; Quarantaine et annulation.</safetyNote>
+        <checkSilentUninstall>Essayer la désinstallation silencieuse lorsque le programme fournit une commande de désinstallation silencieuse</checkSilentUninstall>
+        <checkQuarantineCleanup>Supprimer automatiquement les anciens lots de quarantaine</checkQuarantineCleanup>
+        <quarantineRetentionLabel>Supprimer les lots plus anciens que :</quarantineRetentionLabel>
+        <quarantineRetentionSuffix>jours</quarantineRetentionSuffix>
+        <quarantineMaxSizeLabel>Limiter la quarantaine à :</quarantineMaxSizeLabel>
+        <quarantineMaxSizeSuffix>Mo</quarantineMaxSizeSuffix>
+        <quarantineCleanupNote>Le nettoyage s'exécute au démarrage. Les lots récents sont toujours conservés afin que l'annulation reste disponible.</quarantineCleanupNote>
+    </DlgPreferences>
+    <ExplorerBar>
+        <itemAddNewStartupItem>Ajouter un programme...</itemAddNewStartupItem>
+        <itemBatchUninstallInProgressTip>Désinstallation par lots en cours, veuillez patienter jusqu'à la fin de la suppression de toutes les applications...</itemBatchUninstallInProgressTip>
+        <itemCommandLineCaption>Ligne de commande :</itemCommandLineCaption>
+        <itemDelete>Forcer la suppression de toutes les traces</itemDelete>
+        <itemDeleteSelected>Supprimer les éléments sélectionnés de la liste</itemDeleteSelected>
+        <itemDeleteStartupItem>Supprimer de la liste</itemDeleteStartupItem>
+        <itemDisableRunning>Désactiver l'exécution au démarrage</itemDisableRunning>
+        <itemDisableSelected>Désactiver les éléments sélectionnés</itemDisableSelected>
+        <itemEnableRunning>Activer l'exécution au démarrage</itemEnableRunning>
+        <itemGroup>Il s'agit d'un groupe de programmes</itemGroup>
+        <itemInstalledOn>Installé/mis à jour le :</itemInstalledOn>
+        <itemModifyIt>Modifier</itemModifyIt>
+        <itemMultiplSelected>%u éléments sélectionnés</itemMultiplSelected>
+        <itemNoItemsMatchingFilter>Aucun programme ne correspond à « %s » dans la catégorie %s</itemNoItemsMatchingFilter>
+        <itemNothingFound>Aucun élément trouvé !</itemNothingFound>
+        <itemNoUninstall>Ce programme ne peut pas être désinstallé de façon normale, vous pouvez essayer la suppression forcée.</itemNoUninstall>
+        <itemPublisher>Éditeur :</itemPublisher>
+        <itemSearch>Rechercher</itemSearch>
+        <itemShortSearchTip>Saisissez du texte pour trouver un programme</itemShortSearchTip>
+        <itemSourceCaption>Source :</itemSourceCaption>
+        <itemSourceRun_HKCU>Clé Run du registre (utilisateur actuel)</itemSourceRun_HKCU>
+        <itemSourceRun_HKLM>Clé Run du registre (tous les utilisateurs)</itemSourceRun_HKLM>
+        <itemSourceStartMenu_All>Menu Démarrer d'exécution automatique (tous les utilisateurs)</itemSourceStartMenu_All>
+        <itemSourceStartMenu_Current>Menu Démarrer d'exécution automatique (utilisateur actuel)</itemSourceStartMenu_Current>
+        <itemStatusCaption>État :</itemStatusCaption>
+        <itemStatusDisabled>Désactivé</itemStatusDisabled>
+        <itemStatusInvalid>Non valide</itemStatusInvalid>
+        <itemStatusNotRunning>Non démarré</itemStatusNotRunning>
+        <itemStatusRunning>En cours d'exécution</itemStatusRunning>
+        <itemUninstallIt>Désinstaller</itemUninstallIt>
+        <itemVersion>Version :</itemVersion>
+    </ExplorerBar>
+    <ForceRemovalForm>
+        <captionCancel>Annuler l'opération ?</captionCancel>
+        <staticCancel>L'opération est toujours en cours. Voulez-vous l'arrêter et fermer la fenêtre ?</staticCancel>
+    </ForceRemovalForm>
+    <HTMLReport>
+        <allFiles>Tous les fichiers</allFiles>
+        <computer>Ordinateur</computer>
+        <generatedByOn>Généré par %s le %s</generatedByOn>
+        <htmlFiles>Fichiers HTML</htmlFiles>
+        <installedPrograms>Programmes installés (%s)</installedPrograms>
+        <startupPrograms>Programmes de démarrage</startupPrograms>
+    </HTMLReport>
+    <InstallTracker>
+        <btnInstall>Installer et tracer</btnInstall>
+        <btnNoAndRevert>Non + annuler</btnNoAndRevert>
+        <btnSave>Enregistrer</btnSave>
+        <btnSaveLog>Enregistrer le journal...</btnSaveLog>
+        <btnStop>Arrêter</btnStop>
+        <checkMinimize>Réduire CleanRift dans la zone de notification pendant l'installation</checkMinimize>
+        <installTip1>Poursuivez l'installation pendant que CleanRift surveille les modifications. Le traçage s'arrête automatiquement lorsque tous les processus d'installation sont terminés ; sinon, arrêtez-le manuellement.</installTip1>
+        <installTip2>Veuillez vous assurer qu'aucune autre installation n'est en cours</installTip2>
+        <installTip3>Si une version précédente de ce programme est déjà installée, vous devez d'abord la supprimer avant d'installer une version plus récente</installTip3>
+        <InstallTrackerLocalizedName>Traqueur d'installation</InstallTrackerLocalizedName>
+        <logCompleted>Terminé</logCompleted>
+        <logEventCreateFile>Créer un fichier</logEventCreateFile>
+        <logEventCreateFolder>Créer un dossier</logEventCreateFolder>
+        <logEventCreateKey>Créer une clé</logEventCreateKey>
+        <logEventSetValue>Définir une valeur</logEventSetValue>
+        <logStartingService>Démarrage du service Traqueur d'installation...</logStartingService>
+        <logTracingAnalyzing>Analyse de l'installation, veuillez patienter...</logTracingAnalyzing>
+        <logTrackingAllProcessesFinished>Tous les processus d'installation sont terminés</logTrackingAllProcessesFinished>
+        <logTrackingDone>Terminé</logTrackingDone>
+        <logTrackingStarting>Démarrage de « %s »...</logTrackingStarting>
+        <logTrackingStartingEror>Erreur : impossible de démarrer le processus d'installation (erreur %u)</logTrackingStartingEror>
+        <logTrackingStoppedByUser>Le traçage a été arrêté par l'utilisateur</logTrackingStoppedByUser>
+        <selectInstallFile>Sélectionner un fichier d'installation</selectInstallFile>
+        <staticInstallProgress>Progression de l'installation :</staticInstallProgress>
+        <staticPathToProgram>Chemin du fichier d'installation (.exe, .msi) :</staticPathToProgram>
+        <staticRevertInfo>L'option Annuler tente de supprimer tous les éléments du système de fichiers et du registre créés pendant le traçage de l'installation</staticRevertInfo>
+        <Title>Installer et tracer un programme</Title>
+        <TitleAppend>Installer et tracer, ajouter les données tracées à « %s »</TitleAppend>
+        <logIndexingBefore>Indexation du système avant l'installation...</logIndexingBefore>
+        <logDetectingEntries>Détection des entrées d'installation...</logDetectingEntries>
+        <staticCloseWhileTracing>Le traçage est toujours en cours. Arrêter le traçage et fermer la fenêtre ?</staticCloseWhileTracing>
+        <statusLiveTracking>Surveillance des modifications... %u événements de fichiers, %u événements de registre</statusLiveTracking>
+    </InstallTracker>
+    <InstallTrackerCustomEntryDialog>
+        <checkCreateCustomEntry>Je souhaite créer un élément personnalisé dans la liste</checkCreateCustomEntry>
+        <staticName>Nom :</staticName>
+        <Title>Aucune nouvelle entrée d'installation n'a été trouvée pendant le traçage. Cela signifie généralement que le programme n'est pas installé correctement, mais si vous êtes certain que l'installation s'est bien déroulée, vous pouvez créer un programme personnalisé dans la liste des applications. Toutes les traces trouvées y seront associées.</Title>
+    </InstallTrackerCustomEntryDialog>
+    <InstallTrackerMultipleEntries>
+        <btnSelect>Sélectionner</btnSelect>
+        <Caption>Plusieurs entrées d'installation détectées</Caption>
+        <Title>L'installation a créé plusieurs entrées dans le registre Windows. Sélectionnez l'entrée principale à afficher dans la liste des applications avec l'icône de traçage. La suppression de ses traces supprimera également les entrées dépendantes.</Title>
+    </InstallTrackerMultipleEntries>
+    <ListCtrl>
+        <columnCompany>Éditeur</columnCompany>
+        <columnInstallationDate>Installé le</columnInstallationDate>
+        <columnProgramName>Nom du programme</columnProgramName>
+        <columnSize>Taille</columnSize>
+        <columnSource>Source</columnSource>
+        <columnStatus>État</columnStatus>
+        <columnTraced>Tracé</columnTraced>
+        <mark32bitItem>(32 bits)</mark32bitItem>
+        <sourceHKCURun>HKCU Run</sourceHKCURun>
+        <sourceHKCURunOnce>HKCU RunOnce</sourceHKCURunOnce>
+        <sourceHKLMRun>HKLM Run</sourceHKLMRun>
+        <sourceHKLMRunOnce>HKLM RunOnce</sourceHKLMRunOnce>
+        <sourceStartMenuAll>Menu Démarrer (tous)</sourceStartMenuAll>
+        <sourceStartMenuCU>Menu Démarrer (utilisateur)</sourceStartMenuCU>
+        <sourceWindowsStoreTask>Application Microsoft Store</sourceWindowsStoreTask>
+        <sourceWindowsTask>Tâche Windows</sourceWindowsTask>
+        <staticLoading>Chargement, veuillez patienter...</staticLoading>
+        <staticNoProgramsInCategory>Aucun programme dans la catégorie « %s »</staticNoProgramsInCategory>
+        <staticNoStartupItems>Aucun programme ne s'exécute automatiquement au démarrage de Windows</staticNoStartupItems>
+        <columnImpact>Impact sur le démarrage</columnImpact>
+        <impactHigh>Élevé</impactHigh>
+        <impactMedium>Moyen</impactMedium>
+        <impactLow>Faible</impactLow>
+    </ListCtrl>
+    <MainMenu>
+        <mnuAction>&amp;Action</mnuAction>
+        <mnuActionBrowseLocation>Parcourir l'emplacement...</mnuActionBrowseLocation>
+        <mnuActionDelete>&amp;Suppression forcée</mnuActionDelete>
+        <mnuActionDeleteBatch>Suppression &amp;forcée par lots</mnuActionDeleteBatch>
+        <mnuActionJumpToProgramFolder>Dossier d'&amp;installation</mnuActionJumpToProgramFolder>
+        <mnuActionJumpToRegistry>Entrée du &amp;registre</mnuActionJumpToRegistry>
+        <mnuActionJumpToWebSite>Site &amp;web du programme</mnuActionJumpToWebSite>
+        <mnuActionModify>&amp;Modifier...</mnuActionModify>
+        <mnuActionOpenWindowsStore>Ouvrir dans Microsoft Store</mnuActionOpenWindowsStore>
+        <mnuActionRemoveEntry>Supprimer l'&amp;entrée</mnuActionRemoveEntry>
+        <mnuActionRemoveEntryBatch>Supprimer les &amp;entrées par lots</mnuActionRemoveEntryBatch>
+        <mnuActionUninstall>&amp;Désinstaller...</mnuActionUninstall>
+        <mnuFile>&amp;Fichier</mnuFile>
+        <mnuFileExit>&amp;Quitter</mnuFileExit>
+        <mnuFileExport>&amp;Exporter au format HTML...</mnuFileExport>
+        <mnuHelp>&amp;Aide</mnuHelp>
+        <mnuHelpAbout>À &amp;propos...</mnuHelpAbout>
+        <mnuHelpOnline>Guide de démarrage rapide...</mnuHelpOnline>
+        <mnuTools>&amp;Outils</mnuTools>
+        <mnuToolsAddRemove>&amp;Ajout/Suppression de programmes...</mnuToolsAddRemove>
+        <mnuToolsComponents>&amp;Composants Windows...</mnuToolsComponents>
+        <mnuToolsDefrag>Défragmenteur de disque</mnuToolsDefrag>
+        <mnuToolsOptions>&amp;Préférences...</mnuToolsOptions>
+        <mnuToolsSecurityCenter>Centre de sécurité</mnuToolsSecurityCenter>
+        <mnuToolsServices>Services</mnuToolsServices>
+        <mnuToolsSystemInfo>Informations système</mnuToolsSystemInfo>
+        <mnuToolsSystemProperties>Propriétés système</mnuToolsSystemProperties>
+        <mnuToolsSystemRestore>Restauration du système</mnuToolsSystemRestore>
+        <mnuToolsSystemTools>Outils système</mnuToolsSystemTools>
+        <mnuToolsTaskScheduler>Planificateur de tâches</mnuToolsTaskScheduler>
+        <mnuTracedData>Données tracées</mnuTracedData>
+        <mnuTracedDataAppend>Ajouter des données tracées (Installer et tracer)...</mnuTracedDataAppend>
+        <mnuTracedDataAsXML>Afficher au format XML...</mnuTracedDataAsXML>
+        <mnuTracedDataUndoTracing>Annuler le traçage</mnuTracedDataUndoTracing>
+        <mnuView>&amp;Affichage</mnuView>
+        <mnuViewLanguage>Langue de l'interface</mnuViewLanguage>
+        <mnuViewListColumnsReset>Réinitialiser les colonnes</mnuViewListColumnsReset>
+        <mnuViewMainToolbarButtonLabels>Afficher les libellés sous les icônes</mnuViewMainToolbarButtonLabels>
+        <mnuViewMainToolbarShow>Afficher la barre d'outils principale</mnuViewMainToolbarShow>
+        <mnuViewRefresh>&amp;Actualiser</mnuViewRefresh>
+        <mnuViewSecondaryToolbar>Barre d'outils secondaire</mnuViewSecondaryToolbar>
+        <mnuActionQueue>File de désinstallation...</mnuActionQueue>
+        <mnuToolsQuarantine>Quarantaine et annulation</mnuToolsQuarantine>
+        <mnuToolsHistory>Historique des actions</mnuToolsHistory>
+    </MainMenu>
+    <Messages>
+        <msgCannotOpenFolder>Impossible d'ouvrir le dossier du programme.</msgCannotOpenFolder>
+        <msgCantModifyAutorunEntry>Impossible de modifier les propriétés de cette entrée.</msgCantModifyAutorunEntry>
+        <msgForceCancelWaiting>Voulez-vous vraiment annuler de force la désinstallation de ce programme ?</msgForceCancelWaiting>
+        <msgForceCancelWaitingFooter>L'annulation forcée ne doit être utilisée que lorsque le désinstalleur est bloqué ou que vous devez arrêter d'urgence tous les processus de désinstallation en cours.</msgForceCancelWaitingFooter>
+        <msgForceRemovalCheck>Oui, j'en assume la responsabilité</msgForceRemovalCheck>
+        <msgForceRemovalDescription>La suppression forcée n'exécute pas le désinstalleur du programme ; elle efface uniquement les éléments du système de fichiers et du registre qui lui appartiennent.</msgForceRemovalDescription>
+        <msgForceRemovalDescriptionBatch>La suppression forcée par lots est une fonction avancée qui doit être utilisée avec prudence.</msgForceRemovalDescriptionBatch>
+        <msgForceRemovalDescriptionTraced>La suppression forcée d'un programme tracé est rapide et complète, et n'exécute pas son désinstalleur.</msgForceRemovalDescriptionTraced>
+        <msgForceRemovalDescriptionWindowsComponent>La suppression de ce produit peut empêcher des fonctionnalités de Windows ou d'autres logiciels de fonctionner correctement.</msgForceRemovalDescriptionWindowsComponent>
+        <msgForceRemovalQuestion>Voulez-vous vraiment supprimer de force ce programme ?</msgForceRemovalQuestion>
+        <msgForceRemovalQuestionBatch>Voulez-vous vraiment supprimer de force les programmes suivants ?</msgForceRemovalQuestionBatch>
+        <msgForceRemovalTitle>Suppression forcée : %s</msgForceRemovalTitle>
+        <msgForceRemovalTitleBatch>Suppression forcée par lots</msgForceRemovalTitleBatch>
+        <msgQuickHelp>CleanRift supprime les programmes et leurs résidus.\n\nF1  Ouvrir ce guide\nF5  Actualiser la liste\nCtrl+F  Rechercher\nSuppr  Supprimer le programme sélectionné\n\nLes préférences permettent de modifier le thème, la langue et le mode de l'assistant de suppression.</msgQuickHelp>
+        <msgRemoveEntryDescription>Cette fonction supprime l'entrée de désinstallation du programme dans le registre afin qu'il n'apparaisse plus dans la liste. Si la quarantaine est activée, l'entrée peut être restaurée depuis Outils &gt; Quarantaine et annulation.</msgRemoveEntryDescription>
+        <msgRemoveEntryFailed>Impossible de supprimer l'entrée de registre de cet élément.</msgRemoveEntryFailed>
+        <msgRemoveEntryQuestion>Voulez-vous vraiment supprimer cette entrée ?</msgRemoveEntryQuestion>
+        <msgRemoveMultipleItemsDescription>Cela supprime les entrées sélectionnées du registre (menu Démarrer) afin qu'elles ne s'exécutent plus au démarrage de Windows.</msgRemoveMultipleItemsDescription>
+        <msgStartupDeleteConfirm>Cela efface complètement l'entrée du registre (menu Démarrer).</msgStartupDeleteConfirm>
+        <msgUndoTracing>Voulez-vous vraiment que CleanRift oublie toutes les données tracées de ce programme ?</msgUndoTracing>
+        <msgUninstallFailed>La désinstallation a échoué.\nVoulez-vous supprimer l'entrée de registre de ce programme et nettoyer ses fichiers ?</msgUninstallFailed>
+        <msgNoTracedData>Ce programme ne contient aucune donnée tracée.</msgNoTracedData>
+        <msgPartialRemoval>Certains éléments sélectionnés n'ont pas pu être supprimés. Consultez les détails ci-dessous.</msgPartialRemoval>
+        <msgPendingReboot>Certains fichiers seront supprimés après le prochain redémarrage</msgPendingReboot>
+        <msgChooseExecutable>Veuillez choisir un fichier exécutable.</msgChooseExecutable>
+        <msgQuarantineNotice>Les fichiers et entrées de registre supprimés seront conservés en quarantaine et pourront être restaurés depuis Outils &gt; Quarantaine et annulation.</msgQuarantineNotice>
+        <msgPermanentRemovalNotice>La quarantaine est désactivée. Les éléments sélectionnés seront supprimés définitivement.</msgPermanentRemovalNotice>
+        <msgRemovalPreviewTitle>Confirmer la suppression</msgRemovalPreviewTitle>
+        <msgQuarantineKept>Les éléments supprimés ont été conservés en quarantaine. Restaurez-les depuis Outils &gt; Quarantaine et annulation.</msgQuarantineKept>
+    </Messages>
+    <Misc>
+        <btnCancel>Annuler</btnCancel>
+        <btnClose>Fermer</btnClose>
+        <btnNo>Non</btnNo>
+        <btnOK>OK</btnOK>
+        <btnYes>Oui</btnYes>
+        <statusCalculatingOccupiedSize>Calcul de l'espace occupé... %s</statusCalculatingOccupiedSize>
+        <statusRecentItems>récemment installés</statusRecentItems>
+        <statusRecentItemsTip>Afficher les programmes récemment installés/modifiés</statusRecentItemsTip>
+        <statusStartupTotalInfo>%d programmes au total, %d en cours d'exécution</statusStartupTotalInfo>
+        <statusTotalInfo>%d programmes pour un total de %s</statusTotalInfo>
+        <statusUnknown>inconnu</statusUnknown>
+        <trayOpen>Ouvrir CleanRift</trayOpen>
+        <btnExit>Quitter</btnExit>
+    </Misc>
+    <RunningProcessesDialog>
+        <Instruction1>Les processus suivants ont été détectés :</Instruction1>
+        <Instruction2>Il est recommandé de les fermer manuellement avant la suppression, mais l'Assistant de suppression peut les forcer à se terminer.</Instruction2>
+        <Title>Forcer l'arrêt des processus en cours ?</Title>
+    </RunningProcessesDialog>
+    <SecondaryToolbar>
+        <btnApps>Applications</btnApps>
+        <btnAppsToolTip>Applications</btnAppsToolTip>
+        <btnHidden>Masqués</btnHidden>
+        <btnHiddenToolTip>Composants masqués</btnHiddenToolTip>
+        <btnInstallAndTrace>Installer et tracer</btnInstallAndTrace>
+        <btnInstallAndTraceTooltip>Installer un nouveau programme et surveiller toutes les modifications qu'il apporte au système de fichiers et au registre</btnInstallAndTraceTooltip>
+        <btnRecentlyInstalled>Récemment installés (%u)</btnRecentlyInstalled>
+        <btnStoreApps>Applications Microsoft Store</btnStoreApps>
+        <btnStoreAppsToolTip>Applications installées depuis le Microsoft Store</btnStoreAppsToolTip>
+        <btnSystem>Système</btnSystem>
+        <btnSystemToolTip>Composants et mises à jour du système</btnSystemToolTip>
+    </SecondaryToolbar>
+    <ToolBar>
+        <btnHelp>Aide</btnHelp>
+        <btnHelpToolTip>Ouvrir le guide de démarrage rapide</btnHelpToolTip>
+        <btnPrefs>Préférences</btnPrefs>
+        <btnPrefsToolTip>Préférences de CleanRift</btnPrefsToolTip>
+        <btnRefresh>Actualiser</btnRefresh>
+        <btnRefreshToolTip>Actualiser la liste des programmes</btnRefreshToolTip>
+        <btnStartup>Démarrage</btnStartup>
+        <btnStartupToolTip>Applications qui s'exécutent automatiquement au démarrage</btnStartupToolTip>
+        <btnUninstaller>Désinstalleur</btnUninstaller>
+        <btnUninstallerToolTip>Désinstaller des programmes existants ou installer et tracer de nouveaux logiciels</btnUninstallerToolTip>
+    </ToolBar>
+    <TracedXMLDialog>
+        <TracedXMLDialogCaption>Données tracées de %s</TracedXMLDialogCaption>
+    </TracedXMLDialog>
+    <UninstallWizard>
+        <btnCancel>Annuler</btnCancel>
+        <btnClose>Fermer</btnClose>
+        <btnFinish>Terminer</btnFinish>
+        <btnUninstall>Désinstaller</btnUninstall>
+        <captionQuestionUninstall>Voulez-vous désinstaller « %s » ?</captionQuestionUninstall>
+        <captionQuestionUninstallBatch>Voulez-vous désinstaller les %u applications sélectionnées ?</captionQuestionUninstallBatch>
+        <captionUninstalling>Désinstallation de %s...</captionUninstalling>
+        <staticHyperlinkExport>Exporter au format XML</staticHyperlinkExport>
+        <staticHyperlinkRemovalLog>Enregistrer le journal de suppression</staticHyperlinkRemovalLog>
+        <staticOverallInfo>%d fichiers (%s) et %d éléments de registre restent sur votre ordinateur</staticOverallInfo>
+        <staticScanStatusFound>CleanRift a trouvé les traces suivantes laissées par le programme. Vérifiez-les puis cliquez sur Terminer pour supprimer les éléments sélectionnés.</staticScanStatusFound>
+        <staticScanStatusGeneratingTracesList>Génération de la liste des traces...</staticScanStatusGeneratingTracesList>
+        <staticScanStatusRemoved>%s a été supprimé avec succès.</staticScanStatusRemoved>
+        <staticScanStatusRemovedBatch>Tous les résidus sélectionnés ont été supprimés avec succès.</staticScanStatusRemovedBatch>
+        <statusAllTracesRemoved>Toutes les traces ont été supprimées</statusAllTracesRemoved>
+        <statusDeletingProgramTraces>Suppression des traces du programme...</statusDeletingProgramTraces>
+        <statusLeftOverTracesFound>Des résidus de traces ont été trouvés !</statusLeftOverTracesFound>
+        <statusNothingFound>Aucun résidu de trace trouvé.</statusNothingFound>
+        <statusPerformingUninstall>Exécution du désinstalleur du programme. Il peut demander des interventions.</statusPerformingUninstall>
+        <statusScanning>Recherche des fichiers, dossiers et éléments de registre résiduels...</statusScanning>
+        <statusScanningTraced>Génération de la liste des éléments tracés résiduels, veuillez patienter...</statusScanningTraced>
+        <statusUninstallInfo>L'Assistant de suppression exécute d'abord le désinstalleur du programme, puis nettoie les résidus.</statusUninstallInfo>
+        <statusUninstallInfoBatch>L'Assistant de suppression exécute le désinstalleur de chaque programme, puis affiche la liste combinée des résidus.</statusUninstallInfoBatch>
+        <treeItemFileSystem>Système de fichiers (%d éléments)</treeItemFileSystem>
+        <treeItemRegistry>Registre (%d éléments)</treeItemRegistry>
+        <UninstallWizardCaption>Supprimer toutes les traces de %s - Assistant de suppression</UninstallWizardCaption>
+        <UninstallWizardLocalizedName>Assistant de suppression</UninstallWizardLocalizedName>
+    </UninstallWizard>
+    <UninstallWizardConfirmation>
+        <btnNo>Non</btnNo>
+        <btnYes>Oui</btnYes>
+        <checkDontAskAgain>Mémoriser mon choix et ne plus me demander (modifiable dans les Préférences)</checkDontAskAgain>
+        <staticConfirm>Le désinstalleur intégré a terminé son travail. Voulez-vous effectuer une analyse approfondie du registre et du système de fichiers pour rechercher les entrées de registre inutilisées et les fichiers restants ?</staticConfirm>
+    </UninstallWizardConfirmation>
+    <Quarantine>
+        <Caption>Quarantaine et annulation</Caption>
+        <Description>Les fichiers et entrées de registre supprimés sont conservés ici jusqu'à ce que vous les supprimiez ou qu'un nettoyage automatique les supprime.</Description>
+        <ColumnDate>Créé le</ColumnDate>
+        <ColumnDescription>Opération</ColumnDescription>
+        <ColumnFiles>Fichiers</ColumnFiles>
+        <ColumnRegistry>Registre</ColumnRegistry>
+        <btnRestore>Restaurer</btnRestore>
+        <btnDelete>Supprimer définitivement</btnDelete>
+        <btnOpenFolder>Ouvrir le dossier</btnOpenFolder>
+        <Empty>La quarantaine est vide.</Empty>
+        <Count>%u opération(s) de suppression précédente(s)</Count>
+        <RestoreConfirm>Restaurer tous les éléments de cette opération ? Les fichiers existants ne sont jamais écrasés.</RestoreConfirm>
+        <RestorePartial>Certains éléments n'ont pas pu être restaurés.</RestorePartial>
+        <DeleteConfirm>Supprimer définitivement cette quarantaine ?</DeleteConfirm>
+        <DeleteDescription>Cette action est irréversible. Les fichiers et les sauvegardes de registre seront effacés.</DeleteDescription>
+    </Quarantine>
+    <Queue>
+        <Caption>File de désinstallation</Caption>
+        <Description>Les désinstallations s'exécutent l'une après l'autre. Les échecs n'arrêtent pas la file.</Description>
+        <ColumnStatus>État</ColumnStatus>
+        <btnStart>Démarrer la désinstallation</btnStart>
+        <StatusPending>En attente</StatusPending>
+        <StatusRunning>En cours d'exécution</StatusRunning>
+        <StatusDone>Terminé</StatusDone>
+        <StatusFailed>Échec</StatusFailed>
+        <StatusCancelled>Annulé</StatusCancelled>
+        <Running>Désinstallation de %s...</Running>
+        <Finished>File terminée. %u programme(s) désinstallé(s).</Finished>
+        <StopDescription>Arrêter la file après l'annulation du désinstalleur en cours ?</StopDescription>
+        <CloseDescription>La file est toujours en cours d'exécution. L'arrêter et fermer la fenêtre ?</CloseDescription>
+    </Queue>
+    <ShellIntegration>
+        <installAndTrace>Installer et tracer avec CleanRift</installAndTrace>
+    </ShellIntegration>
+    <History>
+        <Caption>Historique des actions</Caption>
+        <Description>Suppressions, annulations de traçage et opérations de quarantaine.</Description>
+        <ColumnDate>Date</ColumnDate>
+        <ColumnAction>Action</ColumnAction>
+        <ColumnDetails>Détails</ColumnDetails>
+        <ColumnResult>Résultat</ColumnResult>
+        <ColumnUndo>Annuler</ColumnUndo>
+        <Empty>Aucune action enregistrée pour le moment.</Empty>
+        <Count>%u action(s)</Count>
+        <btnUndo>Annuler</btnUndo>
+        <btnDetails>Détails</btnDetails>
+        <btnClear>Effacer l'historique</btnClear>
+        <btnOpenQuarantine>Ouvrir la quarantaine</btnOpenQuarantine>
+        <UndoConfirm>Restaurer tous les éléments de cette action ?</UndoConfirm>
+        <UndoUnavailable>Cette action ne dispose d'aucun lot de quarantaine à restaurer.</UndoUnavailable>
+        <ClearConfirm>Supprimer tout l'historique des actions ?</ClearConfirm>
+        <ClearDescription>Les lots de quarantaine ne sont pas supprimés ; seule la liste des actions est effacée.</ClearDescription>
+        <ResultSuccess>Terminé</ResultSuccess>
+        <ResultPartial>Partiellement terminé</ResultPartial>
+        <ResultFailed>Échec</ResultFailed>
+        <ResultUndone>Annulé</ResultUndone>
+        <DetailsTitle>Détails de l'action</DetailsTitle>
+        <DetailsFormat>Date : %s\nAction : %s\nDétails : %s\nSupprimés : %u\nPlanifiés pour redémarrage : %u\nÉchecs : %u\nLot de quarantaine : %s\nErreurs : %s</DetailsFormat>
+        <ActionRemoval>Suppression</ActionRemoval>
+        <ActionRevert>Annulation de traçage</ActionRevert>
+        <ActionQueue>File de désinstallation</ActionQueue>
+        <ActionRestore>Restauration de quarantaine</ActionRestore>
+        <ActionDelete>Suppression de quarantaine</ActionDelete>
+        <ActionRemoveEntry>Suppression d'entrée</ActionRemoveEntry>
+        <Yes>Oui</Yes>
+        <No>Non</No>
+        <None>Aucun</None>
+    </History>
+</Language>

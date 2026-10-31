@@ -1,4 +1,4 @@
-# CleanRift 1.0 Beta 2 — scope and known limitations
+# CleanRift 1.0 Beta 3 — scope and known limitations
 
 ## What is included
 
@@ -9,15 +9,19 @@
 - Standard uninstall plus the Removal Wizard for leftover files, folders and
   registry entries.
 - Force Removal, including batch mode.
-- Quarantine with undo, registry backups, optional System Restore points and a
-  clear pre-removal preview (see `docs/SAFETY.md`).
+- Quarantine with undo, registry backups, optional System Restore points,
+  automatic quarantine cleanup and a clear pre-removal preview (see
+  `docs/SAFETY.md`).
+- Action history listing removals, trace reverts, queue runs and quarantine
+  operations, with undo support.
 - Install and Trace with real-time filesystem events, an ETW registry session,
   a live event list and a snapshot fallback (see `docs/TRACKER.md`).
 - Optional Explorer “Install and trace” context menu for setup files.
 - Startup manager: Run/RunOnce, StartupApproved, scheduled tasks and an
   estimated startup-impact column.
 - HTML export of programs and startup items.
-- Light, dark and automatic themes; English and Spanish UI.
+- Light, dark and automatic themes; English, Spanish, French, German, Italian
+  and Brazilian Portuguese UI.
 - Single instance, automatic elevation, optional SkipUAC task and jump list.
 
 ## Disabled in this beta
@@ -37,7 +41,9 @@ note:
   `ReadDirectoryChangesW` and registry changes with an ETW kernel session. If
   either monitor is unavailable, the before/after snapshot is used as the
   fallback.
-- **Quarantine uses disk space** until the batch is deleted from Tools.
+- **Quarantine uses disk space** until the batch is deleted from Tools. The
+  default cleanup removes batches older than 30 days and keeps the most recent
+  ones so undo remains available.
 - **System Restore may be disabled** by policy; removal continues if the
   restore point cannot be created.
 - **Unsigned build.** Windows SmartScreen may warn until the executable is
@@ -73,7 +79,7 @@ note:
 Include:
 
 1. Windows version and build.
-2. CleanRift version (`1.0 Beta 2`).
+2. CleanRift version (`1.0 Beta 3`).
 3. Steps to reproduce.
 4. Whether the app was portable or installed.
 5. Relevant lines from `%LOCALAPPDATA%\CleanRift\error.log` with private paths

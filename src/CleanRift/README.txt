@@ -1,4 +1,4 @@
-CLEANRIFT 1.0 BETA 2
+CLEANRIFT 1.0 BETA 3
 ==================
 
 CleanRift removes programs completely, helps review the files and registry
@@ -29,6 +29,7 @@ Command line switches:
   /install_from_task_bar   open the Install and Trace page
   /startup_from_task_bar   open the Startup page
   /store_apps_from_task_bar open the Microsoft Store page
+  /install_and_trace <setup> open Install and Trace with a setup file
   --job <file>             apply an elevated removal/startup job
 
 
@@ -43,6 +44,8 @@ Files:
   state.json               small UI state (last category, hidden items)
   cache.dat                program list and size cache (CleanRift format)
   *_Traces.xml             install traces
+  history.json             action history
+  Quarantine\              removed files and registry backups kept for undo
   error.log, elevation.log, instance.log, jumplist.log
   DisabledStartupItems.json
 
@@ -53,9 +56,9 @@ If you enable the optional SkipUAC scheduled task, turn it off in Preferences
 before uninstalling. The uninstaller also tries to delete the task, but a
 per-user uninstall may not have permission to remove an elevated task.
 
-Removing a program may delete files and registry keys. Back up important data
-before using Force Removal or the leftovers wizard. Deleted data cannot be
-recovered by CleanRift.
+Removed files and registry entries are moved to quarantine by default. Restore
+them from Tools > Quarantine and undo. If you disable quarantine in Preferences,
+removal is permanent; back up important data first.
 
 
 BETA NOTES
@@ -63,12 +66,16 @@ BETA NOTES
 This is beta software. Known limitations:
 - Software update groups are not implemented; the related preferences are
   disabled.
-- Explorer integration, the Control Panel icon, Total Commander navigation and
-  the recent-items toolbar are not available in this beta.
+- The Control Panel icon, Total Commander navigation and the recent-items
+  toolbar are not available in this beta.
 - The real-time install monitor driver used by some commercial tools is not
-  included; tracing compares snapshots before and after an installation.
-- The dark theme uses WinForms controls; the closed state of native combo boxes
-  can still be painted by Windows in a light color.
+  included; files are tracked with ReadDirectoryChangesW and registry changes
+  with an ETW session, with a snapshot fallback.
+- The dark theme uses WinForms controls; the closed state of native controls
+  (including combo boxes and number fields) can still be painted by Windows in a
+  light color.
+- The interface is available in English, Spanish, French, German, Italian and
+  Brazilian Portuguese.
 
 Report bugs with the steps to reproduce and, if possible, the files in
 %LOCALAPPDATA%\CleanRift (remove any private paths first).

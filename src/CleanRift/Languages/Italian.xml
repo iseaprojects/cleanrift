@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Language Name="Italiano" LangID="1040" Version="1">
+    <DelayedFilesRemovalDialog>
+        <Title>Alcuni file non sono stati eliminati</Title>
+    </DelayedFilesRemovalDialog>
+    <DlgAddNewStartupProgram>
+        <checkHighestPriviledges>Esegui l'attività con i privilegi più elevati</checkHighestPriviledges>
+        <DlgAddNewStartupProgramCaption>Aggiungi un nuovo programma di avvio</DlgAddNewStartupProgramCaption>
+        <filterAllFiles>Tutti i file</filterAllFiles>
+        <filterExecutableFiles>File eseguibili</filterExecutableFiles>
+        <labelArguments>Argomenti (facoltativo):</labelArguments>
+        <labelPathToExecutableFile>Percorso del file eseguibile:</labelPathToExecutableFile>
+        <labelStartupType>Tipo di avvio:</labelStartupType>
+    </DlgAddNewStartupProgram>
+    <DlgPreferences>
+        <betaAppListNote>I gruppi di aggiornamenti software, il popup degli elementi recenti e il relativo pulsante nella barra degli strumenti non sono disponibili nella beta 1.0.</betaAppListNote>
+        <betaGeneralNote>Il controllo degli aggiornamenti, l'icona nel Pannello di controllo e la navigazione con Total Commander non sono disponibili nella beta 1.0. Il comando «Install and Trace» di Explorer è facoltativo e può essere disattivato qui.</betaGeneralNote>
+        <categoryAppList>Elenco applicazioni</categoryAppList>
+        <categoryGeneral>Generale</categoryGeneral>
+        <categoryInterface>Interfaccia</categoryInterface>
+        <categoryUninstallWizard>Procedura guidata di rimozione</categoryUninstallWizard>
+        <checkCheckForBetaVersions>Includi le versioni beta</checkCheckForBetaVersions>
+        <checkCheckForUpdates>Controlla gli aggiornamenti all'avvio</checkCheckForUpdates>
+        <checkControlPanelIcon>Mostra un collegamento a CleanRift nel Pannello di controllo</checkControlPanelIcon>
+        <checkDisplayPopup>Mostra un popup con i programmi installati di recente</checkDisplayPopup>
+        <checkDisplayUpdates>Mostra gli aggiornamenti software</checkDisplayUpdates>
+        <checkHighlighRecent>Evidenzia i programmi installati di recente</checkHighlighRecent>
+        <checkMark32bitApps>Contrassegna le app a 32 bit</checkMark32bitApps>
+        <checkMinimizeOnClose>Riduci nell'area di notifica alla chiusura della finestra</checkMinimizeOnClose>
+        <checkMinimizeToTray>Riduci nell'area di notifica quando la finestra viene ridotta a icona</checkMinimizeToTray>
+        <checkRecentOnSecondaryToolbar>Mostra i programmi recenti nella barra degli strumenti secondaria</checkRecentOnSecondaryToolbar>
+        <checkShellExtension>Aggiungi «Install and Trace» al menu contestuale di Explorer per i file di installazione (exe/msi)</checkShellExtension>
+        <checkSkipUAC>Usa l'Utilità di pianificazione per evitare la conferma UAC (quando possibile)</checkSkipUAC>
+        <checkSkipUACHelpText>Se attivato, CleanRift crea un'attività pianificata di Windows con privilegi elevati, così gli avvii successivi possono evitare la conferma UAC. Puoi disattivarlo in qualsiasi momento.</checkSkipUACHelpText>
+        <checkSmallIcons>Elenco compatto con le app</checkSmallIcons>
+        <checkStartMinimized>Avvia automaticamente CleanRift ridotto a icona nell'area di notifica all'avvio di Windows</checkStartMinimized>
+        <checkToolBarCaptions>Mostra le didascalie dei pulsanti della barra degli strumenti</checkToolBarCaptions>
+        <checkTotalCommander>Apri le cartelle dei programmi con Total Commander (se installato)</checkTotalCommander>
+        <checkTrayIcon>Mostra l'icona di CleanRift nell'area di notifica</checkTrayIcon>
+        <colorSchemeAuto>Segui il tema chiaro/scuro di Windows</colorSchemeAuto>
+        <colorSchemeDark>Tema scuro</colorSchemeDark>
+        <colorSchemeLight>Tema chiaro (predefinito)</colorSchemeLight>
+        <comboItemTreeUpdatesAlwaysExpanded>Sempre espansi</comboItemTreeUpdatesAlwaysExpanded>
+        <comboItemTreeUpdatesCollapsed>Inizialmente chiusi</comboItemTreeUpdatesCollapsed>
+        <comboItemTreeUpdatesExpanded>Inizialmente espansi</comboItemTreeUpdatesExpanded>
+        <comboItemWizardOption1>Chiedi prima di avviare</comboItemWizardOption1>
+        <comboItemWizardOption2>Automaticamente</comboItemWizardOption2>
+        <comboItemWizardOption3>Disattiva</comboItemWizardOption3>
+        <DlgPreferencesCaption>Preferenze</DlgPreferencesCaption>
+        <frameColorScheme>Schema colori</frameColorScheme>
+        <staticInterfaceLanguage>Lingua dell'interfaccia:</staticInterfaceLanguage>
+        <staticRecentlyInstalled>Programmi installati di recente:</staticRecentlyInstalled>
+        <staticTreeLikeUpdates>Aggiornamenti software come sottoelementi:</staticTreeLikeUpdates>
+        <staticWizardDesctiption>Dopo che il disinstallatore del programma ha terminato, la Procedura guidata di rimozione può cercare residui nel registro e nel file system. Scegli se eseguirla automaticamente, disattivarla o chiedere ogni volta. Per i programmi tracciati viene sempre usata la Procedura guidata di rimozione.</staticWizardDesctiption>
+        <staticWizardUsage>Avvia la Procedura guidata di rimozione dopo il disinstallatore integrato:</staticWizardUsage>
+        <subitemsHelpText>Espandi o comprimi i gruppi con il mouse o con i tasti Freccia sinistra/destra. Se una ricerca corrisponde a un sottoelemento, il suo gruppo si apre automaticamente.</subitemsHelpText>
+        <staticTrayGroup>Icona nell'area di notifica (system tray):</staticTrayGroup>
+        <staticWizardTracedNote>Per i programmi tracciati la Procedura guidata di rimozione viene sempre eseguita e non può essere disattivata.</staticWizardTracedNote>
+        <checkQuarantine>Sposta i file rimossi nella quarantena (annullamento disponibile in Strumenti)</checkQuarantine>
+        <checkBackupRegistry>Esegui il backup delle chiavi e dei valori di registro rimossi</checkBackupRegistry>
+        <checkRestorePoint>Crea un punto di ripristino di sistema prima della rimozione</checkRestorePoint>
+        <safetyNote>La quarantena e i backup del registro possono essere ripristinati da Strumenti &gt; Quarantena e annullamento.</safetyNote>
+        <checkSilentUninstall>Prova la disinstallazione in modalità invisibile quando il programma fornisce un comando di disinstallazione silenziosa</checkSilentUninstall>
+        <checkQuarantineCleanup>Elimina automaticamente i vecchi batch della quarantena</checkQuarantineCleanup>
+        <quarantineRetentionLabel>Elimina i batch più vecchi di:</quarantineRetentionLabel>
+        <quarantineRetentionSuffix>giorni</quarantineRetentionSuffix>
+        <quarantineMaxSizeLabel>Mantieni la quarantena sotto:</quarantineMaxSizeLabel>
+        <quarantineMaxSizeSuffix>MB</quarantineMaxSizeSuffix>
+        <quarantineCleanupNote>La pulizia viene eseguita all'avvio. I batch recenti vengono sempre conservati, così l'annullamento resta disponibile.</quarantineCleanupNote>
+    </DlgPreferences>
+    <ExplorerBar>
+        <itemAddNewStartupItem>Aggiungi un nuovo programma...</itemAddNewStartupItem>
+        <itemBatchUninstallInProgressTip>Disinstallazione in batch in corso, attendere il completamento della rimozione di tutte le app...</itemBatchUninstallInProgressTip>
+        <itemCommandLineCaption>Riga di comando:</itemCommandLineCaption>
+        <itemDelete>Forza la rimozione di tutte le tracce</itemDelete>
+        <itemDeleteSelected>Elimina gli elementi selezionati dall'elenco</itemDeleteSelected>
+        <itemDeleteStartupItem>Elimina dall'elenco</itemDeleteStartupItem>
+        <itemDisableRunning>Disattiva l'avvio automatico</itemDisableRunning>
+        <itemDisableSelected>Disattiva gli elementi selezionati</itemDisableSelected>
+        <itemEnableRunning>Attiva l'avvio automatico</itemEnableRunning>
+        <itemGroup>Questo è un gruppo di programmi</itemGroup>
+        <itemInstalledOn>Installato/Aggiornato il:</itemInstalledOn>
+        <itemModifyIt>Modifica</itemModifyIt>
+        <itemMultiplSelected>%u elementi selezionati</itemMultiplSelected>
+        <itemNoItemsMatchingFilter>Non ci sono programmi corrispondenti a «%s» nella categoria %s</itemNoItemsMatchingFilter>
+        <itemNothingFound>Nessun risultato.</itemNothingFound>
+        <itemNoUninstall>Il programma non può essere disinstallato in modo normale; puoi provare la Rimozione forzata.</itemNoUninstall>
+        <itemPublisher>Editore:</itemPublisher>
+        <itemSearch>Cerca</itemSearch>
+        <itemShortSearchTip>Digita per trovare un programma</itemShortSearchTip>
+        <itemSourceCaption>Origine:</itemSourceCaption>
+        <itemSourceRun_HKCU>Chiave Run del registro - utente corrente</itemSourceRun_HKCU>
+        <itemSourceRun_HKLM>Chiave Run del registro - tutti gli utenti</itemSourceRun_HKLM>
+        <itemSourceStartMenu_All>Avvio automatico - menu Start di tutti gli utenti</itemSourceStartMenu_All>
+        <itemSourceStartMenu_Current>Avvio automatico - menu Start dell'utente corrente</itemSourceStartMenu_Current>
+        <itemStatusCaption>Stato:</itemStatusCaption>
+        <itemStatusDisabled>Disattivato</itemStatusDisabled>
+        <itemStatusInvalid>Non valido</itemStatusInvalid>
+        <itemStatusNotRunning>Non in esecuzione</itemStatusNotRunning>
+        <itemStatusRunning>In esecuzione</itemStatusRunning>
+        <itemUninstallIt>Disinstalla</itemUninstallIt>
+        <itemVersion>Versione:</itemVersion>
+    </ExplorerBar>
+    <ForceRemovalForm>
+        <captionCancel>Annullare l'operazione?</captionCancel>
+        <staticCancel>L'operazione è ancora in corso. Vuoi interromperla e chiudere la finestra?</staticCancel>
+    </ForceRemovalForm>
+    <HTMLReport>
+        <allFiles>Tutti i file</allFiles>
+        <computer>Computer</computer>
+        <generatedByOn>Generato da %s il %s</generatedByOn>
+        <htmlFiles>File HTML</htmlFiles>
+        <installedPrograms>Programmi installati (%s)</installedPrograms>
+        <startupPrograms>Programmi di avvio</startupPrograms>
+    </HTMLReport>
+    <InstallTracker>
+        <btnInstall>Installa e traccia</btnInstall>
+        <btnNoAndRevert>No + Annulla modifiche</btnNoAndRevert>
+        <btnSave>Salva</btnSave>
+        <btnSaveLog>Salva registro...</btnSaveLog>
+        <btnStop>Interrompi</btnStop>
+        <checkMinimize>Riduci CleanRift nell'area di notifica durante l'installazione</checkMinimize>
+        <installTip1>Continua con l'installazione mentre CleanRift controlla le modifiche. La tracciatura si interrompe automaticamente al termine di tutti i processi di installazione; in caso contrario, interrompila manualmente.</installTip1>
+        <installTip2>Assicurati che non sia in corso un'altra installazione</installTip2>
+        <installTip3>Se è già installata una versione precedente di questo programma, è consigliabile rimuoverla prima di installare una versione più recente</installTip3>
+        <InstallTrackerLocalizedName>Install Tracker</InstallTrackerLocalizedName>
+        <logCompleted>Completato</logCompleted>
+        <logEventCreateFile>Crea file</logEventCreateFile>
+        <logEventCreateFolder>Crea cartella</logEventCreateFolder>
+        <logEventCreateKey>Crea chiave</logEventCreateKey>
+        <logEventSetValue>Imposta valore</logEventSetValue>
+        <logStartingService>Avvio del servizio Install Tracker...</logStartingService>
+        <logTracingAnalyzing>Analisi dell'installazione in corso, attendere...</logTracingAnalyzing>
+        <logTrackingAllProcessesFinished>Tutti i processi di installazione sono terminati</logTrackingAllProcessesFinished>
+        <logTrackingDone>Operazione completata</logTrackingDone>
+        <logTrackingStarting>Avvio di «%s»...</logTrackingStarting>
+        <logTrackingStartingEror>Errore: impossibile avviare il processo di installazione (errore %u)</logTrackingStartingEror>
+        <logTrackingStoppedByUser>La tracciatura è stata interrotta dall'utente</logTrackingStoppedByUser>
+        <selectInstallFile>Seleziona un file di installazione</selectInstallFile>
+        <staticInstallProgress>Avanzamento installazione:</staticInstallProgress>
+        <staticPathToProgram>Percorso di un file di installazione (.exe, .msi):</staticPathToProgram>
+        <staticRevertInfo>L'opzione di annullamento tenta di eliminare tutti gli elementi del file system e del registro creati durante la tracciatura dell'installazione</staticRevertInfo>
+        <Title>Installa e traccia un programma</Title>
+        <TitleAppend>Installa e traccia, aggiungi i dati tracciati a «%s»</TitleAppend>
+        <logIndexingBefore>Indicizzazione del sistema prima dell'installazione...</logIndexingBefore>
+        <logDetectingEntries>Rilevamento delle voci di installazione...</logDetectingEntries>
+        <staticCloseWhileTracing>La tracciatura è ancora in corso. Interromperla e chiudere la finestra?</staticCloseWhileTracing>
+        <statusLiveTracking>Controllo delle modifiche... %u eventi file, %u eventi registro</statusLiveTracking>
+    </InstallTracker>
+    <InstallTrackerCustomEntryDialog>
+        <checkCreateCustomEntry>Vorrei creare un elemento personalizzato nell'elenco</checkCreateCustomEntry>
+        <staticName>Nome:</staticName>
+        <Title>Durante la tracciatura non sono state trovate nuove voci di installazione. In genere ciò significa che il programma non è stato installato correttamente, ma se sei certo che l'installazione sia andata a buon fine puoi creare un nuovo programma personalizzato nell'elenco App. Tutte le tracce attualmente trovate faranno riferimento a esso.</Title>
+    </InstallTrackerCustomEntryDialog>
+    <InstallTrackerMultipleEntries>
+        <btnSelect>Seleziona</btnSelect>
+        <Caption>Rilevate più voci di installazione</Caption>
+        <Title>L'installazione ha creato diverse voci nel registro di Windows. Seleziona la voce principale da mostrare nell'elenco App con l'icona di tracciatura. Rimuovendo le sue tracce verranno rimosse anche le voci dipendenti.</Title>
+    </InstallTrackerMultipleEntries>
+    <ListCtrl>
+        <columnCompany>Azienda</columnCompany>
+        <columnInstallationDate>Installato il</columnInstallationDate>
+        <columnProgramName>Nome programma</columnProgramName>
+        <columnSize>Dimensione</columnSize>
+        <columnSource>Origine</columnSource>
+        <columnStatus>Stato</columnStatus>
+        <columnTraced>Tracciato</columnTraced>
+        <mark32bitItem>(32 bit)</mark32bitItem>
+        <sourceHKCURun>HKCU Run</sourceHKCURun>
+        <sourceHKCURunOnce>HKCU RunOnce</sourceHKCURunOnce>
+        <sourceHKLMRun>HKLM Run</sourceHKLMRun>
+        <sourceHKLMRunOnce>HKLM RunOnce</sourceHKLMRunOnce>
+        <sourceStartMenuAll>Menu Start tutti</sourceStartMenuAll>
+        <sourceStartMenuCU>Menu Start utente</sourceStartMenuCU>
+        <sourceWindowsStoreTask>App Microsoft Store</sourceWindowsStoreTask>
+        <sourceWindowsTask>Attività di Windows</sourceWindowsTask>
+        <staticLoading>Caricamento in corso, attendere...</staticLoading>
+        <staticNoProgramsInCategory>Non ci sono programmi nella categoria «%s»</staticNoProgramsInCategory>
+        <staticNoStartupItems>Non ci sono programmi che si avviano automaticamente all'avvio di Windows</staticNoStartupItems>
+        <columnImpact>Impatto sull'avvio</columnImpact>
+        <impactHigh>Alto</impactHigh>
+        <impactMedium>Medio</impactMedium>
+        <impactLow>Basso</impactLow>
+    </ListCtrl>
+    <MainMenu>
+        <mnuAction>&amp;Azioni</mnuAction>
+        <mnuActionBrowseLocation>Esplora percorso...</mnuActionBrowseLocation>
+        <mnuActionDelete>&amp;Rimozione forzata</mnuActionDelete>
+        <mnuActionDeleteBatch>Rimozione forzata &amp;in batch</mnuActionDeleteBatch>
+        <mnuActionJumpToProgramFolder>Cartella di &amp;installazione</mnuActionJumpToProgramFolder>
+        <mnuActionJumpToRegistry>Voce del &amp;registro</mnuActionJumpToRegistry>
+        <mnuActionJumpToWebSite>Sito web del &amp;programma</mnuActionJumpToWebSite>
+        <mnuActionModify>&amp;Modifica...</mnuActionModify>
+        <mnuActionOpenWindowsStore>Apri in Microsoft Store</mnuActionOpenWindowsStore>
+        <mnuActionRemoveEntry>Rimuovi &amp;voce</mnuActionRemoveEntry>
+        <mnuActionRemoveEntryBatch>Rimuovi &amp;voci in batch</mnuActionRemoveEntryBatch>
+        <mnuActionUninstall>&amp;Disinstalla...</mnuActionUninstall>
+        <mnuFile>&amp;File</mnuFile>
+        <mnuFileExit>&amp;Esci</mnuFileExit>
+        <mnuFileExport>&amp;Esporta in HTML...</mnuFileExport>
+        <mnuHelp>&amp;?</mnuHelp>
+        <mnuHelpAbout>&amp;Informazioni su...</mnuHelpAbout>
+        <mnuHelpOnline>Guida introduttiva...</mnuHelpOnline>
+        <mnuTools>&amp;Strumenti</mnuTools>
+        <mnuToolsAddRemove>&amp;Installazione applicazioni...</mnuToolsAddRemove>
+        <mnuToolsComponents>&amp;Componenti di Windows...</mnuToolsComponents>
+        <mnuToolsDefrag>Deframmentazione dischi</mnuToolsDefrag>
+        <mnuToolsOptions>&amp;Preferenze...</mnuToolsOptions>
+        <mnuToolsSecurityCenter>Centro sicurezza</mnuToolsSecurityCenter>
+        <mnuToolsServices>Servizi</mnuToolsServices>
+        <mnuToolsSystemInfo>Informazioni di sistema</mnuToolsSystemInfo>
+        <mnuToolsSystemProperties>Proprietà del sistema</mnuToolsSystemProperties>
+        <mnuToolsSystemRestore>Ripristino configurazione di sistema</mnuToolsSystemRestore>
+        <mnuToolsSystemTools>Strumenti di sistema</mnuToolsSystemTools>
+        <mnuToolsTaskScheduler>Utilità di pianificazione</mnuToolsTaskScheduler>
+        <mnuTracedData>Dati tracciati</mnuTracedData>
+        <mnuTracedDataAppend>Aggiungi dati tracciati (Installa e traccia)...</mnuTracedDataAppend>
+        <mnuTracedDataAsXML>Visualizza come XML...</mnuTracedDataAsXML>
+        <mnuTracedDataUndoTracing>Annulla tracciatura</mnuTracedDataUndoTracing>
+        <mnuView>&amp;Visualizza</mnuView>
+        <mnuViewLanguage>Lingua dell'interfaccia</mnuViewLanguage>
+        <mnuViewListColumnsReset>Reimposta colonne</mnuViewListColumnsReset>
+        <mnuViewMainToolbarButtonLabels>Mostra le etichette dei pulsanti sotto le icone</mnuViewMainToolbarButtonLabels>
+        <mnuViewMainToolbarShow>Mostra barra degli strumenti principale</mnuViewMainToolbarShow>
+        <mnuViewRefresh>&amp;Aggiorna</mnuViewRefresh>
+        <mnuViewSecondaryToolbar>Barra degli strumenti secondaria</mnuViewSecondaryToolbar>
+        <mnuActionQueue>Coda di disinstallazione...</mnuActionQueue>
+        <mnuToolsQuarantine>Quarantena e annullamento</mnuToolsQuarantine>
+        <mnuToolsHistory>Cronologia azioni</mnuToolsHistory>
+    </MainMenu>
+    <Messages>
+        <msgCannotOpenFolder>Impossibile aprire la cartella del programma.</msgCannotOpenFolder>
+        <msgCantModifyAutorunEntry>Impossibile modificare le proprietà di questa voce.</msgCantModifyAutorunEntry>
+        <msgForceCancelWaiting>Vuoi davvero annullare con la forza la disinstallazione di questo programma?</msgForceCancelWaiting>
+        <msgForceCancelWaitingFooter>L'annullamento forzato va usato solo se il disinstallatore è bloccato o se devi interrompere urgentemente tutti i processi di disinstallazione in corso.</msgForceCancelWaitingFooter>
+        <msgForceRemovalCheck>Sì, mi assumo la responsabilità</msgForceRemovalCheck>
+        <msgForceRemovalDescription>La rimozione forzata non esegue il disinstallatore del programma; elimina solo gli elementi del file system e del registro che gli appartengono.</msgForceRemovalDescription>
+        <msgForceRemovalDescriptionBatch>La rimozione forzata in batch è una funzione avanzata e va usata con cautela.</msgForceRemovalDescriptionBatch>
+        <msgForceRemovalDescriptionTraced>La rimozione forzata di un programma tracciato è rapida e completa e non esegue il suo disinstallatore.</msgForceRemovalDescriptionTraced>
+        <msgForceRemovalDescriptionWindowsComponent>La rimozione di questo prodotto può impedire il corretto funzionamento di funzionalità di Windows o di altri software.</msgForceRemovalDescriptionWindowsComponent>
+        <msgForceRemovalQuestion>Vuoi davvero rimuovere con la forza questo programma?</msgForceRemovalQuestion>
+        <msgForceRemovalQuestionBatch>Vuoi davvero rimuovere con la forza i seguenti programmi?</msgForceRemovalQuestionBatch>
+        <msgForceRemovalTitle>Rimozione forzata: %s</msgForceRemovalTitle>
+        <msgForceRemovalTitleBatch>Rimozione forzata in batch</msgForceRemovalTitleBatch>
+        <msgQuickHelp>CleanRift rimuove i programmi e i loro residui.\n\nF1  Apri questa guida\nF5  Aggiorna l'elenco\nCtrl+F  Cerca\nDel  Rimuovi il programma selezionato\n\nLe Preferenze permettono di cambiare tema, lingua e modalità della procedura guidata di rimozione.</msgQuickHelp>
+        <msgRemoveEntryDescription>Questa funzione rimuove la voce di registro di disinstallazione del programma, così che non compaia più nell'elenco. Con la quarantena attiva, la voce può essere ripristinata da Strumenti &gt; Quarantena e annullamento.</msgRemoveEntryDescription>
+        <msgRemoveEntryFailed>Impossibile eliminare la voce di registro per questo elemento.</msgRemoveEntryFailed>
+        <msgRemoveEntryQuestion>Vuoi davvero rimuovere questa voce?</msgRemoveEntryQuestion>
+        <msgRemoveMultipleItemsDescription>Questo rimuove le voci selezionate dal registro (menu Start), così non verranno più eseguite all'avvio di Windows.</msgRemoveMultipleItemsDescription>
+        <msgStartupDeleteConfirm>Questo elimina completamente la voce dal registro (menu Start).</msgStartupDeleteConfirm>
+        <msgUndoTracing>Vuoi che CleanRift dimentichi tutti i dati tracciati di questo programma?</msgUndoTracing>
+        <msgUninstallFailed>La disinstallazione non è riuscita.\nVuoi rimuovere la voce di registro di questo programma e pulirne i file?</msgUninstallFailed>
+        <msgNoTracedData>Questo programma non ha dati tracciati.</msgNoTracedData>
+        <msgPartialRemoval>Alcuni elementi selezionati non sono stati rimossi. Controlla i dettagli qui sotto.</msgPartialRemoval>
+        <msgPendingReboot>Alcuni file verranno rimossi dopo il prossimo riavvio</msgPendingReboot>
+        <msgChooseExecutable>Scegli un file eseguibile.</msgChooseExecutable>
+        <msgQuarantineNotice>I file e le voci di registro rimossi verranno conservati nella quarantena e potranno essere ripristinati da Strumenti &gt; Quarantena e annullamento.</msgQuarantineNotice>
+        <msgPermanentRemovalNotice>La quarantena è disattivata. Gli elementi selezionati verranno eliminati definitivamente.</msgPermanentRemovalNotice>
+        <msgRemovalPreviewTitle>Conferma rimozione</msgRemovalPreviewTitle>
+        <msgQuarantineKept>Gli elementi rimossi sono stati conservati nella quarantena. Ripristinali da Strumenti &gt; Quarantena e annullamento.</msgQuarantineKept>
+    </Messages>
+    <Misc>
+        <btnCancel>Annulla</btnCancel>
+        <btnClose>Chiudi</btnClose>
+        <btnNo>No</btnNo>
+        <btnOK>OK</btnOK>
+        <btnYes>Sì</btnYes>
+        <statusCalculatingOccupiedSize>Calcolo dello spazio occupato... %s</statusCalculatingOccupiedSize>
+        <statusRecentItems>installati di recente</statusRecentItems>
+        <statusRecentItemsTip>Visualizza i programmi installati o modificati di recente</statusRecentItemsTip>
+        <statusStartupTotalInfo>%d programmi in totale, %d attualmente in esecuzione</statusStartupTotalInfo>
+        <statusTotalInfo>%d programmi per un totale di %s</statusTotalInfo>
+        <statusUnknown>sconosciuto</statusUnknown>
+        <trayOpen>Apri CleanRift</trayOpen>
+        <btnExit>Esci</btnExit>
+    </Misc>
+    <RunningProcessesDialog>
+        <Instruction1>Sono stati rilevati i seguenti processi:</Instruction1>
+        <Instruction2>Si consiglia di terminarli manualmente prima della rimozione, ma la Procedura guidata di rimozione può terminarli forzatamente.</Instruction2>
+        <Title>Terminare forzatamente i processi in esecuzione?</Title>
+    </RunningProcessesDialog>
+    <SecondaryToolbar>
+        <btnApps>App</btnApps>
+        <btnAppsToolTip>Applicazioni</btnAppsToolTip>
+        <btnHidden>Nascosti</btnHidden>
+        <btnHiddenToolTip>Componenti nascosti</btnHiddenToolTip>
+        <btnInstallAndTrace>Installa e traccia</btnInstallAndTrace>
+        <btnInstallAndTraceTooltip>Installa un nuovo programma e osserva tutte le modifiche che apporta al file system e al registro</btnInstallAndTraceTooltip>
+        <btnRecentlyInstalled>Installati di recente (%u)</btnRecentlyInstalled>
+        <btnStoreApps>App Microsoft Store</btnStoreApps>
+        <btnStoreAppsToolTip>App installate da Microsoft Store</btnStoreAppsToolTip>
+        <btnSystem>Sistema</btnSystem>
+        <btnSystemToolTip>Componenti di sistema e aggiornamenti</btnSystemToolTip>
+    </SecondaryToolbar>
+    <ToolBar>
+        <btnHelp>Guida</btnHelp>
+        <btnHelpToolTip>Apri la guida introduttiva</btnHelpToolTip>
+        <btnPrefs>Preferenze</btnPrefs>
+        <btnPrefsToolTip>Preferenze di CleanRift</btnPrefsToolTip>
+        <btnRefresh>Aggiorna</btnRefresh>
+        <btnRefreshToolTip>Aggiorna l'elenco dei programmi</btnRefreshToolTip>
+        <btnStartup>Avvio</btnStartup>
+        <btnStartupToolTip>Applicazioni che si avviano automaticamente all'avvio</btnStartupToolTip>
+        <btnUninstaller>Disinstallatore</btnUninstaller>
+        <btnUninstallerToolTip>Disinstalla i programmi esistenti oppure installa e traccia un nuovo software</btnUninstallerToolTip>
+    </ToolBar>
+    <TracedXMLDialog>
+        <TracedXMLDialogCaption>Dati tracciati di %s</TracedXMLDialogCaption>
+    </TracedXMLDialog>
+    <UninstallWizard>
+        <btnCancel>Annulla</btnCancel>
+        <btnClose>Chiudi</btnClose>
+        <btnFinish>Fine</btnFinish>
+        <btnUninstall>Disinstalla</btnUninstall>
+        <captionQuestionUninstall>Vuoi disinstallare «%s»?</captionQuestionUninstall>
+        <captionQuestionUninstallBatch>Vuoi disinstallare le %u app selezionate?</captionQuestionUninstallBatch>
+        <captionUninstalling>Disinstallazione di %s...</captionUninstalling>
+        <staticHyperlinkExport>Esporta in XML</staticHyperlinkExport>
+        <staticHyperlinkRemovalLog>Salva registro di rimozione</staticHyperlinkRemovalLog>
+        <staticOverallInfo>%d file (%s) e %d elementi del registro sono ancora presenti nel computer</staticOverallInfo>
+        <staticScanStatusFound>CleanRift ha trovato le seguenti tracce lasciate dal programma. Esaminale e fai clic su Fine per rimuovere gli elementi selezionati.</staticScanStatusFound>
+        <staticScanStatusGeneratingTracesList>Generazione dell'elenco delle tracce...</staticScanStatusGeneratingTracesList>
+        <staticScanStatusRemoved>%s è stato rimosso correttamente.</staticScanStatusRemoved>
+        <staticScanStatusRemovedBatch>Tutti i residui selezionati sono stati rimossi correttamente.</staticScanStatusRemovedBatch>
+        <statusAllTracesRemoved>Tutte le tracce rimosse</statusAllTracesRemoved>
+        <statusDeletingProgramTraces>Eliminazione delle tracce del programma...</statusDeletingProgramTraces>
+        <statusLeftOverTracesFound>Sono state trovate alcune tracce residue.</statusLeftOverTracesFound>
+        <statusNothingFound>Nessuna traccia residua trovata.</statusNothingFound>
+        <statusPerformingUninstall>Esecuzione del disinstallatore del programma. Potrebbe richiedere l'intervento dell'utente.</statusPerformingUninstall>
+        <statusScanning>Ricerca di file, cartelle ed elementi del registro residui...</statusScanning>
+        <statusScanningTraced>Generazione dell'elenco degli elementi tracciati residui, attendere...</statusScanningTraced>
+        <statusUninstallInfo>La Procedura guidata di rimozione esegue prima il disinstallatore del programma e poi pulisce i residui.</statusUninstallInfo>
+        <statusUninstallInfoBatch>La Procedura guidata di rimozione esegue il disinstallatore di ogni programma e poi mostra l'elenco combinato dei residui.</statusUninstallInfoBatch>
+        <treeItemFileSystem>File system (%d elementi)</treeItemFileSystem>
+        <treeItemRegistry>Registro (%d elementi)</treeItemRegistry>
+        <UninstallWizardCaption>Rimuovi tutte le tracce di %s - Procedura guidata di rimozione</UninstallWizardCaption>
+        <UninstallWizardLocalizedName>Procedura guidata di rimozione</UninstallWizardLocalizedName>
+    </UninstallWizard>
+    <UninstallWizardConfirmation>
+        <btnNo>No</btnNo>
+        <btnYes>Sì</btnYes>
+        <checkDontAskAgain>Ricorda la mia scelta e non chiedermelo più (modificabile in Preferenze)</checkDontAskAgain>
+        <staticConfirm>Il disinstallatore integrato ha terminato. Vuoi eseguire una scansione approfondita del registro di sistema e del file system alla ricerca di voci di registro e file inutilizzati rimasti?</staticConfirm>
+    </UninstallWizardConfirmation>
+    <Quarantine>
+        <Caption>Quarantena e annullamento</Caption>
+        <Description>I file e le voci di registro rimossi restano qui finché non li elimini o finché la pulizia automatica non li rimuove.</Description>
+        <ColumnDate>Creato</ColumnDate>
+        <ColumnDescription>Operazione</ColumnDescription>
+        <ColumnFiles>File</ColumnFiles>
+        <ColumnRegistry>Registro</ColumnRegistry>
+        <btnRestore>Ripristina</btnRestore>
+        <btnDelete>Elimina definitivamente</btnDelete>
+        <btnOpenFolder>Apri cartella</btnOpenFolder>
+        <Empty>La quarantena è vuota.</Empty>
+        <Count>%u operazione/i di rimozione precedente/i</Count>
+        <RestoreConfirm>Ripristinare tutti gli elementi di questa operazione? I file esistenti non vengono mai sovrascritti.</RestoreConfirm>
+        <RestorePartial>Alcuni elementi non sono stati ripristinati.</RestorePartial>
+        <DeleteConfirm>Eliminare definitivamente questa quarantena?</DeleteConfirm>
+        <DeleteDescription>L'operazione non può essere annullata. I file e i backup del registro verranno cancellati.</DeleteDescription>
+    </Quarantine>
+    <Queue>
+        <Caption>Coda di disinstallazione</Caption>
+        <Description>Le disinstallazioni vengono eseguite una dopo l'altra. Gli errori non interrompono la coda.</Description>
+        <ColumnStatus>Stato</ColumnStatus>
+        <btnStart>Avvia disinstallazione</btnStart>
+        <StatusPending>In attesa</StatusPending>
+        <StatusRunning>In esecuzione</StatusRunning>
+        <StatusDone>Completato</StatusDone>
+        <StatusFailed>Non riuscito</StatusFailed>
+        <StatusCancelled>Annullato</StatusCancelled>
+        <Running>Disinstallazione di %s...</Running>
+        <Finished>Coda completata. %u programma/i disinstallato/i.</Finished>
+        <StopDescription>Interrompere la coda dopo aver annullato il disinstallatore corrente?</StopDescription>
+        <CloseDescription>La coda è ancora in esecuzione. Interromperla e chiudere la finestra?</CloseDescription>
+    </Queue>
+    <ShellIntegration>
+        <installAndTrace>Installa e traccia con CleanRift</installAndTrace>
+    </ShellIntegration>
+    <History>
+        <Caption>Cronologia azioni</Caption>
+        <Description>Rimozioni, annullamenti di tracciature e operazioni di quarantena.</Description>
+        <ColumnDate>Data</ColumnDate>
+        <ColumnAction>Azione</ColumnAction>
+        <ColumnDetails>Dettagli</ColumnDetails>
+        <ColumnResult>Risultato</ColumnResult>
+        <ColumnUndo>Annulla</ColumnUndo>
+        <Empty>Nessuna azione registrata.</Empty>
+        <Count>%u azione/i</Count>
+        <btnUndo>Annulla</btnUndo>
+        <btnDetails>Dettagli</btnDetails>
+        <btnClear>Cancella cronologia</btnClear>
+        <btnOpenQuarantine>Apri quarantena</btnOpenQuarantine>
+        <UndoConfirm>Ripristinare tutti gli elementi di questa azione?</UndoConfirm>
+        <UndoUnavailable>Questa azione non ha un batch di quarantena da ripristinare.</UndoUnavailable>
+        <ClearConfirm>Eliminare l'intera cronologia delle azioni?</ClearConfirm>
+        <ClearDescription>I batch della quarantena non vengono eliminati; viene cancellato solo l'elenco delle azioni.</ClearDescription>
+        <ResultSuccess>Completata</ResultSuccess>
+        <ResultPartial>Completata parzialmente</ResultPartial>
+        <ResultFailed>Non riuscita</ResultFailed>
+        <ResultUndone>Annullata</ResultUndone>
+        <DetailsTitle>Dettagli azione</DetailsTitle>
+        <DetailsFormat>Data: %s\nAzione: %s\nDettagli: %s\nEliminati: %u\nPianificati per il riavvio: %u\nNon riusciti: %u\nBatch di quarantena: %s\nErrori: %s</DetailsFormat>
+        <ActionRemoval>Rimozione</ActionRemoval>
+        <ActionRevert>Annullamento tracciatura</ActionRevert>
+        <ActionQueue>Coda di disinstallazione</ActionQueue>
+        <ActionRestore>Ripristino dalla quarantena</ActionRestore>
+        <ActionDelete>Eliminazione dalla quarantena</ActionDelete>
+        <ActionRemoveEntry>Rimozione voce</ActionRemoveEntry>
+        <Yes>Sì</Yes>
+        <No>No</No>
+        <None>Nessuno</None>
+    </History>
+</Language>

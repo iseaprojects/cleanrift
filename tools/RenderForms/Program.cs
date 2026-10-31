@@ -130,6 +130,7 @@ internal static class Program
         Render(new ForceRemovalForm(new[] { program }, settings), Path.Combine(outDir, "dlg_force.png"));
         Render(new TracedXmlForm(SampleTrace()), Path.Combine(outDir, "dlg_tracedxml.png"));
         Render(new QuarantineForm(), Path.Combine(outDir, "dlg_quarantine.png"));
+        Render(new ActionHistoryForm(), Path.Combine(outDir, "dlg_history.png"));
         Render(new UninstallQueueForm(new[] { program }, settings),
             Path.Combine(outDir, "dlg_queue.png"));
 
@@ -267,6 +268,13 @@ internal static class Program
         form.CreateControl();
         CreateHandles(form);
         form.PerformLayout();
+
+        // ShowWindow bypasses Form.Show(), so raise Load explicitly to let the
+        // dialog populate its lists before it is captured.
+        typeof(Form).GetMethod("OnLoad",
+                System.Reflection.BindingFlags.NonPublic |
+                System.Reflection.BindingFlags.Instance)
+            ?.Invoke(form, new object[] { EventArgs.Empty });
 
         if (_tabIndex >= 0)
             SelectTab(form, _tabIndex);

@@ -13,6 +13,25 @@ CleanRift keeps removed content recoverable by default.
 - Restores into protected Windows locations are rejected.
 - Batches can be restored or deleted from **Tools → Quarantine and undo**.
 
+## Automatic cleanup
+
+- Preferences can delete batches older than 1–365 days (30 by default).
+- A total size limit (2048 MB by default) removes the oldest batches first when
+  the quarantine grows too large.
+- Cleanup runs at startup and after saving Preferences.
+- Batches younger than one day are never removed by the size limit, so the undo
+  of a recent operation is preserved.
+- Recent batches are also protected from the age rule until they are older than
+  the configured retention period.
+
+## Action history
+
+- **Tools → Action history** lists removals, trace reverts, queue runs,
+  quarantine restores and quarantine deletes.
+- An action that produced a quarantine batch can be undone from the history.
+- Restoring a batch marks the original removal as undone.
+- Clearing the history does not delete quarantine batches.
+
 ## Registry backup
 
 When “Back up removed registry keys and values” is enabled, every removed key

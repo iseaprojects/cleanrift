@@ -216,7 +216,7 @@ public sealed class UninstallQueueForm : Form
             if (item == null || item.SubItems[1].Text == StatusText(ItemState.Done))
                 continue;
             SetState(item, ItemState.Running);
-            _status.Text = lang.F("Queue/Running", "Uninstalling %s...", program.DisplayName);
+            _status.Text = lang.F("Queue/Running", program.DisplayName);
 
             var quiet = _settings.SilentUninstall &&
                         (!string.IsNullOrWhiteSpace(program.QuietUninstallString) ||
@@ -264,6 +264,24 @@ public sealed class UninstallQueueForm : Form
         _cts?.Dispose();
         _cts = null;
 
+        var doneText = StatusText(ItemState.Done);
+        var failedText = StatusText(ItemState.Failed);
+        var done = _list.Items.Cast<ListViewItem>()
+            .Count(i => i.SubItems[1].Text == doneText);
+        var failed = _list.Items.Cast<ListViewItem>()
+            .Count(i => i.SubItems[1].Text == failedText);
+        if (done + failed > 0)
+        {
+            ActionHistory.Add(new ActionHistoryEntry
+            {
+                Kind = ActionHistoryKind.Queue,
+                Title = string.Join(", ", _programs.Take(4).Select(p => p.DisplayName)) +
+                        (_programs.Count > 4 ? "..." : ""),
+                Deleted = done,
+                Failed = failed
+            });
+        }
+
         if (_closeAfterCancel)
         {
             _closeAfterCancel = false;
@@ -271,10 +289,7 @@ public sealed class UninstallQueueForm : Form
             return;
         }
 
-        var doneText = StatusText(ItemState.Done);
-        var done = _list.Items.Cast<ListViewItem>().Count(i => i.SubItems[1].Text == doneText);
-        _status.Text = lang.F("Queue/Finished", "Queue finished. %u program(s) uninstalled.",
-            done);
+        _status.Text = lang.F("Queue/Finished", done);
     }
 
     private void Stop()

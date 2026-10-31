@@ -14,7 +14,7 @@
     </DlgAddNewStartupProgram>
     <DlgPreferences>
         <betaAppListNote>Software update groups, the recent-items popup and the recent-items toolbar button are not available in the 1.0 beta.</betaAppListNote>
-        <betaGeneralNote>Update checks, the Control Panel icon and Total Commander navigation are not available in the 1.0 beta. The Explorer Install and Trace" command is optional and can be disabled here."</betaGeneralNote>
+        <betaGeneralNote>Update checks, the Control Panel icon and Total Commander navigation are not available in the 1.0 beta. The Explorer Install and Trace command is optional and can be disabled here.</betaGeneralNote>
         <categoryAppList>Application list</categoryAppList>
         <categoryGeneral>General</categoryGeneral>
         <categoryInterface>Interface</categoryInterface>
@@ -61,6 +61,12 @@
         <checkRestorePoint>Create a System Restore point before removal</checkRestorePoint>
         <safetyNote>Quarantine and registry backups can be restored from Tools &gt; Quarantine and undo.</safetyNote>
         <checkSilentUninstall>Try silent uninstall when the program provides a quiet uninstall command</checkSilentUninstall>
+        <checkQuarantineCleanup>Delete old quarantine batches automatically</checkQuarantineCleanup>
+        <quarantineRetentionLabel>Delete batches older than:</quarantineRetentionLabel>
+        <quarantineRetentionSuffix>days</quarantineRetentionSuffix>
+        <quarantineMaxSizeLabel>Keep quarantine under:</quarantineMaxSizeLabel>
+        <quarantineMaxSizeSuffix>MB</quarantineMaxSizeSuffix>
+        <quarantineCleanupNote>Cleanup runs at startup. Recent batches are always kept so undo remains available.</quarantineCleanupNote>
     </DlgPreferences>
     <ExplorerBar>
         <itemAddNewStartupItem>Add a new program...</itemAddNewStartupItem>
@@ -220,6 +226,7 @@
         <mnuViewSecondaryToolbar>Secondary Toolbar</mnuViewSecondaryToolbar>
         <mnuActionQueue>Uninstall queue...</mnuActionQueue>
         <mnuToolsQuarantine>Quarantine and undo</mnuToolsQuarantine>
+        <mnuToolsHistory>Action history</mnuToolsHistory>
     </MainMenu>
     <Messages>
         <msgCannotOpenFolder>Cannot open the program folder.</msgCannotOpenFolder>
@@ -337,7 +344,7 @@
     </UninstallWizardConfirmation>
     <Quarantine>
         <Caption>Quarantine and undo</Caption>
-        <Description>Removed files and registry entries are kept here until you delete them.</Description>
+        <Description>Removed files and registry entries are kept here until you delete them or automatic cleanup removes them.</Description>
         <ColumnDate>Created</ColumnDate>
         <ColumnDescription>Operation</ColumnDescription>
         <ColumnFiles>Files</ColumnFiles>
@@ -370,4 +377,38 @@
     <ShellIntegration>
         <installAndTrace>Install and trace with CleanRift</installAndTrace>
     </ShellIntegration>
+    <History>
+        <Caption>Action history</Caption>
+        <Description>Removals, trace reverts and quarantine operations.</Description>
+        <ColumnDate>Date</ColumnDate>
+        <ColumnAction>Action</ColumnAction>
+        <ColumnDetails>Details</ColumnDetails>
+        <ColumnResult>Result</ColumnResult>
+        <ColumnUndo>Undo</ColumnUndo>
+        <Empty>No actions recorded yet.</Empty>
+        <Count>%u action(s)</Count>
+        <btnUndo>Undo</btnUndo>
+        <btnDetails>Details</btnDetails>
+        <btnClear>Clear history</btnClear>
+        <btnOpenQuarantine>Open quarantine</btnOpenQuarantine>
+        <UndoConfirm>Restore all items from this action?</UndoConfirm>
+        <UndoUnavailable>This action has no quarantine batch to restore.</UndoUnavailable>
+        <ClearConfirm>Delete the entire action history?</ClearConfirm>
+        <ClearDescription>Quarantine batches are not deleted; only the list of actions is cleared.</ClearDescription>
+        <ResultSuccess>Completed</ResultSuccess>
+        <ResultPartial>Partially completed</ResultPartial>
+        <ResultFailed>Failed</ResultFailed>
+        <ResultUndone>Undone</ResultUndone>
+        <DetailsTitle>Action details</DetailsTitle>
+        <DetailsFormat>Date: %s\nAction: %s\nDetails: %s\nDeleted: %u\nScheduled for reboot: %u\nFailed: %u\nQuarantine batch: %s\nErrors: %s</DetailsFormat>
+        <ActionRemoval>Removal</ActionRemoval>
+        <ActionRevert>Trace revert</ActionRevert>
+        <ActionQueue>Uninstall queue</ActionQueue>
+        <ActionRestore>Quarantine restore</ActionRestore>
+        <ActionDelete>Quarantine delete</ActionDelete>
+        <ActionRemoveEntry>Remove entry</ActionRemoveEntry>
+        <Yes>Yes</Yes>
+        <No>No</No>
+        <None>None</None>
+    </History>
 </Language>

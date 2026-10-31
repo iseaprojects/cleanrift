@@ -49,6 +49,11 @@ public sealed class QuarantineBatchInfo
     public int RegistryCount { get; set; }
 }
 
+public sealed record QuarantineCleanupResult(
+    int BatchesDeleted,
+    long BytesFreed,
+    int BatchesKept);
+
 /// <summary>
 /// Moves removed files into a per-batch folder and exports removed registry
 /// keys/values to a manifest. A batch can be restored later from the UI.
@@ -60,6 +65,8 @@ public static class QuarantineStore
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
+
+    private static readonly object MaintenanceGate = new();
 
     public static string Root => Path.Combine(AppSettings.DataDirectory, "Quarantine");
 
@@ -133,6 +140,12 @@ public static class QuarantineStore
 
     public static bool RestoreBatch(string id, out string error)
     {
+        lock (MaintenanceGate)
+            return RestoreBatchLocked(id, out error);
+    }
+
+    private static bool RestoreBatchLocked(string id, out string error)
+    {
         error = "";
         var batch = LoadBatch(id);
         if (batch == null)
@@ -163,6 +176,12 @@ public static class QuarantineStore
     }
 
     public static bool DeleteBatch(string id, out string error)
+    {
+        lock (MaintenanceGate)
+            return DeleteBatchLocked(id, out error);
+    }
+
+    private static bool DeleteBatchLocked(string id, out string error)
     {
         error = "";
         try
@@ -395,6 +414,148 @@ public static class QuarantineStore
         Directory.CreateDirectory(dir);
         Directory.CreateDirectory(Path.Combine(dir, "items"));
         return dir;
+    }
+
+    /// <summary>
+    /// Deletes batches older than <paramref name="retentionDays"/> and, if the
+    /// total size exceeds <paramref name="maxSizeMb"/>, the oldest batches that
+    /// are at least one day old. Recent batches are preserved so undo keeps
+    /// working.
+    /// </summary>
+    public static QuarantineCleanupResult Cleanup(int retentionDays, int maxSizeMb)
+    {
+        lock (MaintenanceGate)
+            return CleanupAt(Root, retentionDays, maxSizeMb, DateTime.UtcNow);
+    }
+
+    internal static QuarantineCleanupResult CleanupAt(string root, int retentionDays,
+        int maxSizeMb, DateTime nowUtc)
+    {
+        retentionDays = Math.Clamp(retentionDays, 1, 3650);
+        if (maxSizeMb < 0)
+            maxSizeMb = 0;
+
+        var deleted = 0;
+        long freed = 0;
+        var remaining = new List<(string Directory, DateTime CreatedUtc, long Size)>();
+        try
+        {
+            if (!Directory.Exists(root))
+                return new QuarantineCleanupResult(0, 0, 0);
+
+            var cutoff = nowUtc.AddDays(-retentionDays);
+            foreach (var directory in Directory.EnumerateDirectories(root))
+            {
+                var created = SafeCreationTime(directory);
+                var manifest = Path.Combine(directory, "manifest.json");
+                if (File.Exists(manifest))
+                {
+                    try
+                    {
+                        var batch = JsonSerializer.Deserialize<QuarantineBatch>(
+                            File.ReadAllText(manifest), JsonOptions);
+                        if (batch?.CreatedUtc is { } manifestTime &&
+                            manifestTime != default)
+                            created = manifestTime;
+                    }
+                    catch
+                    {
+                        // A damaged manifest falls back to the directory time.
+                    }
+                }
+
+                var size = DirectorySize(directory);
+                if (created < cutoff)
+                {
+                    if (TryDeleteDirectory(directory))
+                    {
+                        deleted++;
+                        freed += size;
+                        continue;
+                    }
+                }
+
+                remaining.Add((directory, created, size));
+            }
+
+            var kept = remaining.Count;
+            var total = remaining.Sum(entry => entry.Size);
+            var limit = (long)maxSizeMb * 1024L * 1024L;
+            if (limit > 0 && total > limit)
+            {
+                var oneDayAgo = nowUtc.AddDays(-1);
+                foreach (var entry in remaining.OrderBy(item => item.CreatedUtc))
+                {
+                    if (total <= limit)
+                        break;
+                    if (entry.CreatedUtc > oneDayAgo)
+                        continue;
+                    if (!TryDeleteDirectory(entry.Directory))
+                        continue;
+                    deleted++;
+                    kept--;
+                    freed += entry.Size;
+                    total -= entry.Size;
+                }
+            }
+
+            return new QuarantineCleanupResult(deleted, freed, Math.Max(0, kept));
+        }
+        catch
+        {
+            return new QuarantineCleanupResult(deleted, freed, remaining.Count);
+        }
+    }
+
+    private static DateTime SafeCreationTime(string directory)
+    {
+        try
+        {
+            return Directory.GetCreationTimeUtc(directory);
+        }
+        catch
+        {
+            return DateTime.UtcNow;
+        }
+    }
+
+    private static long DirectorySize(string directory)
+    {
+        long total = 0;
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(directory, "*",
+                         SearchOption.AllDirectories))
+            {
+                try
+                {
+                    total += new FileInfo(file).Length;
+                }
+                catch
+                {
+                    // A file disappearing during cleanup is not an error.
+                }
+            }
+        }
+        catch
+        {
+            // Best effort: an unreadable folder does not block cleanup.
+        }
+
+        return total;
+    }
+
+    private static bool TryDeleteDirectory(string directory)
+    {
+        try
+        {
+            Directory.Delete(directory, recursive: true);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 

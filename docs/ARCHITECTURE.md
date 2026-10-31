@@ -15,7 +15,8 @@ Core/
   UninstallRunner     runs the program's uninstaller and waits for its tree
   LeftoverScanner     heuristic leftover scan
   RemovalEngine       deletes or quarantines files, folders and registry items
-  QuarantineStore     quarantine batches, manifests and restore
+  QuarantineStore     quarantine batches, manifests, restore and cleanup
+  ActionHistory       bounded local log of removals and quarantine actions
   SystemRestore       optional restore point through SRSetRestorePoint
   ShellIntegration    optional per-user Explorer "Install and trace" verb
   InstallTracker      real-time filesystem tracing + registry snapshot diff
@@ -70,7 +71,10 @@ Job kinds:
 - Traces: `*_Traces.xml`, root `<CleanRiftTraces version="1">` with `Folders`,
   `Files`, `RegistryKeys` and `RegistryValues` sections.
 - Quarantine: `%LOCALAPPDATA%\CleanRift\Quarantine\<batch>\manifest.json` plus
-  the stored files and `.reg` exports.
+  the stored files and `.reg` exports. Old batches are removed at startup and
+  after saving Preferences.
+- Action history: `%LOCALAPPDATA%\CleanRift\history.json`, newest first, capped
+  at 500 entries.
 - Languages: `Languages\English.xml` and `Languages\Spanish.xml`, generated from
   `languages/*.csv` by `tools/Build-Languages.ps1`.
 

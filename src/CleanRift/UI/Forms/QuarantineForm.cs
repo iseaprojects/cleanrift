@@ -90,9 +90,9 @@ public sealed class QuarantineForm : Form
 
         _info = new Label
         {
-            Dock = DockStyle.Top,
-            Height = 22,
-            Padding = new Padding(16, 3, 16, 0),
+            AutoSize = false,
+            Location = new Point(16, 16),
+            Height = 20,
             ForeColor = theme.Muted,
             UseMnemonic = false
         };
@@ -106,7 +106,7 @@ public sealed class QuarantineForm : Form
         _restore.Click += (_, _) => RestoreSelected();
         _delete.Click += (_, _) => DeleteSelected();
         _open.Click += (_, _) => OpenFolder();
-        footer.Controls.AddRange(new Control[] { _restore, _delete, _open, _close });
+        footer.Controls.AddRange(new Control[] { _restore, _delete, _open, _close, _info });
         footer.Resize += (_, _) =>
         {
             var y = footer.ClientSize.Height - 40;
@@ -114,10 +114,10 @@ public sealed class QuarantineForm : Form
             _open.Location = new Point(_close.Left - 8 - _open.Width, y);
             _delete.Location = new Point(_open.Left - 8 - _delete.Width, y);
             _restore.Location = new Point(_delete.Left - 8 - _restore.Width, y);
+            _info.Width = Math.Max(80, _restore.Left - 24);
         };
 
         Controls.Add(_list);
-        Controls.Add(_info);
         Controls.Add(footer);
         Controls.Add(header);
         CancelButton = _close;
@@ -165,14 +165,14 @@ public sealed class QuarantineForm : Form
             item.SubItems.Add(batch.Description);
             item.SubItems.Add(batch.FileCount.ToString());
             item.SubItems.Add(batch.RegistryCount.ToString());
-            item.Tag = batch.Id;
+            item.Tag = batch;
             _list.Items.Add(item);
         }
         _list.EndUpdate();
         AdjustColumns();
         _info.Text = _list.Items.Count == 0
             ? lang.T("Quarantine/Empty", "Quarantine is empty.")
-            : lang.F("Quarantine/Count", "%u previous removal operation(s)", _list.Items.Count);
+            : lang.F("Quarantine/Count", _list.Items.Count);
         UpdateButtons();
     }
 
@@ -184,14 +184,14 @@ public sealed class QuarantineForm : Form
         _open.Enabled = Directory.Exists(QuarantineStore.Root);
     }
 
-    private string? SelectedId() => _list.SelectedItems.Count == 0
+    private QuarantineBatchInfo? SelectedBatch() => _list.SelectedItems.Count == 0
         ? null
-        : _list.SelectedItems[0].Tag as string;
+        : _list.SelectedItems[0].Tag as QuarantineBatchInfo;
 
     private void RestoreSelected()
     {
-        var id = SelectedId();
-        if (string.IsNullOrEmpty(id))
+        var batch = SelectedBatch();
+        if (batch == null)
             return;
         var lang = LanguageManager.Instance;
         var confirm = MessageDialog.Confirm(this,
@@ -202,7 +202,17 @@ public sealed class QuarantineForm : Form
         if (confirm.Result != DialogResult.Yes)
             return;
 
-        if (!QuarantineStore.RestoreBatch(id, out var error))
+        if (QuarantineStore.RestoreBatch(batch.Id, out var error))
+        {
+            ActionHistory.Add(new ActionHistoryEntry
+            {
+                Kind = ActionHistoryKind.Restore,
+                Title = batch.Description,
+                QuarantineBatchId = batch.Id
+            });
+            ActionHistory.MarkUndoneByBatch(batch.Id);
+        }
+        else
         {
             MessageDialog.Error(this, AppInfo.Name,
                 string.IsNullOrWhiteSpace(error)
@@ -216,8 +226,8 @@ public sealed class QuarantineForm : Form
 
     private void DeleteSelected()
     {
-        var id = SelectedId();
-        if (string.IsNullOrEmpty(id))
+        var batch = SelectedBatch();
+        if (batch == null)
             return;
         var lang = LanguageManager.Instance;
         var confirm = MessageDialog.Show(this,
@@ -229,8 +239,20 @@ public sealed class QuarantineForm : Form
         if (confirm.Result != DialogResult.Yes)
             return;
 
-        if (!QuarantineStore.DeleteBatch(id, out var error))
+        if (QuarantineStore.DeleteBatch(batch.Id, out var error))
+        {
+            ActionHistory.Add(new ActionHistoryEntry
+            {
+                Kind = ActionHistoryKind.Delete,
+                Title = batch.Description,
+                QuarantineBatchId = batch.Id
+            });
+        }
+        else
+        {
             MessageDialog.Error(this, AppInfo.Name, error);
+        }
+
         Reload();
     }
 

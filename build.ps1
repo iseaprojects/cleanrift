@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 Set-Location $root
 
-$version = '1.0-beta2'
+$version = '1.0-beta3'
 $portableName = "CleanRift-$version-portable"
 $releaseRoot = Join-Path $root 'artifacts\release'
 $portable = Join-Path $releaseRoot $portableName
