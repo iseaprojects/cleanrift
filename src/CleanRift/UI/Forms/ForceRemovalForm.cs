@@ -400,7 +400,6 @@ public sealed class ForceRemovalForm : Form
         _progress.Visible = true;
 
         var engine = new RemovalEngine();
-        engine.Progress += text => _log.Add(text);
         JobResult? result = null;
         var token = _cts.Token;
         try

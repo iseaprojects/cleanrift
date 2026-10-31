@@ -131,6 +131,10 @@
         <staticRevertInfo>Revert option attempts to delete all file system/registry items created during the installation tracing</staticRevertInfo>
         <Title>Install and Trace a Program</Title>
         <TitleAppend>Install and Trace, append traced data to '%s'</TitleAppend>
+        <logIndexingBefore>Indexing the system before installation...</logIndexingBefore>
+        <logDetectingEntries>Detecting installation entries...</logDetectingEntries>
+        <staticCloseWhileTracing>Tracing is still running. Stop tracing and close the window?</staticCloseWhileTracing>
+        <statusLiveTracking>Watching for changes... %u events</statusLiveTracking>
     </InstallTracker>
     <InstallTrackerCustomEntryDialog>
         <checkCreateCustomEntry>I'd like to create a custom item in the list</checkCreateCustomEntry>

@@ -7,7 +7,8 @@
 - Standard uninstall plus the Removal Wizard for leftover files, folders and
   registry entries.
 - Force Removal, including batch mode.
-- Install and Trace with before/after snapshots.
+- Install and Trace with real-time filesystem events and a registry snapshot
+  diff (see `docs/TRACKER.md`).
 - Startup manager: Run/RunOnce, StartupApproved and scheduled tasks.
 - HTML export of programs and startup items.
 - Light, dark and automatic themes; English and Spanish UI.
@@ -27,8 +28,9 @@ note:
 
 ## Known limitations
 
-- **No real-time driver.** Tracing compares snapshots of common installation
-  roots; very short-lived files or services may be missed.
+- **No kernel driver.** Filesystem changes are captured in real time with
+  `ReadDirectoryChangesW`; registry changes use a before/after snapshot. If the
+  watcher buffer overflows, the final snapshot is used as a fallback.
 - **Unsigned build.** Windows SmartScreen may warn until the executable is
   code-signed.
 - **x64 only.** The published build targets Windows 10/11 x64.
@@ -40,8 +42,8 @@ note:
 - **Store packages** are removed through `Remove-AppxPackage`; per-user and
   provisioned packages can behave differently.
 - **Driver-based monitoring** used by some commercial tools is not included.
-- **Accessibility and multi-monitor placement** have not been fully tested;
-  window position is restored on the primary monitor.
+- **Accessibility** has not been fully tested. Window position is restored
+  across the current virtual desktop, including secondary monitors.
 
 ## Safety notes for testers
 

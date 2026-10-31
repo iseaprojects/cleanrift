@@ -1,7 +1,13 @@
 # Changelog
 
-## Unreleased — audit fixes
+## Unreleased — audit fixes and real-time tracker
 
+- Install Tracker now watches filesystem changes in real time and merges them
+  with the registry snapshot diff; see `docs/TRACKER.md`.
+- Tracks Start Menu, Desktop, LocalLow and newly created custom install
+  folders; pre-existing paths are never recorded, so updates stay safe.
+- Registry-only final snapshot when the live monitor covered every root, which
+  makes tracing faster.
 - Hardened elevated removal jobs, protected paths/registry trees and command
   execution (see `docs/AUDIT-2026-10.md`).
 - Fixed Store-app uninstall quoting, process/GDI leaks, scan cancellation,
@@ -42,4 +48,5 @@ First public beta.
   navigation and recent-items toolbar are disabled in this beta.
 - The build is unsigned.
 - Native dark combo boxes can still paint a light closed state.
-- Tracing uses snapshots rather than a real-time kernel driver.
+- Tracing uses real-time filesystem events plus a registry snapshot diff; it
+  does not load a kernel driver.

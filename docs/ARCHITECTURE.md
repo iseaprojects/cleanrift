@@ -15,7 +15,8 @@ Core/
   UninstallRunner     runs the program's uninstaller and waits for its tree
   LeftoverScanner     heuristic leftover scan
   RemovalEngine       deletes files, folders and registry items
-  InstallTracker      snapshot-based install tracing
+  InstallTracker      real-time filesystem tracing + registry snapshot diff
+  LiveFileMonitor     FileSystemWatcher/ReadDirectoryChangesW event collector
   TraceStore          trace XML read/write
   StartupScanner      Run/RunOnce, StartupApproved, scheduled tasks, Store
   StartupManager      enable/disable/delete/create startup entries
