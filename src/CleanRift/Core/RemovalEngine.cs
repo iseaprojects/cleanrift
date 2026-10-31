@@ -16,6 +16,22 @@ public sealed class RemovalEngine
     private readonly object _lock = new();
     private readonly JobResult _result = new();
     private readonly List<string> _log = new();
+    private readonly bool _quarantine;
+    private readonly bool _backupRegistry;
+    private readonly bool _createRestorePoint;
+    private readonly string _description;
+    private QuarantineSession? _session;
+
+    public RemovalEngine(bool quarantine = false, bool backupRegistry = false,
+        bool createRestorePoint = false, string description = "")
+    {
+        _quarantine = quarantine;
+        _backupRegistry = backupRegistry;
+        _createRestorePoint = createRestorePoint;
+        _description = description;
+    }
+
+    public string QuarantineBatchId => _session?.Id ?? "";
 
     public IReadOnlyList<string> Log
     {
@@ -39,6 +55,32 @@ public sealed class RemovalEngine
             _result.Error = "";
             _result.Errors.Clear();
             _log.Clear();
+        }
+
+        if (_createRestorePoint)
+        {
+            if (!SystemRestore.TryCreate(_description, out var restoreError) &&
+                !string.IsNullOrWhiteSpace(restoreError))
+            {
+                Progress?.Invoke("System Restore: " + restoreError);
+                _log.Add("System Restore: " + restoreError);
+            }
+        }
+
+        if (_quarantine || _backupRegistry)
+        {
+            _session = QuarantineSession.Create(_description, _quarantine, _backupRegistry,
+                out var quarantineError);
+            if (_session == null)
+            {
+                lock (_lock)
+                {
+                    _result.Success = false;
+                    _result.Failed = 1;
+                    _result.Error = "Quarantine is unavailable: " + quarantineError;
+                }
+                return _result;
+            }
         }
 
         var pending = new List<RemovalJobItem>();
@@ -73,6 +115,17 @@ public sealed class RemovalEngine
                 else if (accessDenied)
                 {
                     needsElevation.Add(item);
+                }
+                else if (_session?.MovesFiles == true &&
+                         item.Kind is "file" or "folder")
+                {
+                    // With quarantine enabled, never fall back to permanent
+                    // deletion or a reboot schedule behind the user's back.
+                    lock (_lock)
+                    {
+                        _result.Failed++;
+                        _result.Errors.Add(item.Path + ": could not move to quarantine");
+                    }
                 }
                 else
                 {
@@ -126,7 +179,9 @@ public sealed class RemovalEngine
             else
             {
                 Progress?.Invoke("Requesting administrator rights...");
-                var elevated = Elevation.ExecuteRemoval(needsElevation);
+                var elevated = Elevation.ExecuteRemoval(needsElevation, wait: true,
+                    quarantine: _quarantine, backupRegistry: _backupRegistry,
+                    createRestorePoint: false, description: _description);
                 if (elevated == null || !elevated.Success)
                 {
                     lock (_lock)
@@ -143,13 +198,24 @@ public sealed class RemovalEngine
                         _result.Failed += elevated.Failed;
                         _result.ScheduledForReboot += elevated.ScheduledForReboot;
                         _result.Errors.AddRange(elevated.Errors);
+                        if (string.IsNullOrEmpty(_result.QuarantineBatchId))
+                            _result.QuarantineBatchId = elevated.QuarantineBatchId;
                     }
                 }
             }
         }
 
+        _session?.Complete();
         lock (_lock)
+        {
             _result.Success = _result.Failed == 0;
+            // Keep the elevated helper's batch when the parent only exported
+            // items that the helper later removed, and never advertise an
+            // empty batch that Complete() just deleted.
+            if (_session is { HasEntries: true })
+                _result.QuarantineBatchId = _session.Id;
+        }
+
         return _result;
     }
 
@@ -227,6 +293,23 @@ public sealed class RemovalEngine
     private bool DeleteDirect(RemovalJobItem item, out bool accessDenied)
     {
         accessDenied = false;
+        if (_session != null)
+        {
+            var capture = _session.TryCapture(item, out var captureError);
+            if (capture == CaptureResult.AccessDenied)
+            {
+                accessDenied = true;
+                _log.Add("Quarantine access denied: " + item.Path + " (" + captureError + ")");
+                return false;
+            }
+
+            if (capture == CaptureResult.Failed)
+            {
+                _log.Add("Quarantine failed: " + item.Path + " (" + captureError + ")");
+                return false;
+            }
+        }
+
         switch (item.Kind)
         {
             case "file":
@@ -544,7 +627,8 @@ public sealed class RemovalEngine
             };
         }
 
-        var engine = new RemovalEngine();
+        var engine = new RemovalEngine(job.Quarantine, job.BackupRegistry,
+            job.CreateRestorePoint, job.Description);
         return engine.RemoveItems(job.Items, CancellationToken.None);
     }
 

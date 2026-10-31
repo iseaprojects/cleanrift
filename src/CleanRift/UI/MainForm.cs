@@ -73,13 +73,16 @@ public sealed class MainForm : Form
     private bool _closing;
     private bool _externalClose;
     private readonly StartupTarget _initialTarget;
+    private readonly string? _initialSetupPath;
     private CancellationTokenSource? _scanCts;
     private CancellationTokenSource? _sizeCts;
 
-    public MainForm(AppSettings settings, StartupTarget initialTarget = StartupTarget.None)
+    public MainForm(AppSettings settings, StartupTarget initialTarget = StartupTarget.None,
+        string? initialSetupPath = null)
     {
         _settings = settings;
         _initialTarget = initialTarget;
+        _initialSetupPath = initialSetupPath;
         _startupScanner = new StartupScanner(settings);
         _category = settings.LastCategory;
         // The secondary toolbar no longer exposes "recent"; normalize an old
@@ -194,6 +197,12 @@ public sealed class MainForm : Form
             await RefreshAsync();
             if (_closing)
                 return;
+
+            if (!string.IsNullOrWhiteSpace(_initialSetupPath))
+            {
+                StartInstallTrace(null, _initialSetupPath);
+                return;
+            }
 
             switch (_initialTarget)
             {
@@ -495,6 +504,8 @@ public sealed class MainForm : Form
         {
             action.DropDownItems.Add(Tagged(Item("MainMenu/mnuActionUninstall", (_, _) => UninstallSelected()),
                 "uninstall"));
+            action.DropDownItems.Add(Tagged(Item("MainMenu/mnuActionQueue",
+                (_, _) => OpenUninstallQueue()), "queue"));
             action.DropDownItems.Add(Tagged(Item("MainMenu/mnuActionModify", (_, _) => ModifySelected()), "modify"));
             action.DropDownItems.Add(Tagged(Item("MainMenu/mnuActionDelete", (_, _) => ForceRemoveSelected()), "any"));
             action.DropDownItems.Add(Tagged(Item("MainMenu/mnuActionDeleteBatch", (_, _) => ForceRemoveSelected()),
@@ -615,6 +626,8 @@ public sealed class MainForm : Form
         systemTools.DropDownItems.Add(SystemTool("MainMenu/mnuToolsTaskScheduler", "taskschd.msc"));
         tools.DropDownItems.Add(systemTools);
         tools.DropDownItems.Add(new ToolStripSeparator());
+        tools.DropDownItems.Add(Item("MainMenu/mnuToolsQuarantine",
+            (_, _) => ShowQuarantine()));
         tools.DropDownItems.Add(Item("MainMenu/mnuToolsOptions", (_, _) => OpenPreferences()));
         _menu.Items.Add(tools);
 
@@ -669,6 +682,8 @@ public sealed class MainForm : Form
         if (_mode == ViewMode.Programs)
         {
             _context.Items.Add(Tagged(Item("MainMenu/mnuActionUninstall", (_, _) => UninstallSelected()), "uninstall"));
+            _context.Items.Add(Tagged(Item("MainMenu/mnuActionQueue",
+                (_, _) => OpenUninstallQueue()), "queue"));
             _context.Items.Add(Tagged(Item("MainMenu/mnuActionModify", (_, _) => ModifySelected()), "modify"));
             _context.Items.Add(new ToolStripSeparator());
             _context.Items.Add(Tagged(Item("MainMenu/mnuActionDelete", (_, _) => ForceRemoveSelected()), "any"));
@@ -809,33 +824,36 @@ public sealed class MainForm : Form
             _list.Columns.Add("", Math.Max(200, _settings.StartupColumnWidth));
             _list.Columns.Add("", 110);
             _list.Columns.Add("", 180);
-            _list.Columns.Add("", 160);
+            _list.Columns.Add("", 140);
+            _list.Columns.Add("", 80);
             _list.Columns[0].Text = lang.T("ListCtrl/columnProgramName", "Program Name");
             _list.Columns[1].Text = lang.T("ListCtrl/columnStatus", "Status");
             _list.Columns[2].Text = lang.T("ListCtrl/columnSource", "Source");
             _list.Columns[3].Text = lang.T("ListCtrl/columnCompany", "Company");
+            _list.Columns[4].Text = lang.T("ListCtrl/columnImpact", "Startup impact");
             AdjustStartupColumns();
         }
     }
 
     private void AdjustStartupColumns()
     {
-        if (_mode != ViewMode.Startup || _list.Columns.Count != 4)
+        if (_mode != ViewMode.Startup || _list.Columns.Count != 5)
             return;
 
-        // Status, source and publisher are proportional to the list width so
-        // the name column keeps room at the 780 px minimum and all four
-        // columns remain visible on a wide window.
+        // Status, source, publisher and impact are proportional to the list
+        // width so the name column keeps room at the 780 px minimum.
         var width = _list.ClientSize.Width;
-        var status = Math.Clamp(width / 6, 80, 110);
-        var source = Math.Clamp(width / 4, 110, 200);
-        var company = Math.Clamp(width / 7, 80, 150);
-        var name = Math.Max(120, width - status - source - company - 4);
+        var status = Math.Clamp(width / 7, 80, 110);
+        var source = Math.Clamp(width / 5, 100, 190);
+        var company = Math.Clamp(width / 8, 70, 140);
+        var impact = Math.Clamp(width / 9, 70, 100);
+        var name = Math.Max(120, width - status - source - company - impact - 4);
 
         _list.Columns[0].Width = name;
         _list.Columns[1].Width = status;
         _list.Columns[2].Width = source;
         _list.Columns[3].Width = company;
+        _list.Columns[4].Width = impact;
     }
 
     private void ApplyColumnWidths()
@@ -1250,6 +1268,39 @@ public sealed class MainForm : Form
         return list.OrderBy(key, comparer).ToList();
     }
 
+    private List<StartupItem> SortStartup(List<StartupItem> list)
+    {
+        Func<StartupItem, object> key = _sortColumn switch
+        {
+            1 => p => p.DisplayStatus,
+            2 => p => p.SourceText,
+            3 => p => p.Publisher,
+            4 => p => p.Impact,
+            _ => p => p.Name
+        };
+
+        var comparer = Comparer<object>.Create((a, b) =>
+        {
+            var result = a is string sa && b is string sb
+                ? string.Compare(sa, sb, StringComparison.CurrentCultureIgnoreCase)
+                : Comparer<object>.Default.Compare(a, b);
+            return _sortAscending ? result : -result;
+        });
+
+        return list.OrderBy(key, comparer).ToList();
+    }
+
+    private static string ImpactText(StartupImpact impact)
+    {
+        var lang = LanguageManager.Instance;
+        return impact switch
+        {
+            StartupImpact.High => lang.T("ListCtrl/impactHigh", "High"),
+            StartupImpact.Medium => lang.T("ListCtrl/impactMedium", "Medium"),
+            _ => lang.T("ListCtrl/impactLow", "Low")
+        };
+    }
+
     private void AddProgramItem(InstalledProgram program, string text, int indent)
     {
         // Append the "(32-bit)" marker to 32-bit entries when "Mark 32-bit
@@ -1293,13 +1344,12 @@ public sealed class MainForm : Form
     private void PopulateStartup()
     {
         var filter = _filter.Trim();
-        var items = _startup
+        var items = SortStartup(_startup
             .Where(i => string.IsNullOrWhiteSpace(filter) ||
                         i.Name.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
                         i.Command.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
                         i.SourceText.Contains(filter, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase)
-            .ToList();
+            .ToList());
 
         foreach (var startup in items)
         {
@@ -1311,6 +1361,7 @@ public sealed class MainForm : Form
             item.SubItems.Add(startup.DisplayStatus);
             item.SubItems.Add(startup.SourceText);
             item.SubItems.Add(startup.Publisher);
+            item.SubItems.Add(ImpactText(startup.Impact));
             if (!startup.Enabled)
                 item.ForeColor = Theme.Current.Muted;
 
@@ -1430,6 +1481,8 @@ public sealed class MainForm : Form
             ["any"] = programs.Count > 0 || startup.Count > 0,
             ["single"] = single != null || startupSingle != null,
             ["uninstall"] = single != null && !single.NoRemove && !string.IsNullOrWhiteSpace(single.UninstallString),
+            ["queue"] = programs.Count(p => !p.NoRemove &&
+                (!string.IsNullOrWhiteSpace(p.UninstallString) || p.IsStoreApp)) > 1,
             ["modify"] = single != null && !string.IsNullOrWhiteSpace(single.ModifyPath),
             ["address"] = programs.Count > 0 && programs.All(p => p.Source != ProgramSource.Store),
             ["traced"] = single?.IsTraced == true,
@@ -1692,6 +1745,21 @@ public sealed class MainForm : Form
             _ = RefreshProgramsAsync();
     }
 
+    private void OpenUninstallQueue()
+    {
+        var selected = SelectedPrograms()
+            .Where(p => !p.NoRemove &&
+                        (!string.IsNullOrWhiteSpace(p.UninstallString) || p.IsStoreApp))
+            .ToList();
+        if (selected.Count == 0)
+            return;
+
+        using var queue = new UninstallQueueForm(selected, _settings);
+        queue.ShowDialog(this);
+        if (queue.Removed)
+            _ = RefreshProgramsAsync();
+    }
+
     private void ModifySelected()
     {
         var program = SelectedPrograms().FirstOrDefault();
@@ -1748,51 +1816,31 @@ public sealed class MainForm : Form
             lang.T("MainMenu/mnuActionRemoveEntry", "Remove Entry").Replace("&", ""),
             lang.T("Messages/msgRemoveEntryQuestion", "Are you sure you want to remove this entry?"),
             lang.T("Messages/msgRemoveEntryDescription",
-                "This function will only remove an item from the list. No leftover registry or file system items will be deleted. Use this only for obsolete or invalid list entries."),
+                "This function removes the program's uninstall registry entry so it no longer appears in the list. " +
+                "With quarantine enabled, the entry can be restored from Tools > Quarantine and undo."),
             MessageBoxButtons.YesNo, AppIcons.Warning);
         if (result.Result != DialogResult.Yes)
             return;
 
-        foreach (var program in selected)
+        var items = selected
+            .Where(p => !string.IsNullOrWhiteSpace(p.RegistryPath))
+            .Select(p => new RemovalJobItem { Kind = "key", Path = p.RegistryPath })
+            .ToList();
+        var engine = new RemovalEngine(_settings.QuarantineRemovals,
+            _settings.BackupRegistry, _settings.CreateRestorePoint,
+            "Remove entry: " + string.Join(", ",
+                selected.Take(3).Select(p => p.DisplayName)));
+        var removed = engine.RemoveItems(items, CancellationToken.None);
+        if (removed.Failed > 0)
         {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(program.RegistryPath))
-                {
-                    var lastSlash = program.RegistryPath.LastIndexOf('\\');
-                    if (lastSlash <= 0)
-                        throw new InvalidOperationException("Invalid registry path");
-
-                    var parentPath = program.RegistryPath[..lastSlash];
-                    var sub = program.RegistryPath[(lastSlash + 1)..];
-                    var parsed = LeftoverScanner.ParseKeyPath(parentPath);
-                    if (parsed == null)
-                        throw new InvalidOperationException("Invalid registry path");
-
-                    var hive = parsed.Value.hive == "HKEY_LOCAL_MACHINE"
-                        ? RegistryHive.LocalMachine
-                        : RegistryHive.CurrentUser;
-                    var view = program.Is64Bit ? RegistryView.Registry64 : RegistryView.Registry32;
-                    using var baseKey = RegistryKey.OpenBaseKey(hive, view);
-                    baseKey.DeleteSubKeyTree(sub, throwOnMissingSubKey: false);
-                }
-
-                _settings.HiddenProgramIds.Remove(program.Id);
-            }
-            catch (Exception)
-            {
-                var elevated = Elevation.ExecuteRemoval(new[]
-                {
-                    new RemovalJobItem { Kind = "key", Path = program.RegistryPath }
-                });
-                if (elevated is not { Success: true })
-                {
-                    MessageDialog.Error(this, "CleanRift",
-                        LanguageManager.Instance.T("Messages/msgRemoveEntryFailed",
-                            "Failed to delete the registry entry of this item."));
-                }
-            }
+            MessageDialog.Error(this, AppInfo.Name,
+                LanguageManager.Instance.T("Messages/msgRemoveEntryFailed",
+                    "Failed to delete the registry entry of this item.") + Environment.NewLine +
+                string.Join(Environment.NewLine, removed.Errors.Take(8)));
         }
+
+        foreach (var program in selected)
+            _settings.HiddenProgramIds.Remove(program.Id);
 
         _settings.Save();
         _ = RefreshProgramsAsync();
@@ -1842,9 +1890,9 @@ public sealed class MainForm : Form
             _ = RefreshProgramsAsync();
     }
 
-    private void StartInstallTrace(InstalledProgram? appendTo)
+    private void StartInstallTrace(InstalledProgram? appendTo, string? initialPath = null)
     {
-        using var form = new InstallTrackerForm(_settings, appendTo);
+        using var form = new InstallTrackerForm(_settings, appendTo, initialPath);
         if (form.ShowDialog(this) == DialogResult.OK || form.Traced)
             _ = RefreshProgramsAsync();
     }
@@ -2209,6 +2257,12 @@ public sealed class MainForm : Form
         Close();
     }
 
+    private void ShowQuarantine()
+    {
+        using var form = new QuarantineForm();
+        form.ShowDialog(this);
+    }
+
     private void ShowAbout()
     {
         using var form = new AboutForm();
@@ -2339,7 +2393,7 @@ public sealed class MainForm : Form
             _settings.ColumnDateWidth = _list.Columns[2].Width;
             _settings.ColumnTracedWidth = _list.Columns[3].Width;
         }
-        else if (_mode == ViewMode.Startup && _list.Columns.Count == 4)
+        else if (_mode == ViewMode.Startup && _list.Columns.Count >= 1)
         {
             _settings.StartupColumnWidth = _list.Columns[0].Width;
         }

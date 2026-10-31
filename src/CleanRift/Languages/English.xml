@@ -14,7 +14,7 @@
     </DlgAddNewStartupProgram>
     <DlgPreferences>
         <betaAppListNote>Software update groups, the recent-items popup and the recent-items toolbar button are not available in the 1.0 beta.</betaAppListNote>
-        <betaGeneralNote>Update checks, Explorer integration, the Control Panel icon and Total Commander navigation are not available in the 1.0 beta.</betaGeneralNote>
+        <betaGeneralNote>Update checks, the Control Panel icon and Total Commander navigation are not available in the 1.0 beta. The Explorer Install and Trace" command is optional and can be disabled here."</betaGeneralNote>
         <categoryAppList>Application list</categoryAppList>
         <categoryGeneral>General</categoryGeneral>
         <categoryInterface>Interface</categoryInterface>
@@ -56,6 +56,11 @@
         <subitemsHelpText>Expand or collapse groups with the mouse or the Left/Right keys. If a search matches a sub-item, its group opens automatically.</subitemsHelpText>
         <staticTrayGroup>System notification area (system tray) icon:</staticTrayGroup>
         <staticWizardTracedNote>Removal Wizard always runs for traced programs and cannot be disabled for them.</staticWizardTracedNote>
+        <checkQuarantine>Move removed files to quarantine (undo available in Tools)</checkQuarantine>
+        <checkBackupRegistry>Back up removed registry keys and values</checkBackupRegistry>
+        <checkRestorePoint>Create a System Restore point before removal</checkRestorePoint>
+        <safetyNote>Quarantine and registry backups can be restored from Tools &gt; Quarantine and undo.</safetyNote>
+        <checkSilentUninstall>Try silent uninstall when the program provides a quiet uninstall command</checkSilentUninstall>
     </DlgPreferences>
     <ExplorerBar>
         <itemAddNewStartupItem>Add a new program...</itemAddNewStartupItem>
@@ -166,6 +171,10 @@
         <staticLoading>Loading, please wait...</staticLoading>
         <staticNoProgramsInCategory>There're no programs in '%s' category</staticNoProgramsInCategory>
         <staticNoStartupItems>There're no programs that automatically run on Windows start</staticNoStartupItems>
+        <columnImpact>Startup impact</columnImpact>
+        <impactHigh>High</impactHigh>
+        <impactMedium>Medium</impactMedium>
+        <impactLow>Low</impactLow>
     </ListCtrl>
     <MainMenu>
         <mnuAction>&amp;Action</mnuAction>
@@ -209,6 +218,8 @@
         <mnuViewMainToolbarShow>Show Main Toolbar</mnuViewMainToolbarShow>
         <mnuViewRefresh>&amp;Refresh</mnuViewRefresh>
         <mnuViewSecondaryToolbar>Secondary Toolbar</mnuViewSecondaryToolbar>
+        <mnuActionQueue>Uninstall queue...</mnuActionQueue>
+        <mnuToolsQuarantine>Quarantine and undo</mnuToolsQuarantine>
     </MainMenu>
     <Messages>
         <msgCannotOpenFolder>Cannot open the program folder.</msgCannotOpenFolder>
@@ -225,7 +236,7 @@
         <msgForceRemovalTitle>Force Removal: %s</msgForceRemovalTitle>
         <msgForceRemovalTitleBatch>Batch Force Removal</msgForceRemovalTitleBatch>
         <msgQuickHelp>CleanRift removes programs and their leftovers.\n\nF1  Open this guide\nF5  Refresh the list\nCtrl+F  Search\nDel  Remove the selected program\n\nPreferences let you change the theme, language and removal wizard mode.</msgQuickHelp>
-        <msgRemoveEntryDescription>This only removes the item from the list. No files or registry entries are deleted. Use it for obsolete or invalid entries.</msgRemoveEntryDescription>
+        <msgRemoveEntryDescription>This function removes the program's uninstall registry entry so it no longer appears in the list. With quarantine enabled, the entry can be restored from Tools &gt; Quarantine and undo.</msgRemoveEntryDescription>
         <msgRemoveEntryFailed>Could not delete the registry entry for this item.</msgRemoveEntryFailed>
         <msgRemoveEntryQuestion>Are you sure you want to remove this entry?</msgRemoveEntryQuestion>
         <msgRemoveMultipleItemsDescription>This removes the selected entries from the registry (start menu) so they no longer run when Windows starts.</msgRemoveMultipleItemsDescription>
@@ -236,6 +247,10 @@
         <msgPartialRemoval>Some selected items could not be removed. Review the details below.</msgPartialRemoval>
         <msgPendingReboot>Some files will be removed after the next reboot</msgPendingReboot>
         <msgChooseExecutable>Please choose an executable file.</msgChooseExecutable>
+        <msgQuarantineNotice>Removed files and registry entries will be kept in quarantine and can be restored from Tools &gt; Quarantine and undo.</msgQuarantineNotice>
+        <msgPermanentRemovalNotice>Quarantine is disabled. The selected items will be deleted permanently.</msgPermanentRemovalNotice>
+        <msgRemovalPreviewTitle>Confirm removal</msgRemovalPreviewTitle>
+        <msgQuarantineKept>Removed items were kept in quarantine. Restore them from Tools &gt; Quarantine and undo.</msgQuarantineKept>
     </Messages>
     <Misc>
         <btnCancel>Cancel</btnCancel>
@@ -320,4 +335,39 @@
         <checkDontAskAgain>Remember my choice and don't ask me again (may be changed in Preferences)</checkDontAskAgain>
         <staticConfirm>The built-in uninstaller has finished its job. Would you like to perform a deep scan of your system registry and file system for unused registry entries and files left?</staticConfirm>
     </UninstallWizardConfirmation>
+    <Quarantine>
+        <Caption>Quarantine and undo</Caption>
+        <Description>Removed files and registry entries are kept here until you delete them.</Description>
+        <ColumnDate>Created</ColumnDate>
+        <ColumnDescription>Operation</ColumnDescription>
+        <ColumnFiles>Files</ColumnFiles>
+        <ColumnRegistry>Registry</ColumnRegistry>
+        <btnRestore>Restore</btnRestore>
+        <btnDelete>Delete permanently</btnDelete>
+        <btnOpenFolder>Open folder</btnOpenFolder>
+        <Empty>Quarantine is empty.</Empty>
+        <Count>%u previous removal operation(s)</Count>
+        <RestoreConfirm>Restore all items from this operation? Existing files are never overwritten.</RestoreConfirm>
+        <RestorePartial>Some items could not be restored.</RestorePartial>
+        <DeleteConfirm>Delete this quarantine permanently?</DeleteConfirm>
+        <DeleteDescription>This cannot be undone. The files and registry backups will be erased.</DeleteDescription>
+    </Quarantine>
+    <Queue>
+        <Caption>Uninstall queue</Caption>
+        <Description>Uninstalls run one after another. Failures do not stop the queue.</Description>
+        <ColumnStatus>Status</ColumnStatus>
+        <btnStart>Start uninstall</btnStart>
+        <StatusPending>Pending</StatusPending>
+        <StatusRunning>Running</StatusRunning>
+        <StatusDone>Done</StatusDone>
+        <StatusFailed>Failed</StatusFailed>
+        <StatusCancelled>Cancelled</StatusCancelled>
+        <Running>Uninstalling %s...</Running>
+        <Finished>Queue finished. %u program(s) uninstalled.</Finished>
+        <StopDescription>Stop the queue after the current uninstaller has been cancelled?</StopDescription>
+        <CloseDescription>The queue is still running. Stop it and close the window?</CloseDescription>
+    </Queue>
+    <ShellIntegration>
+        <installAndTrace>Install and trace with CleanRift</installAndTrace>
+    </ShellIntegration>
 </Language>

@@ -613,7 +613,8 @@ public sealed class InstallTracker
         return trace;
     }
 
-    public static JobResult Revert(TraceInfo trace, CancellationToken token)
+    public static JobResult Revert(TraceInfo trace, CancellationToken token,
+        AppSettings? settings = null)
     {
         var items = new List<RemovalJobItem>();
         foreach (var folder in trace.Folders)
@@ -625,7 +626,10 @@ public sealed class InstallTracker
         foreach (var (key, name) in trace.RegistryValues)
             items.Add(new RemovalJobItem { Kind = "value", Path = key, ValueName = name });
 
-        var engine = new RemovalEngine();
+        settings ??= new AppSettings();
+        var engine = new RemovalEngine(settings.QuarantineRemovals,
+            settings.BackupRegistry, settings.CreateRestorePoint,
+            "Revert trace: " + trace.DisplayName);
         return engine.RemoveItems(items, token);
     }
 

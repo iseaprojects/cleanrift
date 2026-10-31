@@ -431,7 +431,12 @@ public sealed class UninstallWizardForm : Form
             _headerSub.Text = program.DisplayName;
             AppendLog("=== " + program.DisplayName + " ===");
             var token = _cts.Token;
-            var outcome = await Task.Run(() => _runner.Run(program, false, true, token), token);
+            var quiet = _settings.SilentUninstall &&
+                        (!string.IsNullOrWhiteSpace(program.QuietUninstallString) ||
+                         program.WindowsInstaller);
+            if (quiet)
+                AppendLog("Silent uninstall requested.");
+            var outcome = await Task.Run(() => _runner.Run(program, quiet, true, token), token);
             if (outcome.Started)
                 _uninstalled = true;
 
@@ -447,7 +452,7 @@ public sealed class UninstallWizardForm : Form
                 return;
             }
 
-            if (!outcome.Started || outcome.ExitCode != 0)
+            if (!outcome.Started || outcome.ExitCode is not (0 or 3010 or 1641))
             {
                 var failed = MessageDialog.Show(this,
                     lang.T("Messages/msgForceRemovalTitle", "Force Removal").Replace("%s", program.DisplayName),
@@ -637,6 +642,20 @@ public sealed class UninstallWizardForm : Form
             return;
         }
 
+        var (files, registry, size) = _tree.GetCheckedSummary();
+        var preview = lang.F("UninstallWizard/staticOverallInfo", files,
+            InstalledProgram.FormatSize(size), registry) + Environment.NewLine + Environment.NewLine +
+                      (_settings.QuarantineRemovals
+                          ? lang.T("Messages/msgQuarantineNotice",
+                              "Removed files and registry entries will be kept in quarantine and can be restored from Tools > Quarantine and undo.")
+                          : lang.T("Messages/msgPermanentRemovalNotice",
+                              "Quarantine is disabled. The selected items will be deleted permanently."));
+        if (MessageDialog.Show(this,
+                lang.T("Messages/msgRemovalPreviewTitle", "Confirm removal"),
+                lang.T("Messages/msgRemovalPreviewTitle", "Confirm removal"),
+                preview, MessageBoxButtons.YesNo, AppIcons.Warning).Result != DialogResult.Yes)
+            return;
+
         _working = true;
         _cts = new CancellationTokenSource();
         SetPhase(Phase.Removing);
@@ -644,7 +663,10 @@ public sealed class UninstallWizardForm : Form
         _bodyLabel.Text = lang.T("UninstallWizard/statusDeletingProgramTraces", "Deleting program traces...");
         _progress.Style = ProgressBarStyle.Marquee;
 
-        var engine = new RemovalEngine();
+        var description = "Removal Wizard: " + string.Join(", ",
+            _programs.Take(3).Select(p => p.DisplayName));
+        var engine = new RemovalEngine(_settings.QuarantineRemovals,
+            _settings.BackupRegistry, _settings.CreateRestorePoint, description);
         engine.Progress += text => AppendLog(text);
         var token = _cts.Token;
         JobResult? result = null;
@@ -689,6 +711,11 @@ public sealed class UninstallWizardForm : Form
 
         if (result != null)
             AppendLog($"Removed: {result.Deleted}, scheduled for reboot: {result.ScheduledForReboot}, failed: {result.Failed}");
+        if (!string.IsNullOrEmpty(result?.QuarantineBatchId))
+        {
+            AppendLog(lang.T("Messages/msgQuarantineKept",
+                "Removed items were kept in quarantine. Restore them from Tools > Quarantine and undo."));
+        }
 
         // Forget trace data of successfully removed traced programs.
         if (result is { Failed: 0 })

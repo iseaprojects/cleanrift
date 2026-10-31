@@ -221,6 +221,13 @@ public static class PathSafety
             return false;
         }
 
+        if (item.Path.Contains('"') || item.Path.Contains('\r') || item.Path.Contains('\n') ||
+            (item.ValueName ?? "").Contains('\r') || (item.ValueName ?? "").Contains('\n'))
+        {
+            error = "Registry path or value name contains invalid characters";
+            return false;
+        }
+
         if (IsProtectedRegistryKey(item.Path, forValue: kind == "value", out var reason))
         {
             error = reason;

@@ -20,6 +20,7 @@ CleanRift stores its data under `%LOCALAPPDATA%\CleanRift`:
 | `cache.dat` | Program list and size cache (CleanRift format) |
 | `*_Traces.xml` | Install traces created by Install and Trace |
 | `DisabledStartupItems.json` | Startup entries disabled from CleanRift |
+| `Quarantine\` | Removed files and registry backups kept for undo |
 | `error.log`, `elevation.log`, `instance.log`, `jumplist.log` | Diagnostics |
 
 The HTML export contains the program list and the computer name. It is written
@@ -29,8 +30,9 @@ only to the location you choose.
 
 CleanRift reads uninstall, startup and Appx information from Windows. It writes
 registry values only when you explicitly change a startup item (for example,
-disabling a Run entry through `StartupApproved`). The installer creates the
-usual uninstall entry for CleanRift itself.
+disabling a Run entry through `StartupApproved`), enable the optional Explorer
+“Install and trace” command, or remove/quarantine registry entries. The
+installer creates the usual uninstall entry for CleanRift itself.
 
 ## Third-party programs
 

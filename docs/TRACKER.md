@@ -15,7 +15,9 @@ load a kernel driver and does not require a reboot.
    - registry: an ETW kernel registry session records new keys and values.
      Events are filtered to the setup process tree and the standard MSI
      workers (`msiexec`, `TrustedInstaller`, `TiWorker`, `dism`).
-4. The setup program runs normally. CleanRift waits for its process tree.
+4. The setup program runs normally. CleanRift waits for its process tree while
+   the tracker window lists the file and registry events as they arrive. The
+   live list is bounded; the trace itself keeps the complete merged result.
 5. The monitors are stopped. If the filesystem monitor covered every root and
    did not overflow, the final filesystem snapshot is skipped. The final
    registry snapshot is still taken and merged with the ETW events as the

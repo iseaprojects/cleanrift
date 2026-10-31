@@ -1,15 +1,21 @@
-# CleanRift 1.0 Beta 1 — scope and known limitations
+# CleanRift 1.0 Beta 2 — scope and known limitations
 
 ## What is included
 
 - Program scan: HKCU/HKLM uninstall keys in both registry views, MSI
   `Installer\UserData`, and Microsoft Store packages.
+- Standard uninstall, optional silent uninstall and a sequential uninstall
+  queue.
 - Standard uninstall plus the Removal Wizard for leftover files, folders and
   registry entries.
 - Force Removal, including batch mode.
-- Install and Trace with real-time filesystem events and an ETW registry
-  session, plus a snapshot fallback (see `docs/TRACKER.md`).
-- Startup manager: Run/RunOnce, StartupApproved and scheduled tasks.
+- Quarantine with undo, registry backups, optional System Restore points and a
+  clear pre-removal preview (see `docs/SAFETY.md`).
+- Install and Trace with real-time filesystem events, an ETW registry session,
+  a live event list and a snapshot fallback (see `docs/TRACKER.md`).
+- Optional Explorer “Install and trace” context menu for setup files.
+- Startup manager: Run/RunOnce, StartupApproved, scheduled tasks and an
+  estimated startup-impact column.
 - HTML export of programs and startup items.
 - Light, dark and automatic themes; English and Spanish UI.
 - Single instance, automatic elevation, optional SkipUAC task and jump list.
@@ -20,7 +26,6 @@ These controls are visible in Preferences but read-only, with an explanatory
 note:
 
 - Check for updates and beta versions.
-- Explorer shell integration for setup files.
 - Control Panel icon.
 - Total Commander navigation.
 - Software update groups (sub-items).
@@ -32,6 +37,9 @@ note:
   `ReadDirectoryChangesW` and registry changes with an ETW kernel session. If
   either monitor is unavailable, the before/after snapshot is used as the
   fallback.
+- **Quarantine uses disk space** until the batch is deleted from Tools.
+- **System Restore may be disabled** by policy; removal continues if the
+  restore point cannot be created.
 - **Unsigned build.** Windows SmartScreen may warn until the executable is
   code-signed.
 - **x64 only.** The published build targets Windows 10/11 x64.
@@ -65,7 +73,7 @@ note:
 Include:
 
 1. Windows version and build.
-2. CleanRift version (`1.0 Beta 1`).
+2. CleanRift version (`1.0 Beta 2`).
 3. Steps to reproduce.
 4. Whether the app was portable or installed.
 5. Relevant lines from `%LOCALAPPDATA%\CleanRift\error.log` with private paths

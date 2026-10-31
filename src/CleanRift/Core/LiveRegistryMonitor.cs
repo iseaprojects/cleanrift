@@ -36,6 +36,8 @@ public sealed class LiveRegistryMonitor : IDisposable
     private bool _started;
     private bool _disposed;
 
+    public event Action<LiveChange>? Change;
+
     public LiveRegistryMonitor(Action<string>? log = null)
     {
         _log = log;
@@ -322,11 +324,14 @@ public sealed class LiveRegistryMonitor : IDisposable
                 return;
 
             Interlocked.Increment(ref _events);
+            var added = false;
             lock (_lock)
             {
                 if (!_baselineKeys.Contains(key))
-                    _keys.Add(key);
+                    added = _keys.Add(key);
             }
+            if (added)
+                Change?.Invoke(new LiveChange("Registry key", key, true));
         }
         catch
         {
@@ -346,6 +351,7 @@ public sealed class LiveRegistryMonitor : IDisposable
 
             Interlocked.Increment(ref _events);
             RemoveKeyTree(key);
+            Change?.Invoke(new LiveChange("Registry delete", key, true));
         }
         catch
         {
@@ -366,13 +372,20 @@ public sealed class LiveRegistryMonitor : IDisposable
             var name = data.ValueName ?? "";
             var id = key + "\u0001" + name;
             Interlocked.Increment(ref _events);
+            var added = false;
             lock (_lock)
             {
                 if (!_baselineKeys.Contains(key) && !_baselineValues.Contains(id))
                     _keys.Add(key);
                 if (!_baselineValues.Contains(id))
+                {
+                    added = !_values.ContainsKey(id);
                     _values[id] = (key, name);
+                }
             }
+            if (added)
+                Change?.Invoke(new LiveChange("Registry value",
+                    key + "\\" + name, true));
         }
         catch
         {
@@ -391,8 +404,11 @@ public sealed class LiveRegistryMonitor : IDisposable
                 return;
 
             Interlocked.Increment(ref _events);
+            var name = data.ValueName ?? "";
             lock (_lock)
-                _values.Remove(key + "\u0001" + (data.ValueName ?? ""));
+                _values.Remove(key + "\u0001" + name);
+            Change?.Invoke(new LiveChange("Registry delete value",
+                key + "\\" + name, true));
         }
         catch
         {

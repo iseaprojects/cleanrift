@@ -1,15 +1,15 @@
 # CleanRift
 
-**CleanRift 1.0 Beta 1** — a Windows uninstaller that removes programs, reviews
+**CleanRift 1.0 Beta 2** — a Windows uninstaller that removes programs, reviews
 their leftovers, traces new installations and manages startup items.
 
 CleanRift is an independent, open-source project released under the MIT License.
 It is not affiliated with, endorsed by or sponsored by any third-party software
 vendor.
 
-> **Beta software.** Removal operations delete files and registry entries and
-> cannot be undone by CleanRift. Back up important data before using Force
-> Removal or the leftovers wizard.
+> **Beta software.** Removal operations move files and registry entries to
+> quarantine by default and can be restored from Tools → Quarantine and undo.
+> Disable quarantine in Preferences if you want permanent deletion.
 
 ![CleanRift main window](docs/screens/main-light.png)
 
@@ -19,12 +19,16 @@ This is the first public beta. The core workflows are implemented:
 
 - Scan installed programs from the registry (32/64-bit), MSI installer data and
   Microsoft Store packages.
-- Uninstall a program with its own uninstaller and review leftover files,
-  folders and registry keys.
-- Force removal, including batch force removal, with an explicit confirmation.
-- Install and Trace: real-time filesystem and ETW registry monitoring with a
-  snapshot fallback; review the changes (see `docs/TRACKER.md`).
-- Startup manager: Run/RunOnce keys, StartupApproved state and scheduled tasks.
+- Uninstall a program with its own uninstaller, optionally silent.
+- Uninstall queue for several programs, one after another.
+- Review leftover files, folders and registry keys; Force Removal with explicit
+  confirmation and a clear preview.
+- Quarantine with undo, registry backups, optional System Restore points
+  (see `docs/SAFETY.md`).
+- Install and Trace: real-time filesystem and ETW registry monitoring, live
+  event list and snapshot fallback (see `docs/TRACKER.md`).
+- Startup manager with an estimated startup-impact column.
+- Optional Explorer “Install and trace” context menu for setup files.
 - HTML export, themes (light/dark/auto), English and Spanish UI.
 - Single instance, UAC elevation, optional SkipUAC scheduled task and jump list.
 
@@ -52,9 +56,9 @@ Create the portable package and, when Inno Setup is available, the installer:
 
 Outputs:
 
-- `artifacts/release/CleanRift-1.0-beta1-portable/`
-- `artifacts/release/CleanRift-1.0-beta1-portable.zip`
-- `artifacts/release/CleanRift-1.0-beta1-setup.exe` (if `ISCC.exe` is found)
+- `artifacts/release/CleanRift-1.0-beta2-portable/`
+- `artifacts/release/CleanRift-1.0-beta2-portable.zip`
+- `artifacts/release/CleanRift-1.0-beta2-setup.exe` (if `ISCC.exe` is found)
 
 The language XML files are generated from `languages/english.csv` and
 `languages/spanish.csv`:

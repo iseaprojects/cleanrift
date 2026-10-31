@@ -2,6 +2,8 @@ using System.IO;
 
 namespace CleanRift.Core;
 
+public readonly record struct LiveChange(string Kind, string Text, bool Registry);
+
 /// <summary>
 /// Real-time filesystem monitor used while a setup program runs. It uses
 /// ReadDirectoryChangesW through <see cref="FileSystemWatcher"/>, so changes
@@ -28,6 +30,8 @@ public sealed class LiveFileMonitor : IDisposable
     private bool _started;
     private bool _disposed;
     private bool _truncated;
+
+    public event Action<LiveChange>? Change;
 
     public LiveFileMonitor(Action<string>? log = null, Func<string, bool>? ignored = null)
     {
@@ -185,8 +189,11 @@ public sealed class LiveFileMonitor : IDisposable
     {
         try
         {
-            RecordCreated(e.FullPath);
-            Interlocked.Increment(ref _created);
+            if (RecordCreated(e.FullPath))
+            {
+                Change?.Invoke(new LiveChange("Create", e.FullPath, false));
+                Interlocked.Increment(ref _created);
+            }
         }
         catch (Exception ex)
         {
@@ -198,8 +205,11 @@ public sealed class LiveFileMonitor : IDisposable
     {
         try
         {
-            RemoveTree(e.FullPath);
-            Interlocked.Increment(ref _deleted);
+            if (RemoveTree(e.FullPath))
+            {
+                Change?.Invoke(new LiveChange("Delete", e.FullPath, false));
+                Interlocked.Increment(ref _deleted);
+            }
         }
         catch (Exception ex)
         {
@@ -211,8 +221,10 @@ public sealed class LiveFileMonitor : IDisposable
     {
         try
         {
-            RemoveTree(e.OldFullPath);
-            RecordCreated(e.FullPath);
+            var removed = RemoveTree(e.OldFullPath);
+            var added = RecordCreated(e.FullPath);
+            if (removed || added)
+                Change?.Invoke(new LiveChange("Rename", e.OldFullPath + " -> " + e.FullPath, false));
             Interlocked.Increment(ref _renamed);
         }
         catch (Exception ex)
@@ -228,14 +240,14 @@ public sealed class LiveFileMonitor : IDisposable
                      e.GetException().Message);
     }
 
-    private void RecordCreated(string rawPath)
+    private bool RecordCreated(string rawPath)
     {
         if (string.IsNullOrWhiteSpace(rawPath))
-            return;
+            return false;
 
         var full = Path.GetFullPath(rawPath).TrimEnd('\\');
         if (full.Length == 0 || _ignored(full))
-            return;
+            return false;
 
         var isDirectory = Directory.Exists(full);
         lock (_lock)
@@ -243,38 +255,40 @@ public sealed class LiveFileMonitor : IDisposable
             // A path that existed before the installation is an update, not a
             // newly installed file. Never schedule it for removal.
             if (_baselineFiles.Contains(full) || _baselineFolders.Contains(full))
-                return;
+                return false;
 
             if (_files.Count + _folders.Count >= MaxTrackedPaths)
             {
                 if (!_truncated)
                     _log?.Invoke("Live monitor reached its path limit; using snapshot fallback.");
                 _truncated = true;
-                return;
+                return false;
             }
 
             if (isDirectory)
-                _folders.Add(full);
-            else if (System.IO.File.Exists(full))
-                _files.Add(full);
+                return _folders.Add(full);
+            if (System.IO.File.Exists(full))
+                return _files.Add(full);
+            return false;
         }
     }
 
-    private void RemoveTree(string rawPath)
+    private bool RemoveTree(string rawPath)
     {
         if (string.IsNullOrWhiteSpace(rawPath))
-            return;
+            return false;
 
         var full = Path.GetFullPath(rawPath).TrimEnd('\\');
         var prefix = full + "\\";
         lock (_lock)
         {
-            _files.RemoveWhere(p =>
+            var removed = _files.RemoveWhere(p =>
                 p.Equals(full, StringComparison.OrdinalIgnoreCase) ||
                 p.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-            _folders.RemoveWhere(p =>
+            removed += _folders.RemoveWhere(p =>
                 p.Equals(full, StringComparison.OrdinalIgnoreCase) ||
                 p.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+            return removed > 0;
         }
     }
 

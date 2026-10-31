@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased — audit fixes and real-time tracker
+## 1.0.0-beta.2 — 2026-10-30
+
+- Added quarantine with restore, registry backups, System Restore points and a
+  clear pre-removal summary (see `docs/SAFETY.md`).
+- Added optional Explorer “Install and trace” context menu, silent uninstall,
+  uninstall queue, live tracker events and startup impact.
+- Added the Quarantine and undo window and a per-item uninstall queue.
+
+## Audit fixes and real-time tracker
 
 - Install Tracker now watches filesystem changes in real time and captures
   registry changes with an ETW kernel session; the final snapshot remains the

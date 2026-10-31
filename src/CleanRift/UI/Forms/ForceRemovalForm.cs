@@ -390,6 +390,20 @@ public sealed class ForceRemovalForm : Form
             return;
         }
 
+        var (files, registry, size) = _tree.GetCheckedSummary();
+        var preview = lang.F("UninstallWizard/staticOverallInfo", files,
+            InstalledProgram.FormatSize(size), registry) + Environment.NewLine + Environment.NewLine +
+                      (_settings.QuarantineRemovals
+                          ? lang.T("Messages/msgQuarantineNotice",
+                              "Removed files and registry entries will be kept in quarantine and can be restored from Tools > Quarantine and undo.")
+                          : lang.T("Messages/msgPermanentRemovalNotice",
+                              "Quarantine is disabled. The selected items will be deleted permanently."));
+        if (MessageDialog.Show(this,
+                lang.T("Messages/msgRemovalPreviewTitle", "Confirm removal"),
+                lang.T("Messages/msgRemovalPreviewTitle", "Confirm removal"),
+                preview, MessageBoxButtons.YesNo, AppIcons.Warning).Result != DialogResult.Yes)
+            return;
+
         _working = true;
         _cts = new CancellationTokenSource();
         _phase = Phase.Removing;
@@ -399,7 +413,22 @@ public sealed class ForceRemovalForm : Form
         _bodyLabel.Text = lang.T("UninstallWizard/statusDeletingProgramTraces", "Deleting program traces...");
         _progress.Visible = true;
 
-        var engine = new RemovalEngine();
+        var description = "Force removal: " + string.Join(", ",
+            _programs.Take(3).Select(p => p.DisplayName));
+        var engine = new RemovalEngine(_settings.QuarantineRemovals,
+            _settings.BackupRegistry, _settings.CreateRestorePoint, description);
+        engine.Progress += text =>
+        {
+            try
+            {
+                if (IsHandleCreated)
+                    BeginInvoke((Action)(() => _infoLabel.Text = text));
+            }
+            catch
+            {
+                // Form closed while the operation was finishing.
+            }
+        };
         JobResult? result = null;
         var token = _cts.Token;
         try
@@ -445,7 +474,10 @@ public sealed class ForceRemovalForm : Form
         {
             _tree.Visible = false;
             _tree.Clear();
-            _infoLabel.Text = "";
+            _infoLabel.Text = string.IsNullOrEmpty(result?.QuarantineBatchId)
+                ? ""
+                : lang.T("Messages/msgQuarantineKept",
+                    "Removed items were kept in quarantine. Restore them from Tools > Quarantine and undo.");
         }
         else
         {

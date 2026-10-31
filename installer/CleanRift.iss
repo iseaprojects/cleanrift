@@ -1,9 +1,9 @@
-; CleanRift 1.0 Beta 1 installer
+; CleanRift 1.0 Beta 2 installer
 ; Build with Inno Setup 6: ISCC.exe installer\CleanRift.iss
 
 #define MyAppName "CleanRift"
-#define MyAppVersion "1.0.0-beta.1"
-#define MyAppDisplayVersion "1.0 Beta 1"
+#define MyAppVersion "1.0.0-beta.2"
+#define MyAppDisplayVersion "1.0 Beta 2"
 #define MyAppPublisher "CleanRift Project"
 #define MyAppExeName "CleanRift.exe"
 #define MyAppId "{{5D6ED849-41B8-4CAC-8716-F8B294CB29A2}"
@@ -15,7 +15,7 @@ AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppDisplayVersion}
 AppPublisher={#MyAppPublisher}
 AppCopyright=Copyright (c) 2026 CleanRift contributors
-AppComments=Beta 1. Removal operations are irreversible; back up important data.
+AppComments=Beta 2. Removed files and registry entries are quarantined by default and can be restored from Tools.
 DefaultDirName={autopf}\CleanRift
 DefaultGroupName=CleanRift
 DisableProgramGroupPage=yes
@@ -25,7 +25,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 OutputDir=..\artifacts\release
-OutputBaseFilename=CleanRift-1.0-beta1-setup
+OutputBaseFilename=CleanRift-1.0-beta2-setup
 SetupIconFile=..\src\CleanRift\Assets\app.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2
@@ -51,7 +51,7 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\artifacts\release\CleanRift-1.0-beta1-portable\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\artifacts\release\CleanRift-1.0-beta2-portable\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -71,3 +71,16 @@ Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""CleanRift_SkipUAC_{%C
 ; CleanRift's local data is intentionally preserved. Delete it manually from
 ; %LOCALAPPDATA%\CleanRift if you also want to remove traces and settings.
 Type: filesandordirs; Name: "{app}\*.log"
+
+[Code]
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usPostUninstall then
+  begin
+    { Remove the optional Explorer command if the user enabled it. }
+    RegDeleteKeyIncludingSubkeys(HKCU,
+      'Software\Classes\exefile\shell\CleanRift.InstallTrace');
+    RegDeleteKeyIncludingSubkeys(HKCU,
+      'Software\Classes\Msi.Package\shell\CleanRift.InstallTrace');
+  end;
+end;
