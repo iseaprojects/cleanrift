@@ -37,7 +37,7 @@ public sealed class MainForm : Form
     private readonly MenuStrip _menu = new();
     private readonly ToolStrip _toolbar = new();
     private readonly CategoryStrip _categories = new();
-    private readonly ListView _list = new();
+    private readonly BufferedListView _list = new();
     private readonly ExplorerPanel _explorer = new();
     private readonly Panel _body = new();
     private readonly StatusStrip _status = new();
@@ -298,6 +298,12 @@ public sealed class MainForm : Form
         _list.DoubleClick += (_, _) => OnListDoubleClick();
         _list.KeyDown += OnListKeyDown;
         _list.MouseUp += OnListMouseUp;
+        _list.MouseLeave += (_, _) =>
+        {
+            // Clear any hover-only repaint artifact.
+            if (!_list.IsDisposed)
+                _list.Invalidate();
+        };
         _list.Resize += (_, _) =>
         {
             UpdateExplorerWidth();
@@ -345,16 +351,11 @@ public sealed class MainForm : Form
 
     private void OnDrawListItem(object? sender, DrawListViewItemEventArgs e)
     {
-        // The row background is painted here; each sub-item paints its own
-        // text on top so the selection covers the full row.
+        // Each sub-item paints its own background and text. Do not fill the
+        // whole row here: ListView redraws a single sub-item on hover, and a
+        // full-row fill would erase the text of the other columns until the
+        // next full repaint.
         e.DrawDefault = false;
-        if (e.Item is null)
-            return;
-
-        var theme = Theme.Current;
-        var back = e.Item.Selected ? theme.Selection : theme.ListBack;
-        using var brush = new SolidBrush(back);
-        e.Graphics.FillRectangle(brush, e.Bounds);
     }
 
     private void OnDrawListSubItem(object? sender, DrawListViewSubItemEventArgs e)
@@ -366,8 +367,13 @@ public sealed class MainForm : Form
         var theme = Theme.Current;
         var selected = e.Item.Selected;
         var back = selected ? theme.Selection : theme.ListBack;
+
+        // On hover Windows only invalidates one sub-item. Use the row height
+        // and a column-width fallback so a clipped/empty sub-item rectangle
+        // cannot erase the text until the next full repaint.
+        var cell = GetSubItemCellBounds(e);
         using (var brush = new SolidBrush(back))
-            e.Graphics.FillRectangle(brush, e.Bounds);
+            e.Graphics.FillRectangle(brush, cell);
 
         var color = selected
             ? (theme.IsDark ? Color.White : theme.Text)
@@ -384,16 +390,16 @@ public sealed class MainForm : Form
             if (image != null)
             {
                 iconWidth = image.Width;
-                var iconRect = new Rectangle(e.Bounds.Left + 4,
-                    e.Bounds.Top + (e.Bounds.Height - image.Height) / 2,
+                var iconRect = new Rectangle(cell.Left + 4,
+                    cell.Top + (cell.Height - image.Height) / 2,
                     image.Width, image.Height);
                 e.Graphics.DrawImage(image, iconRect);
                 iconWidth += 6;
             }
         }
 
-        var rect = new Rectangle(e.Bounds.Left + 4 + iconWidth, e.Bounds.Top,
-            Math.Max(8, e.Bounds.Width - 8 - iconWidth), e.Bounds.Height);
+        var rect = new Rectangle(cell.Left + 4 + iconWidth, cell.Top,
+            Math.Max(8, cell.Width - 8 - iconWidth), cell.Height);
         switch (e.Header?.TextAlign ?? HorizontalAlignment.Left)
         {
             case HorizontalAlignment.Right:
@@ -408,6 +414,34 @@ public sealed class MainForm : Form
         }
 
         TextRenderer.DrawText(e.Graphics, e.SubItem.Text, _list.Font, rect, color, flags);
+    }
+
+    /// <summary>
+    /// ListView sometimes passes clipped or empty bounds when it repaints only
+    /// the hovered sub-item. Rebuild the cell from the row and column widths so
+    /// painting one column can never erase another column's text.
+    /// </summary>
+    private Rectangle GetSubItemCellBounds(DrawListViewSubItemEventArgs e)
+    {
+        var itemBounds = e.Item?.Bounds ?? e.Bounds;
+        var rowTop = itemBounds.Top;
+        var rowHeight = Math.Max(1, itemBounds.Height);
+        var left = e.Bounds.Left;
+        var width = e.Bounds.Width;
+
+        if (e.ColumnIndex > 0 && left <= 0)
+        {
+            left = 0;
+            for (var i = 0; i < e.ColumnIndex && i < _list.Columns.Count; i++)
+                left += _list.Columns[i].Width;
+        }
+
+        if (width <= 0 && e.ColumnIndex >= 0 && e.ColumnIndex < _list.Columns.Count)
+            width = _list.Columns[e.ColumnIndex].Width;
+        if (width <= 0)
+            width = Math.Max(1, _list.ClientSize.Width - left);
+
+        return new Rectangle(left, rowTop, width, rowHeight);
     }
 
     private void BuildStatus()
