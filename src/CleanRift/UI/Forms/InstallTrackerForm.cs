@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
@@ -28,6 +29,8 @@ public sealed class InstallTrackerForm : Form
     private readonly ProgramScanner _scanner = new();
     private readonly List<string> _log = new();
     private readonly System.Windows.Forms.Timer _liveTimer = new() { Interval = 500 };
+    private readonly System.Windows.Forms.Timer _liveEventsTimer = new() { Interval = 200 };
+    private readonly ConcurrentQueue<LiveChange> _liveQueue = new();
 
     private readonly Label _headerLabel;
     private readonly Label _subHeader;
@@ -56,7 +59,8 @@ public sealed class InstallTrackerForm : Form
 
     public bool Traced { get; private set; }
 
-    public InstallTrackerForm(AppSettings settings, InstalledProgram? appendTo)
+    public InstallTrackerForm(AppSettings settings, InstalledProgram? appendTo,
+        string? initialPath = null)
     {
         _settings = settings;
         _appendTo = appendTo;
@@ -135,6 +139,8 @@ public sealed class InstallTrackerForm : Form
             _browse.Location = new Point(_pathHost.ClientSize.Width - 16 - _browse.Width, 21);
             _path.Width = Math.Max(80, _browse.Left - 8 - 16);
         };
+        if (!string.IsNullOrWhiteSpace(initialPath))
+            _path.Text = initialPath.Trim().Trim('"');
 
         var tips = new Panel { Dock = DockStyle.Top, Height = 120, Padding = new Padding(18, 2, 16, 4) };
         var tipsFlow = new FlowLayoutPanel
@@ -288,9 +294,12 @@ public sealed class InstallTrackerForm : Form
                 "Watching for changes... %u file events, %u registry events",
                 _live?.EventCount ?? 0, _liveRegistry?.EventCount ?? 0);
         };
+        _liveEventsTimer.Tick += (_, _) => DrainLiveEvents();
         FormClosing += OnFormClosing;
         Theme.ApplyDialogTheme(this);
         Shown += (_, _) => _path.Focus();
+        if (!string.IsNullOrWhiteSpace(initialPath))
+            Shown += (_, _) => _install.PerformClick();
     }
 
     protected override void OnHandleCreated(EventArgs e)
@@ -306,6 +315,8 @@ public sealed class InstallTrackerForm : Form
         {
             _liveTimer.Stop();
             _liveTimer.Dispose();
+            _liveEventsTimer.Stop();
+            _liveEventsTimer.Dispose();
         }
 
         base.Dispose(disposing);
@@ -386,6 +397,10 @@ public sealed class InstallTrackerForm : Form
         _minimize.Enabled = false;
         _progress.Visible = true;
         _events.Visible = true;
+        _events.Items.Clear();
+        while (_liveQueue.TryDequeue(out _))
+        {
+        }
         _statusLabel.Text = LanguageManager.Instance.T("InstallTracker/logStartingService",
             "Starting Install Tracker...");
         AppendLog(LanguageManager.Instance.T("InstallTracker/logStartingService",
@@ -416,6 +431,16 @@ public sealed class InstallTrackerForm : Form
             // indexing noise is not attributed to the installer.
             using var live = new LiveFileMonitor(text => AppendLog(text));
             using var liveRegistry = new LiveRegistryMonitor(text => AppendLog(text));
+            live.Change += change =>
+            {
+                if (_liveQueue.Count < 10_000)
+                    _liveQueue.Enqueue(change);
+            };
+            liveRegistry.Change += change =>
+            {
+                if (_liveQueue.Count < 10_000)
+                    _liveQueue.Enqueue(change);
+            };
             var roots = InstallTracker.FileRoots().ToList();
             var liveRoots = live.Start(roots, before);
             if (liveRoots == 0)
@@ -430,7 +455,10 @@ public sealed class InstallTrackerForm : Form
             if (registryLive)
                 _liveRegistry = liveRegistry;
             if (_live != null || _liveRegistry != null)
+            {
                 _liveTimer.Start();
+                _liveEventsTimer.Start();
+            }
 
             var exitCode = await Task.Run(
                 () => _tracker.RunSetup(path, token, pid => liveRegistry.SetRootProcess(pid)),
@@ -790,7 +818,7 @@ public sealed class InstallTrackerForm : Form
         try
         {
             UseWaitCursor = true;
-            var result = InstallTracker.Revert(_trace, CancellationToken.None);
+            var result = InstallTracker.Revert(_trace, CancellationToken.None, _settings);
             if (result.Failed > 0)
             {
                 var details = string.Join(Environment.NewLine, result.Errors.Take(10));
@@ -820,7 +848,37 @@ public sealed class InstallTrackerForm : Form
     private void StopLiveStatus()
     {
         _liveTimer.Stop();
+        _liveEventsTimer.Stop();
         _live = null;
+        _liveRegistry = null;
+    }
+
+    private void DrainLiveEvents()
+    {
+        if (_events.IsDisposed)
+            return;
+
+        var added = 0;
+        _events.BeginUpdate();
+        try
+        {
+            while (added < 200 && _liveQueue.TryDequeue(out var change))
+            {
+                if (_events.Items.Count >= 5000)
+                    continue;
+                var item = new ListViewItem(change.Kind);
+                item.SubItems.Add(change.Text);
+                _events.Items.Add(item);
+                added++;
+            }
+        }
+        finally
+        {
+            _events.EndUpdate();
+        }
+
+        if (added > 0 && _events.Items.Count > 0)
+            _events.EnsureVisible(_events.Items.Count - 1);
     }
 
     private void AppendLog(string text)

@@ -59,6 +59,10 @@ public sealed class AppSettings
     public bool MinimizeToTray { get; set; }
     public bool MinimizeOnClose { get; set; }
     public bool SkipUac { get; set; }
+    public bool QuarantineRemovals { get; set; } = true;
+    public bool BackupRegistry { get; set; } = true;
+    public bool CreateRestorePoint { get; set; } = true;
+    public bool SilentUninstall { get; set; }
     public string LastCategory { get; set; } = "apps";
     public int WindowLeft { get; set; } = int.MinValue;
     public int WindowTop { get; set; } = int.MinValue;
@@ -182,6 +186,10 @@ public sealed class AppSettings
         SecondToolbarVisible = GetBool("Toolbar_SecondVisible", SecondToolbarVisible);
         ShellExtension = GetBool("Integration_ShellExtension", ShellExtension);
         SkipUac = GetBool("Security_SkipUac", SkipUac);
+        QuarantineRemovals = GetBool("Safety_Quarantine", QuarantineRemovals);
+        BackupRegistry = GetBool("Safety_RegistryBackup", BackupRegistry);
+        CreateRestorePoint = GetBool("Safety_RestorePoint", CreateRestorePoint);
+        SilentUninstall = GetBool("Uninstall_Silent", SilentUninstall);
         CheckForUpdates = GetBool("Updates_CheckOnStartup", CheckForUpdates);
         ToolbarCaptions = GetBool("Toolbar_Captions", ToolbarCaptions);
         ToolbarVisible = GetBool("Toolbar_Visible", ToolbarVisible);
@@ -252,6 +260,10 @@ public sealed class AppSettings
         Bool("General_TotalCommander", TotalCommander);
         Bool("Integration_ShellExtension", ShellExtension);
         Bool("Security_SkipUac", SkipUac);
+        Bool("Safety_Quarantine", QuarantineRemovals);
+        Bool("Safety_RegistryBackup", BackupRegistry);
+        Bool("Safety_RestorePoint", CreateRestorePoint);
+        Bool("Uninstall_Silent", SilentUninstall);
         Bool("Toolbar_Captions", ToolbarCaptions);
         Bool("Toolbar_Visible", ToolbarVisible);
         Bool("Toolbar_SecondVisible", SecondToolbarVisible);

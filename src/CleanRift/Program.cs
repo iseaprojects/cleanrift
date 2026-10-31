@@ -34,7 +34,11 @@ internal static class Program
         if (!ElevationBootstrap.IsElevated)
         {
             var preferences = AppSettings.Load();
-            if (preferences.SkipUac && SkipUacTask.TryRunAndWait(5000, out _))
+            // The scheduled task does not forward command-line arguments, so a
+            // setup selected from the Explorer menu must use a normal relaunch
+            // that preserves "/install_and_trace <path>".
+            if (preferences.SkipUac && args.Length == 0 &&
+                SkipUacTask.TryRunAndWait(5000, out _))
                 return;
 
             ElevationBootstrap.RelaunchElevated(args);
@@ -84,11 +88,15 @@ internal static class Program
         Theme.Current = Theme.FromScheme(settings.ColorScheme);
 
         // Keep the SkipUAC task in sync with the executable path when enabled.
-        if (settings.SkipUac)
+        var executablePath = Environment.ProcessPath;
+        if (settings.SkipUac && !string.IsNullOrEmpty(executablePath))
+            SkipUacTask.SetEnabled(true, executablePath, out _);
+
+        if (settings.ShellExtension && !string.IsNullOrEmpty(executablePath))
         {
-            var executable = Environment.ProcessPath;
-            if (!string.IsNullOrEmpty(executable))
-                SkipUacTask.SetEnabled(true, executable, out _);
+            ShellIntegration.SetEnabled(true, executablePath,
+                LanguageManager.Instance.T("ShellIntegration/installAndTrace",
+                    "Install and trace with CleanRift"), out _);
         }
 
         // Taskbar jump list: Install and trace / Microsoft Store Apps / Startup.
@@ -103,7 +111,13 @@ internal static class Program
         else if (HasSwitch(args, "/store_apps_from_task_bar"))
             target = StartupTarget.StoreApps;
 
-        using var form = new MainForm(settings, target);
+        string? setupPath = null;
+        var setupIndex = Array.FindIndex(args, a =>
+            a.Equals("/install_and_trace", StringComparison.OrdinalIgnoreCase));
+        if (setupIndex >= 0 && setupIndex + 1 < args.Length)
+            setupPath = args[setupIndex + 1].Trim('"');
+
+        using var form = new MainForm(settings, target, setupPath);
         single.Attach(form);
         Application.Run(form);
     }

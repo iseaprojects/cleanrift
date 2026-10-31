@@ -51,6 +51,7 @@ public sealed class StartupScanner
             item.StatusText = item.DisplayStatus;
             item.Icon = IconCache.ShellIcon(item.ExecutablePath.Length > 0 ? item.ExecutablePath : item.FilePath, true);
             item.Running = IsItemRunning(item);
+            item.Impact = ComputeImpact(item);
         }
 
         return items
@@ -346,6 +347,49 @@ public sealed class StartupScanner
         catch
         {
             return false;
+        }
+    }
+
+    private static StartupImpact ComputeImpact(StartupItem item)
+    {
+        var path = item.ExecutablePath;
+        var userWritable = IsUserWritable(path);
+        var command = item.Command;
+
+        if (item.Running && (userWritable || string.IsNullOrWhiteSpace(path)))
+            return StartupImpact.High;
+
+        if (item.Running || userWritable ||
+            command.Contains("update", StringComparison.OrdinalIgnoreCase) ||
+            command.Contains("helper", StringComparison.OrdinalIgnoreCase) ||
+            command.Contains("launcher", StringComparison.OrdinalIgnoreCase) ||
+            command.Contains("tray", StringComparison.OrdinalIgnoreCase))
+            return StartupImpact.Medium;
+
+        return StartupImpact.Low;
+    }
+
+    private static bool IsUserWritable(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return true;
+        try
+        {
+            var full = Path.GetFullPath(path);
+            var roots = new[]
+            {
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                Path.GetTempPath()
+            };
+            return roots.Where(r => !string.IsNullOrWhiteSpace(r))
+                .Any(r => full.StartsWith(r.TrimEnd('\\') + "\\",
+                    StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            return true;
         }
     }
 

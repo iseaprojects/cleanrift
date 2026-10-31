@@ -19,6 +19,10 @@ public sealed class PreferencesForm : Form
     private readonly CheckBox _controlPanel;
     private readonly CheckBox _shellExtension;
     private readonly CheckBox _totalCommander;
+    private readonly CheckBox _quarantine;
+    private readonly CheckBox _backupRegistry;
+    private readonly CheckBox _restorePoint;
+    private readonly CheckBox _silentUninstall;
 
     private readonly CheckBox _toolbarCaptions;
     private readonly ComboBox _language;
@@ -115,6 +119,12 @@ public sealed class PreferencesForm : Form
             settings.ShellExtension);
         _totalCommander = Check("DlgPreferences/checkTotalCommander",
             "Navigate to program directory using Total Commander (if installed)", settings.TotalCommander);
+        _quarantine = Check("DlgPreferences/checkQuarantine",
+            "Move removed files to quarantine (undo is available from Tools)", settings.QuarantineRemovals);
+        _backupRegistry = Check("DlgPreferences/checkBackupRegistry",
+            "Back up removed registry keys and values", settings.BackupRegistry);
+        _restorePoint = Check("DlgPreferences/checkRestorePoint",
+            "Create a System Restore point before removal", settings.CreateRestorePoint);
 
         general.Controls.Add(_skipUac);
         general.Controls.Add(_checkUpdates);
@@ -122,14 +132,20 @@ public sealed class PreferencesForm : Form
         general.Controls.Add(_controlPanel);
         general.Controls.Add(_shellExtension);
         general.Controls.Add(_totalCommander);
+        general.Controls.Add(_quarantine);
+        general.Controls.Add(_backupRegistry);
+        general.Controls.Add(_restorePoint);
         general.Controls.Add(Note("DlgPreferences/checkSkipUACHelpText",
             "Activating this option allows to bypass UAC confirmation when launching CleanRift. When turned on, " +
             "CleanRift creates a Windows Task Scheduler elevated task which is executed every time you'd like to run the app."));
+        general.Controls.Add(Note("DlgPreferences/safetyNote",
+            "Quarantine and registry backups can be restored from Tools > Quarantine and undo."));
 
-        foreach (var control in new CheckBox[] { _checkUpdates, _checkBeta, _controlPanel, _shellExtension, _totalCommander })
+        foreach (var control in new CheckBox[] { _checkUpdates, _checkBeta, _controlPanel, _totalCommander })
             DisableCheck(control);
         general.Controls.Add(Note("DlgPreferences/betaGeneralNote",
-            "Update checks, Explorer integration, the Control Panel icon and Total Commander navigation are not available in the 1.0 beta."));
+            "Update checks, the Control Panel icon and Total Commander navigation are not available in the 1.0 beta. " +
+            "The Explorer 'Install and Trace' command is available and optional."));
 
         // --------------------------- Interface ---------------------------
         var interfacePage = NewPage(tabs, lang.T("DlgPreferences/categoryInterface", "Interface"));
@@ -377,6 +393,10 @@ public sealed class PreferencesForm : Form
         wizard.Controls.Add(_wizardMode);
         wizard.Controls.Add(Note("DlgPreferences/staticWizardTracedNote",
             "Removal Wizard always runs for traced programs and cannot be disabled for them."));
+        _silentUninstall = Check("DlgPreferences/checkSilentUninstall",
+            "Try silent uninstall when the program provides a quiet uninstall command",
+            settings.SilentUninstall);
+        wizard.Controls.Add(_silentUninstall);
 
         var footer = new Panel { Dock = DockStyle.Bottom, Height = 52, Padding = new Padding(12, 8, 12, 10) };
         var ok = new Button
@@ -493,6 +513,10 @@ public sealed class PreferencesForm : Form
         _settings.ControlPanelIcon = _controlPanel.Checked;
         _settings.ShellExtension = _shellExtension.Checked;
         _settings.TotalCommander = _totalCommander.Checked;
+        _settings.QuarantineRemovals = _quarantine.Checked;
+        _settings.BackupRegistry = _backupRegistry.Checked;
+        _settings.CreateRestorePoint = _restorePoint.Checked;
+        _settings.SilentUninstall = _silentUninstall.Checked;
 
         _settings.ToolbarCaptions = _toolbarCaptions.Checked;
         if (_language.SelectedItem is LanguageInfo info)
@@ -524,6 +548,15 @@ public sealed class PreferencesForm : Form
             !string.IsNullOrWhiteSpace(taskError))
         {
             MessageDialog.Error(this, Text, taskError);
+        }
+
+        if (!string.IsNullOrEmpty(executable) &&
+            !ShellIntegration.SetEnabled(_settings.ShellExtension, executable,
+                LanguageManager.Instance.T("ShellIntegration/installAndTrace",
+                    "Install and trace with CleanRift"), out var shellError) &&
+            !string.IsNullOrWhiteSpace(shellError))
+        {
+            MessageDialog.Error(this, Text, shellError);
         }
     }
 

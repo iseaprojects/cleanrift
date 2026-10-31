@@ -14,7 +14,7 @@
     </DlgAddNewStartupProgram>
     <DlgPreferences>
         <betaAppListNote>Los grupos de actualizaciones, la ventana de programas recientes y el botón de recientes de la barra secundaria no están disponibles en la beta 1.0.</betaAppListNote>
-        <betaGeneralNote>La comprobación de actualizaciones, la integración con el Explorador, el icono del Panel de control y la navegación con Total Commander no están disponibles en la beta 1.0.</betaGeneralNote>
+        <betaGeneralNote>La comprobación de actualizaciones, el icono del Panel de control y la navegación con Total Commander no están disponibles en la beta 1.0. El comando Instalar y rastrear" del Explorador es opcional y se puede desactivar aquí."</betaGeneralNote>
         <categoryAppList>Lista de aplicaciones</categoryAppList>
         <categoryGeneral>General</categoryGeneral>
         <categoryInterface>Interfaz</categoryInterface>
@@ -56,6 +56,11 @@
         <subitemsHelpText>Expande o contrae los grupos con el ratón o con las teclas Izquierda/Derecha. Si una búsqueda coincide con un subelemento, su grupo se abre automáticamente.</subitemsHelpText>
         <staticTrayGroup>Icono en el área de notificación (bandeja del sistema):</staticTrayGroup>
         <staticWizardTracedNote>El Asistente de eliminación siempre se ejecuta para los programas rastreados y no se puede desactivar para ellos.</staticWizardTracedNote>
+        <checkQuarantine>Mover los archivos eliminados a cuarentena (deshacer disponible en Herramientas)</checkQuarantine>
+        <checkBackupRegistry>Respaldar claves y valores del registro eliminados</checkBackupRegistry>
+        <checkRestorePoint>Crear un punto de restauración del sistema antes de eliminar</checkRestorePoint>
+        <safetyNote>La cuarentena y los respaldos del registro se pueden restaurar desde Herramientas &gt; Cuarentena y deshacer.</safetyNote>
+        <checkSilentUninstall>Intentar desinstalación silenciosa cuando el programa ofrece un comando silencioso</checkSilentUninstall>
     </DlgPreferences>
     <ExplorerBar>
         <itemAddNewStartupItem>Añadir un programa...</itemAddNewStartupItem>
@@ -166,6 +171,10 @@
         <staticLoading>Cargando; espera...</staticLoading>
         <staticNoProgramsInCategory>No hay programas en la categoría «%s»</staticNoProgramsInCategory>
         <staticNoStartupItems>No hay programas que se inicien automáticamente con Windows</staticNoStartupItems>
+        <columnImpact>Impacto de inicio</columnImpact>
+        <impactHigh>Alto</impactHigh>
+        <impactMedium>Medio</impactMedium>
+        <impactLow>Bajo</impactLow>
     </ListCtrl>
     <MainMenu>
         <mnuAction>&amp;Acción</mnuAction>
@@ -209,6 +218,8 @@
         <mnuViewMainToolbarShow>Mostrar barra principal</mnuViewMainToolbarShow>
         <mnuViewRefresh>&amp;Actualizar</mnuViewRefresh>
         <mnuViewSecondaryToolbar>Barra secundaria</mnuViewSecondaryToolbar>
+        <mnuActionQueue>Cola de desinstalación...</mnuActionQueue>
+        <mnuToolsQuarantine>Cuarentena y deshacer</mnuToolsQuarantine>
     </MainMenu>
     <Messages>
         <msgCannotOpenFolder>No se pudo abrir la carpeta del programa.</msgCannotOpenFolder>
@@ -225,7 +236,7 @@
         <msgForceRemovalTitle>Eliminación forzada: %s</msgForceRemovalTitle>
         <msgForceRemovalTitleBatch>Eliminación forzada por lotes</msgForceRemovalTitleBatch>
         <msgQuickHelp>CleanRift desinstala programas y limpia sus restos.\n\nF1  Abrir esta guía\nF5  Actualizar la lista\nCtrl+F  Buscar\nSupr  Eliminar el programa seleccionado\n\nEn Preferencias puedes cambiar el tema, el idioma y el modo del asistente de eliminación.</msgQuickHelp>
-        <msgRemoveEntryDescription>Esto solo quita el elemento de la lista. No se eliminan archivos ni entradas del registro. Úsalo para entradas obsoletas o no válidas.</msgRemoveEntryDescription>
+        <msgRemoveEntryDescription>Esta función elimina la entrada de desinstalación del registro para que el programa deje de aparecer en la lista. Con la cuarentena activada, la entrada se puede restaurar desde Herramientas &gt; Cuarentena y deshacer.</msgRemoveEntryDescription>
         <msgRemoveEntryFailed>No se pudo eliminar la entrada del registro de este elemento.</msgRemoveEntryFailed>
         <msgRemoveEntryQuestion>¿Seguro que quieres quitar esta entrada?</msgRemoveEntryQuestion>
         <msgRemoveMultipleItemsDescription>Esto quita las entradas seleccionadas del registro (menú Inicio) para que no se ejecuten al iniciar Windows.</msgRemoveMultipleItemsDescription>
@@ -236,6 +247,10 @@
         <msgPartialRemoval>No se pudieron eliminar algunos elementos seleccionados. Revisa los detalles a continuación.</msgPartialRemoval>
         <msgPendingReboot>Algunos archivos se eliminarán después del próximo reinicio</msgPendingReboot>
         <msgChooseExecutable>Elige un archivo ejecutable.</msgChooseExecutable>
+        <msgQuarantineNotice>Los archivos y entradas de registro eliminados se guardarán en cuarentena y se pueden restaurar desde Herramientas &gt; Cuarentena y deshacer.</msgQuarantineNotice>
+        <msgPermanentRemovalNotice>La cuarentena está desactivada. Los elementos seleccionados se eliminarán permanentemente.</msgPermanentRemovalNotice>
+        <msgRemovalPreviewTitle>Confirmar eliminación</msgRemovalPreviewTitle>
+        <msgQuarantineKept>Los elementos eliminados se guardaron en cuarentena. Restáuralos desde Herramientas &gt; Cuarentena y deshacer.</msgQuarantineKept>
     </Messages>
     <Misc>
         <btnCancel>Cancelar</btnCancel>
@@ -320,4 +335,39 @@
         <checkDontAskAgain>Recordar mi elección y no volver a preguntar (se puede cambiar en Preferencias)</checkDontAskAgain>
         <staticConfirm>El desinstalador propio ha terminado. ¿Quieres buscar en el registro y el sistema de archivos restos de archivos y entradas?</staticConfirm>
     </UninstallWizardConfirmation>
+    <Quarantine>
+        <Caption>Cuarentena y deshacer</Caption>
+        <Description>Los archivos y entradas de registro eliminados se guardan aquí hasta que los borres.</Description>
+        <ColumnDate>Creado</ColumnDate>
+        <ColumnDescription>Operación</ColumnDescription>
+        <ColumnFiles>Archivos</ColumnFiles>
+        <ColumnRegistry>Registro</ColumnRegistry>
+        <btnRestore>Restaurar</btnRestore>
+        <btnDelete>Eliminar permanentemente</btnDelete>
+        <btnOpenFolder>Abrir carpeta</btnOpenFolder>
+        <Empty>La cuarentena está vacía.</Empty>
+        <Count>%u operación(es) de eliminación anteriores</Count>
+        <RestoreConfirm>¿Restaurar todos los elementos de esta operación? Los archivos existentes nunca se sobrescriben.</RestoreConfirm>
+        <RestorePartial>No se pudieron restaurar algunos elementos.</RestorePartial>
+        <DeleteConfirm>¿Eliminar esta cuarentena permanentemente?</DeleteConfirm>
+        <DeleteDescription>No se puede deshacer. Se borrarán los archivos y respaldos del registro.</DeleteDescription>
+    </Quarantine>
+    <Queue>
+        <Caption>Cola de desinstalacion</Caption>
+        <Description>Las desinstalaciones se ejecutan una tras otra. Un fallo no detiene la cola.</Description>
+        <ColumnStatus>Estado</ColumnStatus>
+        <btnStart>Iniciar desinstalación</btnStart>
+        <StatusPending>Pendiente</StatusPending>
+        <StatusRunning>En ejecución</StatusRunning>
+        <StatusDone>Hecho</StatusDone>
+        <StatusFailed>Fallido</StatusFailed>
+        <StatusCancelled>Cancelado</StatusCancelled>
+        <Running>Desinstalando %s...</Running>
+        <Finished>Cola finalizada. %u programa(s) desinstalado(s).</Finished>
+        <StopDescription>¿Detener la cola después de cancelar el desinstalador actual?</StopDescription>
+        <CloseDescription>La cola sigue activa. ¿Detenerla y cerrar la ventana?</CloseDescription>
+    </Queue>
+    <ShellIntegration>
+        <installAndTrace>Instalar y rastrear con CleanRift</installAndTrace>
+    </ShellIntegration>
 </Language>

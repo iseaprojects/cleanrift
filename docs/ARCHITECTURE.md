@@ -14,7 +14,10 @@ Core/
   ProgramScanner      registry / MSI / Store discovery
   UninstallRunner     runs the program's uninstaller and waits for its tree
   LeftoverScanner     heuristic leftover scan
-  RemovalEngine       deletes files, folders and registry items
+  RemovalEngine       deletes or quarantines files, folders and registry items
+  QuarantineStore     quarantine batches, manifests and restore
+  SystemRestore       optional restore point through SRSetRestorePoint
+  ShellIntegration    optional per-user Explorer "Install and trace" verb
   InstallTracker      real-time filesystem tracing + registry snapshot diff
   LiveFileMonitor     FileSystemWatcher/ReadDirectoryChangesW event collector
   LiveRegistryMonitor ETW kernel registry event collector
@@ -54,7 +57,8 @@ waits for `<job>.result.json`.
 
 Job kinds:
 
-- `removal` — list of file/folder/registry items.
+- `removal` — list of file/folder/registry items, plus the quarantine, registry
+  backup and restore-point flags.
 - `startup` — add, delete, enable or disable a startup entry.
 
 ## Data formats
@@ -65,6 +69,8 @@ Job kinds:
 - Cache: `cache.dat`, magic `CLEANRIFT1\n` followed by JSON.
 - Traces: `*_Traces.xml`, root `<CleanRiftTraces version="1">` with `Folders`,
   `Files`, `RegistryKeys` and `RegistryValues` sections.
+- Quarantine: `%LOCALAPPDATA%\CleanRift\Quarantine\<batch>\manifest.json` plus
+  the stored files and `.reg` exports.
 - Languages: `Languages\English.xml` and `Languages\Spanish.xml`, generated from
   `languages/*.csv` by `tools/Build-Languages.ps1`.
 
@@ -83,4 +89,8 @@ Job kinds:
   highest available privileges. It is created only from Preferences and can be
   removed there.
 - Removal jobs validate item kinds and registry paths in `RemovalEngine`.
+- Quarantine restore rejects protected paths and keeps every stored item inside
+  its own batch folder; existing files are never overwritten.
+- The Explorer verb is written to `HKCU` only, is optional, and is removed by
+  the uninstaller.
 - HTML output is HTML-encoded; trace XML is written with `XmlWriter`.

@@ -230,6 +230,13 @@ public enum StartupKind
     StoreTask
 }
 
+public enum StartupImpact
+{
+    Low,
+    Medium,
+    High
+}
+
 public sealed class StartupItem
 {
     public string Id { get; set; } = "";
@@ -248,6 +255,7 @@ public sealed class StartupItem
     public bool Enabled { get; set; } = true;
     public bool Running { get; set; }
     public bool Invalid { get; set; }
+    public StartupImpact Impact { get; set; } = StartupImpact.Low;
     public string Publisher { get; set; } = "";
     public string StatusText { get; set; } = "";
     public Icon? Icon { get; set; }

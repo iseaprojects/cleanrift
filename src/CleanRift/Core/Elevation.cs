@@ -17,6 +17,10 @@ public sealed class RemovalJob
     public string Kind { get; set; } = "";
     public List<RemovalJobItem> Items { get; set; } = new();
     public StartupJob? Startup { get; set; }
+    public bool Quarantine { get; set; }
+    public bool BackupRegistry { get; set; }
+    public bool CreateRestorePoint { get; set; }
+    public string Description { get; set; } = "";
 }
 
 public sealed class StartupJob
@@ -44,6 +48,7 @@ public sealed class JobResult
     public int Failed { get; set; }
     public int ScheduledForReboot { get; set; }
     public string Error { get; set; } = "";
+    public string QuarantineBatchId { get; set; } = "";
     public List<string> Errors { get; set; } = new();
 }
 
@@ -84,9 +89,19 @@ public static class Elevation
         }
     }
 
-    public static JobResult? ExecuteRemoval(IEnumerable<RemovalJobItem> items, bool wait = true)
+    public static JobResult? ExecuteRemoval(IEnumerable<RemovalJobItem> items, bool wait = true,
+        bool quarantine = false, bool backupRegistry = false, bool createRestorePoint = false,
+        string description = "")
     {
-        var job = new RemovalJob { Kind = "removal", Items = items.ToList() };
+        var job = new RemovalJob
+        {
+            Kind = "removal",
+            Items = items.ToList(),
+            Quarantine = quarantine,
+            BackupRegistry = backupRegistry,
+            CreateRestorePoint = createRestorePoint,
+            Description = description
+        };
         return Execute(job, wait);
     }
 

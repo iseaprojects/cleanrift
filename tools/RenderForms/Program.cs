@@ -74,9 +74,16 @@ internal static class Program
             return;
         }
 
-        if (args.Contains("--main"))
+        var waitArg = args.FirstOrDefault(a => a.StartsWith("--wait=", StringComparison.OrdinalIgnoreCase));
+        if (waitArg != null && int.TryParse(waitArg[7..], out var waitMs))
+            _waitMs = Math.Clamp(waitMs, 0, 30000);
+
+        if (args.Contains("--main") || args.Contains("--startup"))
         {
-            var main = new MainForm(settings);
+            var target = args.Contains("--startup")
+                ? StartupTarget.Startup
+                : StartupTarget.None;
+            var main = new MainForm(settings, target);
             main.ShowInTaskbar = false;
             main.StartPosition = FormStartPosition.Manual;
             main.Location = new Point(-32000, -32000);
@@ -114,10 +121,6 @@ internal static class Program
         if (tabIndex >= 0)
             _tabIndex = tabIndex;
 
-        var waitArg = args.FirstOrDefault(a => a.StartsWith("--wait=", StringComparison.OrdinalIgnoreCase));
-        if (waitArg != null && int.TryParse(waitArg[7..], out var waitMs))
-            _waitMs = Math.Clamp(waitMs, 0, 30000);
-
         Render(new AboutForm(), Path.Combine(outDir, "dlg_about.png"));
         Render(new PreferencesForm(settings), Path.Combine(outDir, "dlg_preferences.png"));
         Render(new AddStartupForm(), Path.Combine(outDir, "dlg_addstartup.png"));
@@ -126,6 +129,9 @@ internal static class Program
         var program = SampleProgram();
         Render(new ForceRemovalForm(new[] { program }, settings), Path.Combine(outDir, "dlg_force.png"));
         Render(new TracedXmlForm(SampleTrace()), Path.Combine(outDir, "dlg_tracedxml.png"));
+        Render(new QuarantineForm(), Path.Combine(outDir, "dlg_quarantine.png"));
+        Render(new UninstallQueueForm(new[] { program }, settings),
+            Path.Combine(outDir, "dlg_queue.png"));
 
         var explorer = new ExplorerPanel { Dock = DockStyle.None, Width = 253, Height = 650 };
         explorer.ShowPrograms(new[] { program });
