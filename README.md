@@ -28,6 +28,16 @@ vendor.
 Windows 10/11 x64. The executable is not code-signed yet, so Windows SmartScreen
 may show a warning; verify the checksums above if you prefer.
 
+### Scoop
+
+```powershell
+scoop bucket add cleanrift https://github.com/iseaprojects/scoop-cleanrift
+scoop install cleanrift
+```
+
+The winget and Chocolatey manifests are prepared in `packaging/`; their public
+submissions are pending review.
+
 ## Screenshots
 
 ![CleanRift main window](docs/screens/main-light.png)
@@ -147,6 +157,7 @@ tools/RenderForms/  diagnostic dialog renderer (not distributed)
 tools/              language and icon generators
 languages/          translation sources (CSV)
 installer/          Inno Setup script
+packaging/          winget, Chocolatey and Scoop packaging
 docs/               design, beta and privacy notes
 ```
 
