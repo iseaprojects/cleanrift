@@ -28,15 +28,26 @@ vendor.
 Windows 10/11 x64. The executable is not code-signed yet, so Windows SmartScreen
 may show a warning; verify the checksums above if you prefer.
 
-### Scoop
+### Package managers
+
+**Chocolatey** (beta channel):
+
+```powershell
+choco install cleanrift --pre
+```
+
+**Scoop:**
 
 ```powershell
 scoop bucket add cleanrift https://github.com/iseaprojects/scoop-cleanrift
 scoop install cleanrift
 ```
 
-The winget and Chocolatey manifests are prepared in `packaging/`; their public
-submissions are pending review.
+**winget:** the manifest has been submitted to
+[`microsoft/winget-pkgs`](https://github.com/microsoft/winget-pkgs/pull/466757)
+and passed all validation checks. It becomes available as
+`winget install CleanRift.CleanRift` once a moderator merges the pull request.
+The manifest source lives in `packaging/winget`.
 
 ## Screenshots
 

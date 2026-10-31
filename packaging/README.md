@@ -5,6 +5,16 @@ package managers.
 
 Current release: **1.0 Beta 3.1** (`1.0.0-beta.3.1`).
 
+| Channel | Package | Status |
+| --- | --- | --- |
+| Chocolatey | `cleanrift 1.0.0-beta3-1` | Published in the community repository |
+| Scoop | `iseaprojects/scoop-cleanrift` | Published and tested |
+| winget | `CleanRift.CleanRift 1.0.0-beta.3.1` | Submitted; all checks passed, awaiting moderator merge |
+
+Chocolatey uses SemVer v1 for prereleases (`1.0.0-beta3-1`) because the
+community repository does not accept SemVer v2 versions such as
+`1.0.0-beta3.1`; it rejects them with an unhelpful 504/500 response.
+
 ## Winget
 
 Manifests live in `packaging/winget/`. They are submitted to
@@ -45,11 +55,14 @@ choco apikey --key <your-api-key> --source https://push.chocolatey.org/
 choco push cleanrift.1.0.0-beta3-1.nupkg --source https://push.chocolatey.org/
 ```
 
-Once approved, users can install with:
+The package is published. Users install the beta with:
 
 ```powershell
 choco install cleanrift --pre
 ```
+
+For a new release, pack and push the new version; it goes through automated
+checks and moderation again.
 
 ## Scoop
 
