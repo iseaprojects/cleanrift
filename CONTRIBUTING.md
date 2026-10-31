@@ -21,12 +21,22 @@ Portable package and installer:
 .\build.ps1
 ```
 
-Language XML files are generated from `languages/english.csv` and
-`languages/spanish.csv`:
+Language XML files are generated from the CSV sources in `languages/` (English,
+Spanish, French, German, Italian and Brazilian Portuguese):
 
 ```powershell
 .\tools\Build-Languages.ps1
 ```
+
+Run the tests before opening a pull request:
+
+```powershell
+dotnet test tests\CleanRift.Tests\CleanRift.Tests.csproj
+```
+
+When adding a UI string, add it to every `languages/*.csv` file. The
+`LanguageParityTests` check that all languages have the same keys and
+placeholders.
 
 The application icon is generated from code:
 

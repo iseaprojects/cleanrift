@@ -6,8 +6,9 @@ Only the latest beta receives fixes.
 
 ## Reporting a vulnerability
 
-Please report security issues privately to the project maintainer instead of
-opening a public issue. Include:
+Please report security issues privately through
+[GitHub Security Advisories](https://github.com/iseaprojects/cleanrift/security/advisories/new)
+instead of opening a public issue. Include:
 
 - CleanRift version and Windows build.
 - A description of the issue and its impact.
