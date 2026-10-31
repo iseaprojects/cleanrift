@@ -17,7 +17,7 @@ vendor.
 
 ## Download
 
-**Latest: [CleanRift 1.0 Beta 3](https://github.com/iseaprojects/cleanrift/releases/tag/v1.0.0-beta.3)** (pre-release)
+**Latest: [CleanRift 1.0 Beta 3](https://github.com/iseaprojects/cleanrift/releases/tag/v1.0.0-beta.3)** (beta)
 
 - [Portable ZIP](https://github.com/iseaprojects/cleanrift/releases/download/v1.0.0-beta.3/CleanRift-1.0-beta3-portable.zip)
   — unzip and run `CleanRift.exe`; no installation required.
